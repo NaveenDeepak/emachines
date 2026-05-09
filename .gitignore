@@ -39,3 +39,6 @@ dist/
 # Secrets
 .env
 *.env
+
+# Local reference material (not part of the library)
+KnowledgeBase/
