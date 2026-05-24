@@ -1,19 +1,56 @@
-"""Magnetics: BH curve models, iron loss, electrical steel database, PM materials."""
+"""Magnetics module - Magnetic circuit analysis, iron loss models, and magnet properties.
 
-from .iron_loss import (
-    steinmetz, modified_steinmetz, bertotti,
-    fit_steinmetz, fit_modified_steinmetz, fit_bertotti,
-    fit_loss_model, MODEL_NAMES,
+This module provides:
+- BH curve models (Fröhlich, linear) and fitting
+- Iron loss models (Steinmetz, Modified Steinmetz, Bertotti)
+- Electrical steel material database
+- Permanent magnet (NdFeB) grade library
+"""
+
+from .magnetics import (
+    # BH Models
+    frolich,
+    linear_region,
+    fit_frolich,
+    # Iron Loss Models
+    steinmetz,
+    modified_steinmetz,
+    bertotti,
+    fit_steinmetz,
+    fit_modified_steinmetz,
+    fit_bertotti,
+    fit_loss_model,
+    # Steel Database
+    SteelGrade,
+    SteelDatabase,
+    SAMPLE_BH,
+    SAMPLE_LOSS,
+    # Magnet Materials
+    MagnetGrade,
+    MagnetData,
+    MAGNET_LIBRARY,
 )
-from .bh_models import frolich, fit_frolich, linear_region
-from .electrical_steel import SteelGrade, SteelDatabase, SAMPLE_BH, SAMPLE_LOSS
-from .pm_materials import MagnetGrade, MAGNET_LIBRARY, MagnetData
 
 __all__ = [
-    "steinmetz", "modified_steinmetz", "bertotti",
-    "fit_steinmetz", "fit_modified_steinmetz", "fit_bertotti",
-    "fit_loss_model", "MODEL_NAMES",
-    "frolich", "fit_frolich", "linear_region",
-    "SteelGrade", "SteelDatabase", "SAMPLE_BH", "SAMPLE_LOSS",
-    "MagnetGrade", "MAGNET_LIBRARY", "MagnetData",
+    # BH Models
+    "frolich",
+    "linear_region",
+    "fit_frolich",
+    # Iron Loss Models
+    "steinmetz",
+    "modified_steinmetz",
+    "bertotti",
+    "fit_steinmetz",
+    "fit_modified_steinmetz",
+    "fit_bertotti",
+    "fit_loss_model",
+    # Steel Database
+    "SteelGrade",
+    "SteelDatabase",
+    "SAMPLE_BH",
+    "SAMPLE_LOSS",
+    # Magnet Materials
+    "MagnetGrade",
+    "MagnetData",
+    "MAGNET_LIBRARY",
 ]

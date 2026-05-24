@@ -1,15 +1,47 @@
-"""Motor models: PMSM dq-model, SPM torque-speed profile, PMDC motor."""
+"""Electric Motors module — DC and PMSM models."""
 
-from emachines.motors.pmsm import PMSMParams, SPM, back_emf, torque, dq_currents
-from emachines.motors.dc_motor import (
-    GeometricParams, MaterialProperties, OperatingConditions, LumpedParams,
-    calculate_lumped_parameters, calculate_steady_state_performance,
-    calculate_losses_and_efficiency, plot_efficiency_map,
+from .motors import (
+    # DC Motor classes
+    GeometricParams,
+    MaterialProperties,
+    OperatingConditions,
+    LumpedParams,
+    # DC Motor functions
+    calculate_carter_coefficient,
+    calculate_magnetic_circuit,
+    calculate_armature_resistance,
+    calculate_motor_constants,
+    calculate_rotor_inertia,
+    calculate_lumped_parameters,
+    calculate_steady_state_performance,
+    calculate_losses_and_efficiency,
+    plot_efficiency_map,
+    # PMSM classes
+    PMSMParams,
+    SPM,
+    # PMSM functions
+    back_emf,
+    torque,
+    dq_currents,
 )
 
 __all__ = [
-    "PMSMParams", "SPM", "back_emf", "torque", "dq_currents",
-    "GeometricParams", "MaterialProperties", "OperatingConditions", "LumpedParams",
-    "calculate_lumped_parameters", "calculate_steady_state_performance",
-    "calculate_losses_and_efficiency", "plot_efficiency_map",
+    "GeometricParams",
+    "MaterialProperties",
+    "OperatingConditions",
+    "LumpedParams",
+    "calculate_carter_coefficient",
+    "calculate_magnetic_circuit",
+    "calculate_armature_resistance",
+    "calculate_motor_constants",
+    "calculate_rotor_inertia",
+    "calculate_lumped_parameters",
+    "calculate_steady_state_performance",
+    "calculate_losses_and_efficiency",
+    "plot_efficiency_map",
+    "PMSMParams",
+    "SPM",
+    "back_emf",
+    "torque",
+    "dq_currents",
 ]

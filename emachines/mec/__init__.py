@@ -8,14 +8,14 @@ Quick start
     from emachines.mec import MEC, ShanesudhoffModel
 
     mec = MEC()
-    mec.add_mesh_branch(branch=1, mesh=1, mmf=500.0)
-    mec.add_nonlinear_branch(
-        branch=2, length=0.05, area=1e-4,
+    mec.add_mesh_branch(mmf=500.0)
+    mec.add_reluctance_branch(
+        length=0.05, area=1e-4,
         model=ShanesudhoffModel.ferrite_3C90(),
-        meshes=[1], orientations=[1],
+        meshes=[0], orientations=[1],
     )
     sol = mec.solve()
-    print(f"Φ = {sol.flux(2)*1e6:.3f} µWb,  Wf = {sol.field_energy*1e6:.3f} µJ")
+    print(f"Φ = {sol.flux(1)*1e6:.3f} µWb,  Wf = {sol.field_energy*1e6:.3f} µJ")
 
 Public API
 ----------
@@ -32,16 +32,19 @@ SplinePermeabilityModel
     :class:`emachines.magnetics.SteelGrade`.
 ShanesudhoffModel
     Analytical Shane-Sudhoff (2010) model with 3C90 ferrite class method.
+BranchType
+    Branch type identifiers (MESH, RELUCTANCE, NODAL).
 """
 
-from .material import (
+from .mec import (
     PermeabilityModel,
     LinearPermeabilityModel,
     SplinePermeabilityModel,
     ShanesudhoffModel,
+    BranchType,
+    MEC,
+    MECSolution,
 )
-from .result import MECSolution
-from .solver import MEC
 
 __all__ = [
     "MEC",
@@ -50,6 +53,7 @@ __all__ = [
     "LinearPermeabilityModel",
     "SplinePermeabilityModel",
     "ShanesudhoffModel",
+    "BranchType",
 ]
 
 # ── quick reference ───────────────────────────────────────────────────────────

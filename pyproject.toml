@@ -31,6 +31,7 @@ dependencies = [
     "numpy>=1.24",
     "scipy>=1.10",
     "pandas>=1.5",
+    "matplotlib>=3.7",
 ]
 
 [project.optional-dependencies]
@@ -56,3 +57,19 @@ packages = ["emachines"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--tb=short"
+
+[tool.nbdev]
+lib_name = "emachines"
+version = "0.6.0"
+nbs_path = "nbs"
+lib_path = "emachines"
+doc_path = "docs"
+author = "ND"
+author_email = "NaveenDeepak@gmail.com"
+description = "Analytical electromechanical machine design library"
+keywords = ["electric motor", "PMSM", "BLDC", "winding", "electromagnetic"]
+license = "MIT"
+copyright = "ND"
+branch = "main"
+git_url = "https://github.com/NaveenDeepak/emachines"
+min_python = "3.9"
