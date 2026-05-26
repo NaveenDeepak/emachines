@@ -42,3 +42,6 @@ dist/
 
 # Local reference material (not part of the library)
 KnowledgeBase/
+
+# isort temp files
+*.isorted

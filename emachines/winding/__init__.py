@@ -12,16 +12,16 @@ sos
     get_valid_coil_spans, is_valid_combination
 """
 
-from .factors import pitch_factor, distribution_factor, winding_factor
+from .factors import distribution_factor, pitch_factor, winding_factor
 from .sos import (
-    get_basic_params,
-    build_star_of_slots,
     assign_phases,
     build_coil_matrix,
-    winding_factor_sos,
+    build_star_of_slots,
     check_symmetry,
+    get_basic_params,
     get_valid_coil_spans,
     is_valid_combination,
+    winding_factor_sos,
 )
 
 __all__ = [

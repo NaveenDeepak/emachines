@@ -151,7 +151,7 @@ def winding_factor(
     0.8660...
     """
     P = 2 * p
-    pole_pitch = Q / (2 * p)   # standard pole pitch τp = Q/P
+    pole_pitch = Q / (2 * p)  # standard pole pitch τp = Q/P
     q = Q / (2 * m * p)
 
     if q >= 1.0 - 1e-9:

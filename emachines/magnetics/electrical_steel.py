@@ -34,31 +34,36 @@ __all__ = ["SteelGrade", "SteelDatabase", "SAMPLE_BH", "SAMPLE_LOSS"]
 SAMPLE_BH: dict = {
     "M-19 Steel": {
         "H (A/m)": [0, 50, 100, 150, 200, 300, 400, 500, 1000, 1500, 2000, 3000, 4000, 5000],
-        "B (T)":   [0, 0.6, 1.0, 1.2, 1.3, 1.4, 1.45, 1.5, 1.6, 1.65, 1.7, 1.75, 1.8, 1.85],
+        "B (T)": [0, 0.6, 1.0, 1.2, 1.3, 1.4, 1.45, 1.5, 1.6, 1.65, 1.7, 1.75, 1.8, 1.85],
     },
     "M-36 Steel": {
         "H (A/m)": [0, 40, 80, 120, 160, 240, 320, 400, 800, 1200, 1600, 2400, 3200, 4000],
-        "B (T)":   [0, 0.5, 0.9, 1.1, 1.2, 1.3, 1.35, 1.4, 1.5, 1.55, 1.6, 1.65, 1.7, 1.75],
+        "B (T)": [0, 0.5, 0.9, 1.1, 1.2, 1.3, 1.35, 1.4, 1.5, 1.55, 1.6, 1.65, 1.7, 1.75],
     },
 }
 
 SAMPLE_LOSS: dict = {
-    "M-19 Steel": pd.DataFrame({
-        "Frequency (Hz)":  [60, 60, 60, 60, 400, 400, 400, 400],
-        "Flux Density (T)":[0.5, 1.0, 1.5, 1.7, 0.5, 1.0, 1.5, 1.7],
-        "Core Loss (W/kg)":[0.4, 1.0, 1.8, 2.5, 4.0, 12.0, 25.0, 35.0],
-    }),
-    "M-36 Steel": pd.DataFrame({
-        "Frequency (Hz)":  [60, 60, 60, 60, 400, 400, 400, 400],
-        "Flux Density (T)":[0.5, 1.0, 1.5, 1.7, 0.5, 1.0, 1.5, 1.7],
-        "Core Loss (W/kg)":[0.5, 1.2, 2.2, 3.0, 5.0, 15.0, 30.0, 42.0],
-    }),
+    "M-19 Steel": pd.DataFrame(
+        {
+            "Frequency (Hz)": [60, 60, 60, 60, 400, 400, 400, 400],
+            "Flux Density (T)": [0.5, 1.0, 1.5, 1.7, 0.5, 1.0, 1.5, 1.7],
+            "Core Loss (W/kg)": [0.4, 1.0, 1.8, 2.5, 4.0, 12.0, 25.0, 35.0],
+        }
+    ),
+    "M-36 Steel": pd.DataFrame(
+        {
+            "Frequency (Hz)": [60, 60, 60, 60, 400, 400, 400, 400],
+            "Flux Density (T)": [0.5, 1.0, 1.5, 1.7, 0.5, 1.0, 1.5, 1.7],
+            "Core Loss (W/kg)": [0.5, 1.2, 2.2, 3.0, 5.0, 15.0, 30.0, 42.0],
+        }
+    ),
 }
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Data model
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 @dataclass
 class SteelGrade:
@@ -72,11 +77,12 @@ class SteelGrade:
         loss_data:    DataFrame with columns 'frequency [Hz]', 'B [T]', 'core loss P [W/kg]'
         source_file:  Path to the originating data file
     """
-    name:         str
+
+    name: str
     manufacturer: str
-    bh_data:      pd.DataFrame = field(default_factory=pd.DataFrame)
-    loss_data:    pd.DataFrame = field(default_factory=pd.DataFrame)
-    source_file:  str = ""
+    bh_data: pd.DataFrame = field(default_factory=pd.DataFrame)
+    loss_data: pd.DataFrame = field(default_factory=pd.DataFrame)
+    source_file: str = ""
 
     @property
     def frequencies(self) -> list[float]:
@@ -106,9 +112,11 @@ class SteelGrade:
         """
         if freq not in self.frequencies:
             raise ValueError(f"Frequency {freq} Hz not in dataset. Available: {self.frequencies}")
-        b_col    = next((c for c in ("B [T]", "J [T]") if c in self.loss_data.columns), None)
-        loss_col = next((c for c in ("core loss P [W/kg]", "Core Loss [W/kg]")
-                         if c in self.loss_data.columns), None)
+        b_col = next((c for c in ("B [T]", "J [T]") if c in self.loss_data.columns), None)
+        loss_col = next(
+            (c for c in ("core loss P [W/kg]", "Core Loss [W/kg]") if c in self.loss_data.columns),
+            None,
+        )
         if not b_col or not loss_col:
             raise ValueError("Loss data missing expected columns.")
         subset = self.loss_data[self.loss_data["frequency [Hz]"] == freq].sort_values(b_col)
@@ -118,6 +126,7 @@ class SteelGrade:
 # ─────────────────────────────────────────────────────────────────────────────
 # Database
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class SteelDatabase:
     """
@@ -142,8 +151,8 @@ class SteelDatabase:
         print(grade.loss_at(freq=400, B=1.5))
     """
 
-    _CACHE_SUBDIR    = "steel_data_cache"
-    _VOEST_SUBDIR    = "Voelstapine Electrical Steel"
+    _CACHE_SUBDIR = "steel_data_cache"
+    _VOEST_SUBDIR = "Voelstapine Electrical Steel"
 
     def __init__(self, data_dir: str):
         self._data_dir = Path(data_dir)
@@ -267,15 +276,19 @@ class SteelDatabase:
                 return pd.DataFrame(), pd.DataFrame()
             df = pd.read_excel(path, sheet_name=sheet, header=1, engine="openpyxl")
             df = df[:-2].dropna(subset=["grade"])
-            bh   = df[df["frequency [Hz]"] == 0].copy()
+            bh = df[df["frequency [Hz]"] == 0].copy()
             loss = df[df["frequency [Hz]"] > 0].copy()
             for part in (bh, loss):
                 if part.empty:
                     continue
                 if "permeability µr [1]" in part.columns:
-                    part["B [T]"] = part["permeability µr [1]"] * mu0 * part["field strength H [A/m]"]
+                    part["B [T]"] = (
+                        part["permeability µr [1]"] * mu0 * part["field strength H [A/m]"]
+                    )
                 else:
-                    part["B [T]"] = mu0 * part["field strength H [A/m]"] + part["polarisation J [T]"]
+                    part["B [T]"] = (
+                        mu0 * part["field strength H [A/m]"] + part["polarisation J [T]"]
+                    )
             return bh, loss
         except Exception:
             return pd.DataFrame(), pd.DataFrame()

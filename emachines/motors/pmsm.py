@@ -13,7 +13,6 @@ References:
 import numpy as np
 
 
-
 class PMSMParams:
     """
     Container for PMSM parameters.
@@ -135,8 +134,7 @@ def dq_currents(
     we = omega_e
 
     # 2x2 linear system: [Rs, -we*Lq; we*Ld, Rs] · [id; iq] = [Vd; Vq - we*psi_m]
-    A = np.array([[Rs, -we * Lq],
-                  [we * Ld, Rs]])
+    A = np.array([[Rs, -we * Lq], [we * Ld, Rs]])
     b = np.array([Vd, Vq - we * psi_m])
     id_, iq_ = np.linalg.solve(A, b)
     return float(id_), float(iq_)
@@ -173,21 +171,21 @@ class SPM:
     """
 
     def __init__(self, phi_m: float, ld: float, pp: int, Vb: float, Ib: float):
-        self.phi_m = phi_m   # PM flux linkage (Wb)
-        self.sal   = 0       # saliency ratio Lq/Ld (0 for SPM = no reluctance torque)
-        self.ld    = ld      # d-axis inductance (H)
-        self.Vb    = Vb      # DC bus voltage (V)
-        self.Ib    = Ib      # Peak phase current (A)
-        self.Pb    = 1.5 * Vb * Ib   # VA rating
-        self.pp    = pp      # pole pairs
+        self.phi_m = phi_m  # PM flux linkage (Wb)
+        self.sal = 0  # saliency ratio Lq/Ld (0 for SPM = no reluctance torque)
+        self.ld = ld  # d-axis inductance (H)
+        self.Vb = Vb  # DC bus voltage (V)
+        self.Ib = Ib  # Peak phase current (A)
+        self.Pb = 1.5 * Vb * Ib  # VA rating
+        self.pp = pp  # pole pairs
 
         # Results populated by motor_profile()
-        self.speed:   list[float] = []
-        self.torque:  list[float] = []
+        self.speed: list[float] = []
+        self.torque: list[float] = []
         self.voltage: list[float] = []
         self.current: list[float] = []
-        self.gamma:   list[float] = []
-        self.power:   list[float] = []
+        self.gamma: list[float] = []
+        self.power: list[float] = []
         self.valid: int = 0
 
     def validate(self) -> bool:
@@ -206,7 +204,9 @@ class SPM:
         if denom == 0:
             self.valid = 1
             return True
-        sin_gamma = (-self.phi_m + np.sqrt(self.phi_m**2 + 8 * (self.ld * (self.sal - 1))**2)) / denom
+        sin_gamma = (
+            -self.phi_m + np.sqrt(self.phi_m**2 + 8 * (self.ld * (self.sal - 1)) ** 2)
+        ) / denom
         if sin_gamma <= 1:
             self.valid = 1
             return True
@@ -220,28 +220,32 @@ class SPM:
         Flux-weakening region   (γ swept 1°→84°, speed set by voltage limit)
         """
         # Reset previous results
-        self.speed   = []
-        self.torque  = []
+        self.speed = []
+        self.torque = []
         self.voltage = []
-        self.gamma   = []
-        self.power   = []
+        self.gamma = []
+        self.power = []
 
         gamma_deg = 0
         gamma = 0.0
         omega = 0.0
         v = 0.0
-        v_lim = self.Vb / 1.732   # phase voltage limit (V_dc / √3)
+        v_lim = self.Vb / 1.732  # phase voltage limit (V_dc / √3)
 
         # ── Constant-torque region ────────────────────────────────────────────
         while v < v_lim:
-            v = omega * self.pp * np.sqrt(
-                (self.phi_m - self.Ib * np.sin(gamma) * self.ld) ** 2
-                + (self.Ib * self.ld * np.cos(gamma)) ** 2
+            v = (
+                omega
+                * self.pp
+                * np.sqrt(
+                    (self.phi_m - self.Ib * np.sin(gamma) * self.ld) ** 2
+                    + (self.Ib * self.ld * np.cos(gamma)) ** 2
+                )
             )
             t = 1.5 * self.pp * self.phi_m * self.Ib * np.cos(gamma)
             p = t * omega
             omega += 0.1
-            self.speed.append(omega * 30 / np.pi)   # rad/s → rpm
+            self.speed.append(omega * 30 / np.pi)  # rad/s → rpm
             self.voltage.append(v)
             self.gamma.append(gamma_deg)
             self.torque.append(t)
@@ -250,10 +254,13 @@ class SPM:
         # ── Flux-weakening region ─────────────────────────────────────────────
         for gamma_deg in range(1, 85):
             gamma = gamma_deg * np.pi / 180
-            omega = (v_lim) / (self.pp * np.sqrt(
-                (self.phi_m - self.Ib * np.sin(gamma) * self.ld) ** 2
-                + (self.Ib * self.ld * np.cos(gamma)) ** 2
-            ))
+            omega = (v_lim) / (
+                self.pp
+                * np.sqrt(
+                    (self.phi_m - self.Ib * np.sin(gamma) * self.ld) ** 2
+                    + (self.Ib * self.ld * np.cos(gamma)) ** 2
+                )
+            )
             t = 1.5 * self.pp * self.Ib * self.phi_m * np.cos(gamma)
             p = t * omega
             self.speed.append(omega * 30 / np.pi)
@@ -278,54 +285,89 @@ class SPM:
             raise ImportError("plotly is required for plot_profile()") from e
 
         fig = make_subplots(
-            rows=4, cols=1,
+            rows=4,
+            cols=1,
             subplot_titles=(
-                'Torque vs Speed', 'Power vs Speed',
-                'Voltage vs Speed', 'Current Angle vs Speed',
+                "Torque vs Speed",
+                "Power vs Speed",
+                "Voltage vs Speed",
+                "Current Angle vs Speed",
             ),
             vertical_spacing=0.08,
             specs=[[{"secondary_y": False}]] * 4,
         )
 
-        fig.add_trace(go.Scatter(
-            x=self.speed, y=self.torque, mode='lines', name='Torque',
-            line=dict(color='blue', width=2),
-            hovertemplate='Speed: %{x:.1f} rpm<br>Torque: %{y:.3f} N·m<extra></extra>',
-        ), row=1, col=1)
+        fig.add_trace(
+            go.Scatter(
+                x=self.speed,
+                y=self.torque,
+                mode="lines",
+                name="Torque",
+                line=dict(color="blue", width=2),
+                hovertemplate="Speed: %{x:.1f} rpm<br>Torque: %{y:.3f} N·m<extra></extra>",
+            ),
+            row=1,
+            col=1,
+        )
 
-        fig.add_trace(go.Scatter(
-            x=self.speed, y=self.power, mode='lines', name='Power',
-            line=dict(color='green', width=2),
-            hovertemplate='Speed: %{x:.1f} rpm<br>Power: %{y:.1f} W<extra></extra>',
-        ), row=2, col=1)
+        fig.add_trace(
+            go.Scatter(
+                x=self.speed,
+                y=self.power,
+                mode="lines",
+                name="Power",
+                line=dict(color="green", width=2),
+                hovertemplate="Speed: %{x:.1f} rpm<br>Power: %{y:.1f} W<extra></extra>",
+            ),
+            row=2,
+            col=1,
+        )
 
-        fig.add_trace(go.Scatter(
-            x=self.speed, y=self.voltage, mode='lines', name='Voltage',
-            line=dict(color='orange', width=2),
-            hovertemplate='Speed: %{x:.1f} rpm<br>Voltage: %{y:.1f} V<extra></extra>',
-        ), row=3, col=1)
+        fig.add_trace(
+            go.Scatter(
+                x=self.speed,
+                y=self.voltage,
+                mode="lines",
+                name="Voltage",
+                line=dict(color="orange", width=2),
+                hovertemplate="Speed: %{x:.1f} rpm<br>Voltage: %{y:.1f} V<extra></extra>",
+            ),
+            row=3,
+            col=1,
+        )
 
         vb_phase = self.Vb / 1.732
         fig.add_hline(
-            y=vb_phase, line_dash="dash", line_color="red",
+            y=vb_phase,
+            line_dash="dash",
+            line_color="red",
             annotation_text=f"Vb = {vb_phase:.1f} V",
-            annotation_position="left", row=3, col=1,
+            annotation_position="left",
+            row=3,
+            col=1,
         )
 
-        fig.add_trace(go.Scatter(
-            x=self.speed, y=self.gamma, mode='lines', name='Current Angle',
-            line=dict(color='purple', width=2),
-            hovertemplate='Speed: %{x:.1f} rpm<br>Angle: %{y:.1f}°<extra></extra>',
-        ), row=4, col=1)
+        fig.add_trace(
+            go.Scatter(
+                x=self.speed,
+                y=self.gamma,
+                mode="lines",
+                name="Current Angle",
+                line=dict(color="purple", width=2),
+                hovertemplate="Speed: %{x:.1f} rpm<br>Angle: %{y:.1f}°<extra></extra>",
+            ),
+            row=4,
+            col=1,
+        )
 
         for i in range(1, 5):
             fig.update_xaxes(range=[0, 10000], row=i, col=1)
 
         fig.update_yaxes(title_text="Torque (N·m)", row=1, col=1)
-        fig.update_yaxes(title_text="Power (W)",    row=2, col=1)
-        fig.update_yaxes(title_text="Voltage (V)",  row=3, col=1)
-        fig.update_yaxes(title_text="Angle (°)",    row=4, col=1)
-        fig.update_xaxes(title_text="Speed (rpm)",  row=4, col=1)
+        fig.update_yaxes(title_text="Power (W)", row=2, col=1)
+        fig.update_yaxes(title_text="Voltage (V)", row=3, col=1)
+        fig.update_yaxes(title_text="Angle (°)", row=4, col=1)
+        fig.update_xaxes(title_text="Speed (rpm)", row=4, col=1)
 
         fig.update_layout(
             height=800,

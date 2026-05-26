@@ -24,9 +24,9 @@ References:
 
 from __future__ import annotations
 
-from math import gcd
 from fractions import Fraction
 from functools import lru_cache
+from math import gcd
 from typing import List, Tuple
 
 import numpy as np
@@ -46,6 +46,7 @@ __all__ = [
 # ─────────────────────────────────────────────────────────────────────────────
 # Private helpers
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def _lcm(a: int, b: int) -> int:
     """Least-common multiple of two positive integers."""
@@ -112,8 +113,8 @@ def _assign_slot_to_phase(alpha: float, m: int) -> Tuple[int, int]:
     sign      : int   +1 (forward) or −1 (return)
     """
     alpha = float(alpha) % (2.0 * np.pi)
-    half = np.pi / (2.0 * m)        # half sector width (30° for m=3)
-    sector_width = np.pi / m        # full sector width (60° for m=3)
+    half = np.pi / (2.0 * m)  # half sector width (30° for m=3)
+    sector_width = np.pi / m  # full sector width (60° for m=3)
     alpha_shifted = (alpha + half) % (2.0 * np.pi)
     sector_idx = int((alpha_shifted + 1e-9) / sector_width) % (2 * m)
     return _get_sector_map(m)[sector_idx]
@@ -122,6 +123,7 @@ def _assign_slot_to_phase(alpha: float, m: int) -> Tuple[int, int]:
 # ─────────────────────────────────────────────────────────────────────────────
 # Public API
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def get_basic_params(Q: int, P: int, m: int = 3) -> dict:
     r"""
@@ -347,8 +349,8 @@ def build_coil_matrix(
     if layers == 1 and Q % 2 == 0 and Q < m * P:
         for i in range(0, Q, 2):
             k, sign = _assign_slot_to_phase(angles[i], m)
-            matrix[0, i]     =  sign * (k + 1)   # go side
-            matrix[0, i + 1] = -sign * (k + 1)   # return side
+            matrix[0, i] = sign * (k + 1)  # go side
+            matrix[0, i + 1] = -sign * (k + 1)  # return side
 
     # Layer 1: return-side of layer-0 coils shifted by coil span w
     if layers == 2:
@@ -413,7 +415,7 @@ def winding_factor_sos(
     if w is None:
         w = Q // p
 
-    angles = build_star_of_slots(Q, P)   # α_i for fundamental (ν=1)
+    angles = build_star_of_slots(Q, P)  # α_i for fundamental (ν=1)
     matrix = build_coil_matrix(Q, P, m, layers, w)
 
     kw_per_phase = []

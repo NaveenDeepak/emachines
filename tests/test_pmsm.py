@@ -2,7 +2,8 @@
 
 import numpy as np
 import pytest
-from emachines.motors.pmsm import PMSMParams, back_emf, torque, dq_currents
+
+from emachines.motors.pmsm import PMSMParams, back_emf, dq_currents, torque
 
 
 @pytest.fixture
@@ -35,7 +36,7 @@ def test_spm_torque_no_reluctance(spm):
 
 def test_ipm_reluctance_torque(ipm):
     """IPM: negative id adds reluctance torque (MTPA region)."""
-    Te_id0  = torque(ipm, id=0.0,  iq=10.0)
+    Te_id0 = torque(ipm, id=0.0, iq=10.0)
     Te_mtpa = torque(ipm, id=-5.0, iq=10.0)
     assert Te_mtpa > Te_id0  # reluctance torque boosts total torque
 

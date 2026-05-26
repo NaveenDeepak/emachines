@@ -6,32 +6,34 @@ Auto-generated from nbdev notebooks:
 - nbs/04_results.ipynb
 """
 
+import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from scipy.interpolate import CubicSpline
 from typing import Any, Dict, List, Optional, Sequence, Tuple
-from typing import Any, Dict, Optional
-import math
+
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.interpolate import CubicSpline
 
 __all__ = [
-    'PermeabilityModel',
-    'LinearPermeabilityModel',
-    'SplinePermeabilityModel',
-    'ShanesudhoffModel',
-    'BranchType',
-    'MEC',
-    'MECSolution',
+    "PermeabilityModel",
+    "LinearPermeabilityModel",
+    "SplinePermeabilityModel",
+    "ShanesudhoffModel",
+    "BranchType",
+    "MEC",
+    "MECSolution",
 ]
 
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.interpolate import CubicSpline
-from abc import ABC, abstractmethod
 import math
+from abc import ABC, abstractmethod
+
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.interpolate import CubicSpline
 
 MU0 = 4e-7 * np.pi  # H/m
+
 
 class PermeabilityModel(ABC):
     """Abstract interface for permeability models used by the MEC solver."""
@@ -44,6 +46,7 @@ class PermeabilityModel(ABC):
     def dmu_dB(self, B: float) -> float:
         r"""Return dμ/dB [H/m·T⁻¹] at flux density *B* [T]."""
         pass
+
 
 class LinearPermeabilityModel(PermeabilityModel):
     """
@@ -67,6 +70,7 @@ class LinearPermeabilityModel(PermeabilityModel):
     def dmu_dB(self, B: float) -> float:
         """Derivative is zero for linear model."""
         return 0.0
+
 
 class SplinePermeabilityModel(PermeabilityModel):
     """
@@ -154,6 +158,7 @@ class SplinePermeabilityModel(PermeabilityModel):
         sign = 1.0 if B >= 0 else -1.0
         return sign * float(self._cs_deriv(absB))
 
+
 class ShanesudhoffModel(PermeabilityModel):
     """
     Shane-Sudhoff (2010) analytical permeability model.
@@ -205,13 +210,13 @@ class ShanesudhoffModel(PermeabilityModel):
         """Return (f, df/d|B|) at |B|."""
         eb = np.exp(-self._b * absB)
         arg = self._e + self._z * eb
-        
+
         sum_terms = np.sum(self._a * absB + self._d * np.log(arg))
         f = self._mu_r / (self._mu_r - 1.0) + sum_terms
-        
+
         dlog_dabs = -self._d * self._z * self._b * eb / arg
         df = np.sum(self._a + dlog_dabs)
-        
+
         return f, df
 
     def mu(self, B: float) -> float:
@@ -242,42 +247,52 @@ class ShanesudhoffModel(PermeabilityModel):
             gamma=[0.4742, 2.7955, 0.59862, 0.43996],
         )
 
-import numpy as np
-import matplotlib.pyplot as plt
+
+import math
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence, Tuple
-import math
+
+import matplotlib.pyplot as plt
+import numpy as np
+
 
 class BranchType:
     """Branch type identifiers for the MEC."""
-    MESH       = "mesh"
+
+    MESH = "mesh"
     RELUCTANCE = "reluctance"
-    NODAL      = "nodal"
+    NODAL = "nodal"
+
 
 @dataclass
 class _Branch:
     """Internal representation of a single MEC branch."""
-    branch_id:    int
-    btype:        str
-    mesh_id:      Optional[int] = None
-    mmf:          float = 0.0
-    length:       float = 0.0
-    area:         float = 0.0
-    model:        Optional[Any] = None
-    phi_source:   float = 0.0
-    meshes:       List[int] = field(default_factory=list)
+
+    branch_id: int
+    btype: str
+    mesh_id: Optional[int] = None
+    mmf: float = 0.0
+    length: float = 0.0
+    area: float = 0.0
+    model: Optional[Any] = None
+    phi_source: float = 0.0
+    meshes: List[int] = field(default_factory=list)
     orientations: List[int] = field(default_factory=list)
-    permeance:    Optional[float] = None
-    node_from:    Optional[int] = None
-    node_to:      Optional[int] = None
+    permeance: Optional[float] = None
+    node_from: Optional[int] = None
+    node_to: Optional[int] = None
+
 
 @dataclass
 class _Winding:
     """Internal descriptor of a multi-turn winding."""
-    winding_id:   Any
+
+    winding_id: Any
     branch_turns: Dict[int, float] = field(default_factory=dict)
 
+
 MU0 = 4e-7 * math.pi
+
 
 class MEC:
     """
@@ -309,32 +324,32 @@ class MEC:
     ) -> None:
         if (phi_base is None) != (F_base is None):
             raise ValueError("phi_base and F_base must both be specified or both be None.")
-        
+
         self.phi_base = phi_base
         self.F_base = F_base
         self.rtol = rtol
         self.atol = atol
         self.max_iter = max_iter
-        
+
         self._branches: Dict[int, _Branch] = {}
         self._windings: Dict[Any, _Winding] = {}
         self._next_branch_id = 0
         self._mesh_count = 0
         self._node_count = 0
 
+
 class MEC(MEC):  # Continue the class
-    
     def add_mesh_branch(
         self,
         mmf: float = 0.0,
     ) -> int:
         """Add a mesh (loop current) branch.
-        
+
         Parameters
         ----------
         mmf : float
             Magnetomotive force source [A-turns].
-        
+
         Returns
         -------
         branch_id : int
@@ -350,7 +365,7 @@ class MEC(MEC):  # Continue the class
         self._next_branch_id += 1
         self._mesh_count += 1
         return bid
-    
+
     def add_reluctance_branch(
         self,
         length: float,
@@ -362,7 +377,7 @@ class MEC(MEC):  # Continue the class
         phi_source: float = 0.0,
     ) -> int:
         """Add a reluctance (nonlinear magnetic) branch.
-        
+
         Parameters
         ----------
         length : float
@@ -379,7 +394,7 @@ class MEC(MEC):  # Continue the class
             Magnetomotive force source [A-turns].
         phi_source : float
             PM (Norton equivalent) flux source [Wb].
-        
+
         Returns
         -------
         branch_id : int
@@ -398,7 +413,7 @@ class MEC(MEC):  # Continue the class
         )
         self._next_branch_id += 1
         return bid
-    
+
     def add_nodal_branch(
         self,
         permeance: float,
@@ -407,7 +422,7 @@ class MEC(MEC):  # Continue the class
         mmf: float = 0.0,
     ) -> int:
         """Add a nodal (linear permeance) branch.
-        
+
         Parameters
         ----------
         permeance : float
@@ -418,7 +433,7 @@ class MEC(MEC):  # Continue the class
             Ending magnetic node.
         mmf : float
             Magnetomotive force source.
-        
+
         Returns
         -------
         branch_id : int
@@ -436,15 +451,15 @@ class MEC(MEC):  # Continue the class
         self._next_branch_id += 1
         return bid
 
+
 class MEC(MEC):  # Continue the class
-    
     def add_winding(
         self,
         winding_id: Any,
         branch_turns: Dict[int, float],
     ) -> None:
         """Register a winding for flux linkage calculation.
-        
+
         Parameters
         ----------
         winding_id : Any
@@ -458,11 +473,11 @@ class MEC(MEC):  # Continue the class
             branch_turns=dict(branch_turns),
         )
 
+
 class MEC(MEC):  # Continue the class
-    
     def solve(self) -> Any:  # Returns MECSolution
         """Solve the MEC using Newton-Raphson iteration.
-        
+
         Returns
         -------
         solution : MECSolution
@@ -472,127 +487,128 @@ class MEC(MEC):  # Continue the class
         mesh_b = [b for b in self._branches.values() if b.btype == BranchType.MESH]
         reluctance_b = [b for b in self._branches.values() if b.btype == BranchType.RELUCTANCE]
         nodal_b = [b for b in self._branches.values() if b.btype == BranchType.NODAL]
-        
+
         # Initialize
         n_mesh = len(mesh_b)
         n_nodal = self._node_count
         n_vars = n_mesh + n_nodal
-        
+
         # Index mappings
         mesh_idx = {b.branch_id: i for i, b in enumerate(mesh_b)}
         nodal_idx = {b.node_to: i + n_mesh for b in nodal_b}  # Simplified mapping
-        
+
         Phi = np.zeros(n_vars)
-        
+
         # Newton-Raphson loop
         converged = False
-        residual = float('inf')
-        
+        residual = float("inf")
+
         for n_iter in range(self.max_iter):
             # Assemble system matrix and RHS
             J = np.zeros((n_vars, n_vars))
             F_vec = np.zeros(n_vars)
-            
+
             R_eff_map = {}  # For post-processing
             Fs_eff_map = {}  # For post-processing
-            
+
             # Mesh equations: one equation per mesh
             for i, mesh_branch in enumerate(mesh_b):
                 # Sum MMF drops around mesh loop
                 mmf_sum = mesh_branch.mmf
-                
+
                 for reluctance in reluctance_b:
                     if mesh_branch.branch_id in reluctance.meshes:
                         # This reluctance crosses this mesh
                         idx_in_mesh = reluctance.meshes.index(mesh_branch.branch_id)
                         orientation = reluctance.orientations[idx_in_mesh]
-                        
+
                         # Compute flux through this reluctance
-                        phi_b = self._branch_flux_simple(reluctance, Phi, mesh_idx, n_mesh)
-                        
+                        phi_b = self._branch_flux_simple(reluctance, Phi, mesh_idx)
+
                         # Nonlinear reluctance equation
                         if reluctance.model is not None:
                             # Get B from flux
                             B = phi_b / reluctance.area if reluctance.area > 0 else 0
                             mu = reluctance.model.mu(B)
                             dmu_dB = reluctance.model.dmu_dB(B)
-                            
-                            R0 = reluctance.length / (mu * reluctance.area) if mu > 0 and reluctance.area > 0 else float('inf')
+
+                            R0 = (
+                                reluctance.length / (mu * reluctance.area)
+                                if mu > 0 and reluctance.area > 0
+                                else float("inf")
+                            )
                             if mu > 0:
                                 S0 = (dmu_dB * B / mu) if abs(mu) > 1e-15 else 0
                             else:
                                 S0 = 0
-                            
-                            R_eff = R0 * (1 - S0) if R0 < float('inf') else float('inf')
+
+                            R_eff = R0 * (1 - S0) if R0 < float("inf") else float("inf")
                             Fs_eff = reluctance.mmf - R0 * (S0 * phi_b - reluctance.phi_source)
-                            
+
                             R_eff_map[reluctance.branch_id] = R_eff
                             Fs_eff_map[reluctance.branch_id] = Fs_eff
-                            
-                            mmf_sum -= Fs_eff
-                            
+
+                            mmf_sum -= R_eff * phi_b - Fs_eff
+
                             # Jacobian entry
-                            if R_eff < float('inf'):
+                            if R_eff < float("inf"):
                                 J[i, i] -= orientation * R_eff
-                
+
                 F_vec[i] = mmf_sum
-            
+
             # Solve for flux update
             try:
                 dPhi = np.linalg.solve(J + np.eye(n_vars) * 1e-12, F_vec)
             except np.linalg.LinAlgError:
                 # Singular matrix, use pseudoinverse
                 dPhi = np.linalg.pinv(J) @ F_vec
-            
+
             # Update flux
             Phi_old = Phi.copy()
             Phi -= dPhi
-            
+
             # Check convergence
             norm_Phi = 0.5 * (np.linalg.norm(Phi) + np.linalg.norm(Phi_old))
             residual = np.linalg.norm(dPhi)
-            
+
             tol = self.rtol * norm_Phi + self.atol
             if residual <= tol:
                 converged = True
                 break
-        
+
         # Extract results
         phi_mesh = {b.branch_id: Phi[mesh_idx[b.branch_id]] for b in mesh_b}
         phi_nodal = {}
         phi_branches = {}
         mmf_branches = {}
-        
+
         # Reconstruct branch fluxes and MMF drops
         for b in mesh_b:
             phi_branches[b.branch_id] = phi_mesh[b.branch_id]
             mmf_branches[b.branch_id] = b.mmf
-        
+
         for b in reluctance_b:
-            phi_b = self._branch_flux_simple(b, Phi, mesh_idx, n_mesh)
+            phi_b = self._branch_flux_simple(b, Phi, mesh_idx)
             phi_branches[b.branch_id] = phi_b
             R_eff = R_eff_map.get(b.branch_id, 0.0)
             Fs_eff = Fs_eff_map.get(b.branch_id, b.mmf)
             mmf_branches[b.branch_id] = Fs_eff - R_eff * phi_b
-        
+
         # Calculate flux linkages
         flux_linkages = {}
         for wid, winding in self._windings.items():
-            lam = sum(
-                N * phi_branches.get(bid, 0.0)
-                for bid, N in winding.branch_turns.items()
-            )
+            lam = sum(N * phi_branches.get(bid, 0.0) for bid, N in winding.branch_turns.items())
             flux_linkages[wid] = lam
-        
+
         # Field energy
         Wf = sum(
             0.5 * R_eff_map.get(b.branch_id, 0.0) * phi_branches[b.branch_id] ** 2
             for b in reluctance_b
         )
-        
+
         # Import here to avoid circular dependency
         from .result import MECSolution
-        
+
         return MECSolution(
             phi_mesh=phi_mesh,
             phi_nodal=phi_nodal,
@@ -606,8 +622,8 @@ class MEC(MEC):  # Continue the class
             phi_base=self.phi_base,
             F_base=self.F_base,
         )
-    
-    def _branch_flux_simple(self, branch, Phi, mesh_idx, n_mesh):
+
+    def _branch_flux_simple(self, branch, Phi, mesh_idx):
         """Compute flux through a branch from mesh variables."""
         phi = 0.0
         for mesh_id, orientation in zip(branch.meshes, branch.orientations):
@@ -615,9 +631,12 @@ class MEC(MEC):  # Continue the class
                 phi += orientation * Phi[mesh_idx[mesh_id]]
         return phi
 
+
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
+
 import numpy as np
+
 
 @dataclass
 class MECSolution:
@@ -655,28 +674,28 @@ class MECSolution:
         Base MMF used for per-unit scaling [A-turns].
     """
 
-    phi_mesh:      Dict[int, float] = field(default_factory=dict)
-    phi_nodal:     Dict[int, float] = field(default_factory=dict)
-    phi_branches:  Dict[int, float] = field(default_factory=dict)
-    mmf_branches:  Dict[int, float] = field(default_factory=dict)
+    phi_mesh: Dict[int, float] = field(default_factory=dict)
+    phi_nodal: Dict[int, float] = field(default_factory=dict)
+    phi_branches: Dict[int, float] = field(default_factory=dict)
+    mmf_branches: Dict[int, float] = field(default_factory=dict)
     flux_linkages: Dict[Any, float] = field(default_factory=dict)
-    converged:     bool  = False
-    n_iterations:  int   = 0
-    residual:      float = float("inf")
-    field_energy:  float = 0.0
-    phi_base:      Optional[float] = None
-    F_base:        Optional[float] = None
+    converged: bool = False
+    n_iterations: int = 0
+    residual: float = float("inf")
+    field_energy: float = 0.0
+    phi_base: Optional[float] = None
+    F_base: Optional[float] = None
+
 
 class MECSolution(MECSolution):  # Continue the class
-    
     def flux(self, branch: int) -> float:
         """Return the net flux through *branch* [Wb]."""
         return self.phi_branches.get(branch, 0.0)
-    
+
     def mmf(self, branch: int) -> float:
         """Return the MMF drop across *branch* [A-turns]."""
         return self.mmf_branches.get(branch, 0.0)
-    
+
     def flux_linkage(self, winding_id: Any) -> float:
         """
         Return the flux linkage of *winding_id* [Wb-turns].
@@ -695,14 +714,12 @@ class MECSolution(MECSolution):  # Continue the class
             If *winding_id* was not registered.
         """
         return self.flux_linkages[winding_id]
-    
+
     def __repr__(self) -> str:
         """Return string representation of solution."""
         status = "converged" if self.converged else "NOT converged"
         scaling = (
-            f"pu(φ_base={self.phi_base:.3g})"
-            if self.phi_base is not None
-            else "heuristic-scaled"
+            f"pu(φ_base={self.phi_base:.3g})" if self.phi_base is not None else "heuristic-scaled"
         )
         return (
             f"MECSolution({status}, "

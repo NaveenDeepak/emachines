@@ -2,30 +2,43 @@
 
 import numpy as np
 import pytest
+
 from emachines.magnetics.iron_loss import (
-    steinmetz, modified_steinmetz, bertotti,
-    fit_steinmetz, fit_modified_steinmetz, fit_bertotti,
-    fit_loss_model, MODEL_NAMES,
+    MODEL_NAMES,
+    bertotti,
+    fit_bertotti,
+    fit_loss_model,
+    fit_modified_steinmetz,
+    fit_steinmetz,
+    modified_steinmetz,
+    steinmetz,
 )
 
-
 # ─── Forward model tests ──────────────────────────────────────────────────────
+
 
 def test_steinmetz_scales_with_frequency():
     assert steinmetz(100, 1.0, 0.01, 1.5, 2.0) > steinmetz(50, 1.0, 0.01, 1.5, 2.0)
 
+
 def test_steinmetz_scales_with_flux():
     assert steinmetz(50, 1.5, 0.01, 1.5, 2.0) > steinmetz(50, 1.0, 0.01, 1.5, 2.0)
+
 
 def test_modified_steinmetz_positive():
     assert modified_steinmetz(400, 1.5, 0.01, 1.5, 2.0) > 0
 
+
 def test_modified_steinmetz_scales_with_frequency():
-    assert modified_steinmetz(400, 1.0, 0.01, 1.5, 2.0) > modified_steinmetz(50, 1.0, 0.01, 1.5, 2.0)
+    assert modified_steinmetz(400, 1.0, 0.01, 1.5, 2.0) > modified_steinmetz(
+        50, 1.0, 0.01, 1.5, 2.0
+    )
+
 
 def test_bertotti_total_equals_sum():
     result = bertotti(50, 1.5, k_h=0.02, k_e=1e-4, k_a=1e-3)
     assert np.isclose(result["total"], result["hysteresis"] + result["eddy"] + result["excess"])
+
 
 def test_bertotti_all_components_positive():
     result = bertotti(400, 1.0, k_h=0.01, k_e=5e-5, k_a=5e-4)
@@ -36,13 +49,14 @@ def test_bertotti_all_components_positive():
 
 # ─── Fitting tests ────────────────────────────────────────────────────────────
 
+
 @pytest.fixture
 def sample_data():
     """Synthetic loss data generated from known Bertotti coefficients."""
     k_h, k_e, k_a = 0.02, 1e-4, 1e-3
-    freqs  = np.array([50, 50, 50, 100, 100, 100, 400, 400, 400], dtype=float)
-    B_vals = np.array([0.5, 1.0, 1.5,  0.5,  1.0,  1.5, 0.5, 1.0, 1.5], dtype=float)
-    loss   = bertotti(freqs, B_vals, k_h, k_e, k_a)["total"]
+    freqs = np.array([50, 50, 50, 100, 100, 100, 400, 400, 400], dtype=float)
+    B_vals = np.array([0.5, 1.0, 1.5, 0.5, 1.0, 1.5, 0.5, 1.0, 1.5], dtype=float)
+    loss = bertotti(freqs, B_vals, k_h, k_e, k_a)["total"]
     return freqs, B_vals, loss, (k_h, k_e, k_a)
 
 

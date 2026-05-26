@@ -18,8 +18,12 @@ import numpy as np
 from scipy.optimize import curve_fit
 
 __all__ = [
-    "steinmetz", "modified_steinmetz", "bertotti",
-    "fit_steinmetz", "fit_modified_steinmetz", "fit_bertotti",
+    "steinmetz",
+    "modified_steinmetz",
+    "bertotti",
+    "fit_steinmetz",
+    "fit_modified_steinmetz",
+    "fit_bertotti",
     "fit_loss_model",
     "MODEL_NAMES",
 ]
@@ -30,6 +34,7 @@ MODEL_NAMES = ("Bertotti", "Steinmetz", "Modified Steinmetz")
 # ─────────────────────────────────────────────────────────────────────────────
 # Forward models
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def steinmetz(
     f: float | np.ndarray,
@@ -131,20 +136,21 @@ def bertotti(
     """
     f = np.asarray(f)
     B = np.asarray(B_peak)
-    p_hyst = k_h * (f ** alpha) * (B ** beta)
+    p_hyst = k_h * (f**alpha) * (B**beta)
     p_eddy = k_e * (f * B) ** 2
-    p_exc  = k_a * (f * B) ** 1.5
+    p_exc = k_a * (f * B) ** 1.5
     return {
         "hysteresis": p_hyst,
-        "eddy":       p_eddy,
-        "excess":     p_exc,
-        "total":      p_hyst + p_eddy + p_exc,
+        "eddy": p_eddy,
+        "excess": p_exc,
+        "total": p_hyst + p_eddy + p_exc,
     }
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Fitting functions
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def _r2_rmse(y_true: np.ndarray, y_pred: np.ndarray) -> tuple[float, float]:
     """Return (R², RMSE) for a fit."""
@@ -170,15 +176,21 @@ def fit_steinmetz(
     Returns:
         Dict with keys: 'k', 'alpha', 'beta', 'r2', 'rmse', 'model'
     """
+
     def _func(X, k, alpha, beta):
         return steinmetz(X[0], X[1], k, alpha, beta)
 
-    popt, _ = curve_fit(_func, (f_arr, B_arr), loss_arr,
-                        p0=[0.01, 1.5, 2.5], maxfev=10000)
+    popt, _ = curve_fit(_func, (f_arr, B_arr), loss_arr, p0=[0.01, 1.5, 2.5], maxfev=10000)
     fitted = _func((f_arr, B_arr), *popt)
     r2, rmse = _r2_rmse(loss_arr, fitted)
-    return {"k": popt[0], "alpha": popt[1], "beta": popt[2],
-            "r2": r2, "rmse": rmse, "model": "Steinmetz"}
+    return {
+        "k": popt[0],
+        "alpha": popt[1],
+        "beta": popt[2],
+        "r2": r2,
+        "rmse": rmse,
+        "model": "Steinmetz",
+    }
 
 
 def fit_modified_steinmetz(
@@ -197,15 +209,21 @@ def fit_modified_steinmetz(
     Returns:
         Dict with keys: 'k', 'alpha', 'beta', 'r2', 'rmse', 'model'
     """
+
     def _func(X, k, alpha, beta):
         return modified_steinmetz(X[0], X[1], k, alpha, beta)
 
-    popt, _ = curve_fit(_func, (f_arr, B_arr), loss_arr,
-                        p0=[0.01, 1.5, 2.0], maxfev=10000)
+    popt, _ = curve_fit(_func, (f_arr, B_arr), loss_arr, p0=[0.01, 1.5, 2.0], maxfev=10000)
     fitted = _func((f_arr, B_arr), *popt)
     r2, rmse = _r2_rmse(loss_arr, fitted)
-    return {"k": popt[0], "alpha": popt[1], "beta": popt[2],
-            "r2": r2, "rmse": rmse, "model": "Modified Steinmetz"}
+    return {
+        "k": popt[0],
+        "alpha": popt[1],
+        "beta": popt[2],
+        "r2": r2,
+        "rmse": rmse,
+        "model": "Modified Steinmetz",
+    }
 
 
 def fit_bertotti(
@@ -224,15 +242,21 @@ def fit_bertotti(
     Returns:
         Dict with keys: 'k_h', 'k_e', 'k_a', 'r2', 'rmse', 'model'
     """
+
     def _func(X, kh, ke, ka):
         return bertotti(X[0], X[1], kh, ke, ka)["total"]
 
-    popt, _ = curve_fit(_func, (f_arr, B_arr), loss_arr,
-                        p0=[0.01, 0.0001, 0.001], maxfev=10000)
+    popt, _ = curve_fit(_func, (f_arr, B_arr), loss_arr, p0=[0.01, 0.0001, 0.001], maxfev=10000)
     fitted = _func((f_arr, B_arr), *popt)
     r2, rmse = _r2_rmse(loss_arr, fitted)
-    return {"k_h": popt[0], "k_e": popt[1], "k_a": popt[2],
-            "r2": r2, "rmse": rmse, "model": "Bertotti"}
+    return {
+        "k_h": popt[0],
+        "k_e": popt[1],
+        "k_a": popt[2],
+        "r2": r2,
+        "rmse": rmse,
+        "model": "Bertotti",
+    }
 
 
 def fit_loss_model(
@@ -256,8 +280,8 @@ def fit_loss_model(
     Raises:
         ValueError: If model name is not recognised
     """
-    f_arr    = np.asarray(f_arr, dtype=float)
-    B_arr    = np.asarray(B_arr, dtype=float)
+    f_arr = np.asarray(f_arr, dtype=float)
+    B_arr = np.asarray(B_arr, dtype=float)
     loss_arr = np.asarray(loss_arr, dtype=float)
 
     if model == "Bertotti":

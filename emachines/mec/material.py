@@ -42,6 +42,7 @@ MU0 = 4e-7 * np.pi  # H/m
 # Abstract base
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class PermeabilityModel(abc.ABC):
     """Abstract interface for permeability models used by the MEC solver."""
 
@@ -57,6 +58,7 @@ class PermeabilityModel(abc.ABC):
 # ─────────────────────────────────────────────────────────────────────────────
 # Linear (constant μ)
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class LinearPermeabilityModel(PermeabilityModel):
     """
@@ -83,6 +85,7 @@ class LinearPermeabilityModel(PermeabilityModel):
 # ─────────────────────────────────────────────────────────────────────────────
 # Spline model from B-H data
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class SplinePermeabilityModel(PermeabilityModel):
     """
@@ -123,7 +126,7 @@ class SplinePermeabilityModel(PermeabilityModel):
         # μ(B) = μ₀ * H/B  — defined for B > 0 only
         # We build a spline of μ as a function of B so we can differentiate.
         # At B=0 we use the initial slope (μ₀·μᵣ from the linear region).
-        B_pos = B[1:]   # skip (0,0) point
+        B_pos = B[1:]  # skip (0,0) point
         H_pos = H[1:]
         mu_pos = MU0 * H_pos / B_pos
 
@@ -181,6 +184,7 @@ class SplinePermeabilityModel(PermeabilityModel):
 # Shane-Sudhoff analytical model
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class ShanesudhoffModel(PermeabilityModel):
     """
     Shane-Sudhoff (2010) analytical permeability model.
@@ -233,9 +237,9 @@ class ShanesudhoffModel(PermeabilityModel):
         self._mu0 = float(mu0)
 
         # Pre-compute derived constants (n-vectors)
-        self._d = a / b                   # dₙ
-        self._z = (gamma - 1.0) / gamma   # zₙ
-        self._e = 1.0 - self._z           # eₙ = 1 − zₙ (ensures log=0 at B=0)
+        self._d = a / b  # dₙ
+        self._z = (gamma - 1.0) / gamma  # zₙ
+        self._e = 1.0 - self._z  # eₙ = 1 − zₙ (ensures log=0 at B=0)
 
         # For dmu/dB: h_n = mu0 * a_n / b_n * b_n = mu0 * a_n
         # Full derivation gives: h_n coefficient in numerator
@@ -246,7 +250,7 @@ class ShanesudhoffModel(PermeabilityModel):
     def _f_and_df(self, absB: float):
         """Return (f, df/d|B|) at |B|."""
         eb = np.exp(-self._b * absB)
-        denom = self._e + self._z * eb     # eₙ + zₙ·exp(−bₙ|B|) — wait
+        denom = self._e + self._z * eb  # eₙ + zₙ·exp(−bₙ|B|) — wait
 
         # Recheck formula: log(eₙ + zₙ·exp(−bₙ|B|))
         # z_n = (γ-1)/γ,  e_n = 1 + z_n = 1/γ + ... — let's use the

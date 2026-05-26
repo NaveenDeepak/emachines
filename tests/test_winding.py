@@ -4,9 +4,10 @@ Tests for winding factor calculations.
 Reference values validated against emetor.com and SWAT-EM.
 """
 
-import pytest
 import numpy as np
-from emachines.winding.factors import pitch_factor, distribution_factor, winding_factor
+import pytest
+
+from emachines.winding.factors import distribution_factor, pitch_factor, winding_factor
 
 
 class TestPitchFactor:
@@ -39,29 +40,37 @@ class TestDistributionFactor:
 
 
 class TestWindingFactorIntegerSlot:
-    @pytest.mark.parametrize("Q,p,coil_span,expected_kw1", [
-        (24, 2, 5, 0.9330),   # 24s/4p, 5/6 chording: kp=0.9659, kd=0.9659
-        (36, 3, 5, 0.9330),   # 36s/6p, 5/6 chording: same q=2, same result
-        (12, 1, 6, 0.9659),   # 12s/2p, full pitch: kp=1.0, kd=0.9659
-    ])
+    @pytest.mark.parametrize(
+        "Q,p,coil_span,expected_kw1",
+        [
+            (24, 2, 5, 0.9330),  # 24s/4p, 5/6 chording: kp=0.9659, kd=0.9659
+            (36, 3, 5, 0.9330),  # 36s/6p, 5/6 chording: same q=2, same result
+            (12, 1, 6, 0.9659),  # 12s/2p, full pitch: kp=1.0, kd=0.9659
+        ],
+    )
     def test_integer_slot_kw1(self, Q, p, coil_span, expected_kw1):
         kw = winding_factor(1, Q, p, coil_span)
-        assert np.isclose(kw, expected_kw1, atol=0.001), \
-            f"Q={Q}, p={p}, coil_span={coil_span}: kw1={kw:.4f}, expected≈{expected_kw1}"
+        assert np.isclose(
+            kw, expected_kw1, atol=0.001
+        ), f"Q={Q}, p={p}, coil_span={coil_span}: kw1={kw:.4f}, expected≈{expected_kw1}"
 
 
 class TestWindingFactorFSCW:
     """FSCW winding factors via star-of-slots — validated against emetor.com."""
 
-    @pytest.mark.parametrize("Q,P,coil_span,expected_kw1", [
-        (12, 10, 1, 0.933),   # 12s/10p — most common FSCW
-        (12,  8, 1, 0.866),   # 12s/8p  — q = 1/2
-        ( 9,  8, 1, 0.945),   # 9s/8p
-        (12, 14, 1, 0.933),   # 12s/14p
-    ])
+    @pytest.mark.parametrize(
+        "Q,P,coil_span,expected_kw1",
+        [
+            (12, 10, 1, 0.933),  # 12s/10p — most common FSCW
+            (12, 8, 1, 0.866),  # 12s/8p  — q = 1/2
+            (9, 8, 1, 0.945),  # 9s/8p
+            (12, 14, 1, 0.933),  # 12s/14p
+        ],
+    )
     def test_fscw_kw1(self, Q, P, coil_span, expected_kw1):
         """FSCW fundamental winding factors match emetor reference values."""
         p = P // 2
         kw = winding_factor(1, Q, p, coil_span)
-        assert np.isclose(kw, expected_kw1, atol=0.01), \
-            f"Q={Q}, P={P}: kw1={kw:.4f}, expected≈{expected_kw1}"
+        assert np.isclose(
+            kw, expected_kw1, atol=0.01
+        ), f"Q={Q}, P={P}: kw1={kw:.4f}, expected≈{expected_kw1}"

@@ -49,17 +49,17 @@ class MECSolution:
         heuristic scaling was used.
     """
 
-    phi_mesh:      Dict[int, float] = field(default_factory=dict)
-    phi_nodal:     Dict[int, float] = field(default_factory=dict)
-    phi_branches:  Dict[int, float] = field(default_factory=dict)
-    mmf_branches:  Dict[int, float] = field(default_factory=dict)
+    phi_mesh: Dict[int, float] = field(default_factory=dict)
+    phi_nodal: Dict[int, float] = field(default_factory=dict)
+    phi_branches: Dict[int, float] = field(default_factory=dict)
+    mmf_branches: Dict[int, float] = field(default_factory=dict)
     flux_linkages: Dict[Any, float] = field(default_factory=dict)
-    converged:     bool  = False
-    n_iterations:  int   = 0
-    residual:      float = float("inf")
-    field_energy:  float = 0.0
-    phi_base:      Optional[float] = None
-    F_base:        Optional[float] = None
+    converged: bool = False
+    n_iterations: int = 0
+    residual: float = float("inf")
+    field_energy: float = 0.0
+    phi_base: Optional[float] = None
+    F_base: Optional[float] = None
 
     # ── convenience ───────────────────────────────────────────────────────
 
@@ -93,9 +93,7 @@ class MECSolution:
     def __repr__(self) -> str:  # noqa: D105
         status = "converged" if self.converged else "NOT converged"
         scaling = (
-            f"pu(φ_base={self.phi_base:.3g})"
-            if self.phi_base is not None
-            else "heuristic-scaled"
+            f"pu(φ_base={self.phi_base:.3g})" if self.phi_base is not None else "heuristic-scaled"
         )
         return (
             f"MECSolution({status}, "

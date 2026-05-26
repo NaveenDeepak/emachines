@@ -7,9 +7,9 @@ Auto-generated from nbdev notebooks:
 
 from __future__ import annotations
 
-from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -34,9 +34,11 @@ __all__ = [
     "dq_currents",
 ]
 
+
 @dataclass
 class GeometricParams:
     """Geometric dimensions of the motor (SI units)."""
+
     stator_outer_diameter: float
     stator_inner_diameter: float
     rotor_outer_diameter: float
@@ -56,6 +58,7 @@ class GeometricParams:
 @dataclass
 class MaterialProperties:
     """Material properties for motor components."""
+
     copper_resistivity: float
     steel_permeability: float
     magnet_remanent_flux_density: float
@@ -72,6 +75,7 @@ class MaterialProperties:
 @dataclass
 class OperatingConditions:
     """Terminal operating conditions."""
+
     terminal_voltage: float
     brush_contact_drop_v: float = 1.0
     brush_resistance_total: float = 0.05
@@ -80,6 +84,7 @@ class OperatingConditions:
 @dataclass
 class LumpedParams:
     """Calculated lumped-parameter motor model."""
+
     armature_resistance: float
     armature_inductance: float
     motor_constant: float
@@ -88,38 +93,59 @@ class LumpedParams:
     air_gap_flux_density: float
     flux_per_pole: float
 
+
 def calculate_carter_coefficient(g: float, w_so: float, slot_pitch: float) -> float:
     """Carter's coefficient for slot opening effect."""
     gamma = (w_so / g) ** 2 / (5 + w_so / g)
     k_c = slot_pitch / (slot_pitch - gamma * g)
     return max(k_c, 1.0)
 
-def calculate_magnetic_circuit(geom: GeometricParams, mat: MaterialProperties) -> tuple[float, float]:
+
+def calculate_magnetic_circuit(
+    geom: GeometricParams, mat: MaterialProperties
+) -> tuple[float, float]:
     """Magnetic circuit analysis via reluctance network."""
     mu_0 = 4 * np.pi * 1e-7
-    pole_face_area = (geom.magnet_arc_angle_deg / 360 * np.pi * 
-                      geom.rotor_outer_diameter * geom.stack_length)
+    pole_face_area = (
+        geom.magnet_arc_angle_deg / 360 * np.pi * geom.rotor_outer_diameter * geom.stack_length
+    )
     slot_pitch = np.pi * geom.rotor_outer_diameter / geom.num_armature_slots
     k_c = calculate_carter_coefficient(geom.air_gap_length, geom.slot_opening_width, slot_pitch)
     R_gap = (geom.air_gap_length * k_c) / (mu_0 * pole_face_area)
 
-    magnet_area = (geom.magnet_arc_angle_deg / 360 * np.pi * 
-                   (geom.stator_inner_diameter - geom.magnet_thickness) * geom.stack_length)
+    magnet_area = (
+        geom.magnet_arc_angle_deg
+        / 360
+        * np.pi
+        * (geom.stator_inner_diameter - geom.magnet_thickness)
+        * geom.stack_length
+    )
     R_magnet = geom.magnet_thickness / (mat.magnet_recoil_permeability * magnet_area)
 
     yoke_t = (geom.stator_outer_diameter - geom.stator_inner_diameter) / 2 - geom.magnet_thickness
-    R_stator = (np.pi * (geom.stator_outer_diameter - yoke_t) / geom.num_poles / 
-                (mat.steel_permeability * yoke_t * geom.stack_length))
+    R_stator = (
+        np.pi
+        * (geom.stator_outer_diameter - yoke_t)
+        / geom.num_poles
+        / (mat.steel_permeability * yoke_t * geom.stack_length)
+    )
 
     core_t = (geom.rotor_outer_diameter - geom.rotor_inner_diameter) / 2
-    R_rotor = (np.pi * (geom.rotor_inner_diameter + core_t) / geom.num_poles / 
-               (mat.steel_permeability * core_t * geom.stack_length))
+    R_rotor = (
+        np.pi
+        * (geom.rotor_inner_diameter + core_t)
+        / geom.num_poles
+        / (mat.steel_permeability * core_t * geom.stack_length)
+    )
 
-    mmf = (mat.magnet_remanent_flux_density / mat.magnet_recoil_permeability) * geom.magnet_thickness
+    mmf = (
+        mat.magnet_remanent_flux_density / mat.magnet_recoil_permeability
+    ) * geom.magnet_thickness
     R_total = R_magnet + 2 * R_gap + R_stator + R_rotor
     flux_per_pole = mmf / R_total
     B_gap = flux_per_pole / pole_face_area
     return B_gap, flux_per_pole
+
 
 def calculate_armature_resistance(geom: GeometricParams, mat: MaterialProperties) -> float:
     """Armature winding resistance."""
@@ -129,7 +155,8 @@ def calculate_armature_resistance(geom: GeometricParams, mat: MaterialProperties
     total_length = (total_conductors / 2) * mlt
     R_wire = mat.copper_resistivity * total_length / geom.armature_wire_cross_section_m2
     parallel_paths = geom.num_poles if geom.is_lap_winding else 2
-    return R_wire / parallel_paths ** 2
+    return R_wire / parallel_paths**2
+
 
 def calculate_motor_constants(geom: GeometricParams, flux_per_pole: float) -> float:
     """Motor constant K = Kt = Ke."""
@@ -137,16 +164,18 @@ def calculate_motor_constants(geom: GeometricParams, flux_per_pole: float) -> fl
     parallel_paths = geom.num_poles if geom.is_lap_winding else 2
     return (total_conductors * geom.num_poles * flux_per_pole) / (2 * np.pi * parallel_paths)
 
+
 def calculate_rotor_inertia(geom: GeometricParams, mat: MaterialProperties) -> float:
     """Rotor moment of inertia."""
     r_o = geom.rotor_outer_diameter / 2
     r_i = geom.rotor_inner_diameter / 2
-    vol_core = np.pi * (r_o ** 2 - r_i ** 2) * geom.stack_length
-    J_core = 0.5 * mat.steel_density * vol_core * (r_o ** 2 + r_i ** 2)
+    vol_core = np.pi * (r_o**2 - r_i**2) * geom.stack_length
+    J_core = 0.5 * mat.steel_density * vol_core * (r_o**2 + r_i**2)
     J_winding = J_core * 0.15
-    vol_shaft = np.pi * r_i ** 2 * geom.stack_length
-    J_shaft = 0.5 * mat.shaft_density * vol_shaft * r_i ** 2
+    vol_shaft = np.pi * r_i**2 * geom.stack_length
+    J_shaft = 0.5 * mat.shaft_density * vol_shaft * r_i**2
     return J_core + J_winding + J_shaft
+
 
 def calculate_lumped_parameters(geom: GeometricParams, mat: MaterialProperties) -> LumpedParams:
     """Complete lumped model."""
@@ -157,10 +186,15 @@ def calculate_lumped_parameters(geom: GeometricParams, mat: MaterialProperties) 
     La = 10 * Ra * 1e-6
     b = J * 0.01
     return LumpedParams(
-        armature_resistance=Ra, armature_inductance=La, motor_constant=K,
-        rotor_inertia=J, viscous_damping=b,
-        air_gap_flux_density=B_g, flux_per_pole=flux_per_pole,
+        armature_resistance=Ra,
+        armature_inductance=La,
+        motor_constant=K,
+        rotor_inertia=J,
+        viscous_damping=b,
+        air_gap_flux_density=B_g,
+        flux_per_pole=flux_per_pole,
     )
+
 
 def calculate_steady_state_performance(params: LumpedParams, op: OperatingConditions) -> dict:
     """Steady-state speed-torque characteristic."""
@@ -169,31 +203,40 @@ def calculate_steady_state_performance(params: LumpedParams, op: OperatingCondit
     V_eff = max(0.0, op.terminal_voltage - op.brush_contact_drop_v)
     stall_torque = (V_eff * K) / Ra
     torque_range = np.linspace(0, stall_torque, 200)
-    speed_rad_s = V_eff / K - (Ra / K ** 2) * torque_range
+    speed_rad_s = V_eff / K - (Ra / K**2) * torque_range
     speed_rpm = speed_rad_s * 60 / (2 * np.pi)
     return {
-        "torque": torque_range, "speed_rpm": speed_rpm,
+        "torque": torque_range,
+        "speed_rpm": speed_rpm,
         "current": torque_range / K,
         "no_load_speed_rpm": (V_eff / K) * 60 / (2 * np.pi),
-        "stall_torque": stall_torque, "effective_voltage": V_eff,
+        "stall_torque": stall_torque,
+        "effective_voltage": V_eff,
     }
 
+
 def calculate_losses_and_efficiency(
-    params: LumpedParams, geom: GeometricParams, mat: MaterialProperties,
-    torque: float, speed_rpm: float,
+    params: LumpedParams,
+    geom: GeometricParams,
+    mat: MaterialProperties,
+    torque: float,
+    speed_rpm: float,
 ) -> dict:
     """Loss breakdown and efficiency."""
     if speed_rpm < 0 or torque < 0:
         return {"p_cu": 0, "p_iron": 0, "p_mech": 0, "p_out": 0, "efficiency": 0}
     omega = speed_rpm * 2 * np.pi / 60
     current = torque / params.motor_constant if params.motor_constant > 0 else 0
-    p_cu = current ** 2 * params.armature_resistance
-    p_mech = params.viscous_damping * omega ** 2
+    p_cu = current**2 * params.armature_resistance
+    p_mech = params.viscous_damping * omega**2
     f_e = (geom.num_poles / 2) * (omega / (2 * np.pi))
-    vol_rotor = (np.pi * ((geom.rotor_outer_diameter / 2) ** 2 - 
-                          (geom.rotor_inner_diameter / 2) ** 2) * geom.stack_length)
+    vol_rotor = (
+        np.pi
+        * ((geom.rotor_outer_diameter / 2) ** 2 - (geom.rotor_inner_diameter / 2) ** 2)
+        * geom.stack_length
+    )
     B = params.air_gap_flux_density
-    p_hyst = mat.hysteresis_coeff * f_e * B ** mat.steinmetz_exponent * vol_rotor
+    p_hyst = mat.hysteresis_coeff * f_e * B**mat.steinmetz_exponent * vol_rotor
     p_eddy = mat.eddy_current_coeff * (f_e * B * mat.lamination_thickness) ** 2 * vol_rotor
     p_iron = p_hyst + p_eddy
     p_out = torque * omega
@@ -201,10 +244,15 @@ def calculate_losses_and_efficiency(
     eff = p_out / p_in if p_in > 0 else 0.0
     return {"p_cu": p_cu, "p_iron": p_iron, "p_mech": p_mech, "p_out": p_out, "efficiency": eff}
 
+
 def plot_efficiency_map(
-    params: LumpedParams, geom: GeometricParams, mat: MaterialProperties,
-    op_conditions: OperatingConditions, steady_state_data: dict,
-    target_torque: Optional[float] = None, target_speed_rpm: Optional[float] = None,
+    params: LumpedParams,
+    geom: GeometricParams,
+    mat: MaterialProperties,
+    op_conditions: OperatingConditions,
+    steady_state_data: dict,
+    target_torque: Optional[float] = None,
+    target_speed_rpm: Optional[float] = None,
 ):
     """2-D efficiency contour map."""
     try:
@@ -213,8 +261,9 @@ def plot_efficiency_map(
         raise ImportError("matplotlib required") from e
     torque_max = steady_state_data["stall_torque"]
     speed_max = steady_state_data["no_load_speed_rpm"]
-    V_eff = steady_state_data.get("effective_voltage",
-            op_conditions.terminal_voltage - op_conditions.brush_contact_drop_v)
+    V_eff = steady_state_data.get(
+        "effective_voltage", op_conditions.terminal_voltage - op_conditions.brush_contact_drop_v
+    )
     torque_grid = np.linspace(0.01, torque_max, 50)
     speed_grid = np.linspace(0.01, speed_max, 50)
     T, S = np.meshgrid(torque_grid, speed_grid)
@@ -223,7 +272,7 @@ def plot_efficiency_map(
     Ra = params.armature_resistance
     for i in range(T.shape[0]):
         for j in range(T.shape[1]):
-            max_t = (K ** 2 / Ra) * (V_eff / K - S[i, j] * 2 * np.pi / 60)
+            max_t = (K**2 / Ra) * (V_eff / K - S[i, j] * 2 * np.pi / 60)
             if T[i, j] <= max_t and max_t > 0:
                 d = calculate_losses_and_efficiency(params, geom, mat, T[i, j], S[i, j])
                 Eff[i, j] = d["efficiency"]
@@ -232,10 +281,15 @@ def plot_efficiency_map(
     fig, ax = plt.subplots(figsize=(10, 6))
     cf = ax.contourf(T, S, Eff * 100, levels=np.arange(0, 101, 5), cmap="viridis")
     fig.colorbar(cf, ax=ax, label="Efficiency (%)")
-    ax.plot(steady_state_data["torque"], steady_state_data["speed_rpm"],
-            "r--", linewidth=2, label="Operating Envelope")
+    ax.plot(
+        steady_state_data["torque"],
+        steady_state_data["speed_rpm"],
+        "r--",
+        linewidth=2,
+        label="Operating Envelope",
+    )
     if target_torque is not None and target_speed_rpm is not None:
-        max_t_at_target = (K ** 2 / Ra) * (V_eff / K - target_speed_rpm * 2 * np.pi / 60)
+        max_t_at_target = (K**2 / Ra) * (V_eff / K - target_speed_rpm * 2 * np.pi / 60)
         in_env = target_torque <= max_t_at_target and max_t_at_target > 0
         color = "lime" if in_env else "red"
         ax.plot(target_torque, target_speed_rpm, "*", color=color, markersize=16)
@@ -247,8 +301,10 @@ def plot_efficiency_map(
     fig.tight_layout()
     return fig
 
+
 class PMSMParams:
     """Container for PMSM parameters."""
+
     def __init__(self, p: int, Ld: float, Lq: float, psi_m: float, Rs: float = 0.0, J: float = 0.0):
         self.p = p
         self.Ld = Ld
@@ -262,9 +318,11 @@ class PMSMParams:
         """True if surface-mount (Ld ≈ Lq)."""
         return np.isclose(self.Ld, self.Lq, rtol=0.05)
 
+
 def back_emf(omega_e: float, psi_m: float) -> float:
     """Peak phase back-EMF."""
     return omega_e * psi_m
+
 
 def torque(params: PMSMParams, id: float, iq: float) -> float:
     """Electromagnetic torque."""
@@ -272,16 +330,18 @@ def torque(params: PMSMParams, id: float, iq: float) -> float:
     T_reluctance = (params.Ld - params.Lq) * id * iq
     return 1.5 * params.p * (T_excitation + T_reluctance)
 
+
 def dq_currents(params: PMSMParams, omega_e: float, Vd: float, Vq: float) -> tuple[float, float]:
     """Steady-state dq currents."""
-    A = np.array([[params.Rs, -omega_e * params.Lq],
-                  [omega_e * params.Ld, params.Rs]])
+    A = np.array([[params.Rs, -omega_e * params.Lq], [omega_e * params.Ld, params.Rs]])
     b = np.array([Vd, Vq - omega_e * params.psi_m])
     id_, iq_ = np.linalg.solve(A, b)
     return float(id_), float(iq_)
 
+
 class SPM:
     """Surface-Mount PMSM motor profile."""
+
     def __init__(self, phi_m: float, ld: float, pp: int, Vb: float, Ib: float):
         self.phi_m = phi_m
         self.sal = 0
@@ -315,9 +375,13 @@ class SPM:
         v = 0.0
         v_lim = self.Vb / 1.732
         while v < v_lim:
-            v = omega * self.pp * np.sqrt(
-                (self.phi_m - self.Ib * np.sin(gamma) * self.ld) ** 2
-                + (self.Ib * self.ld * np.cos(gamma)) ** 2
+            v = (
+                omega
+                * self.pp
+                * np.sqrt(
+                    (self.phi_m - self.Ib * np.sin(gamma) * self.ld) ** 2
+                    + (self.Ib * self.ld * np.cos(gamma)) ** 2
+                )
             )
             t = 1.5 * self.pp * self.phi_m * self.Ib * np.cos(gamma)
             p = t * omega
@@ -329,10 +393,13 @@ class SPM:
             self.power.append(p)
         for gamma_deg in range(1, 85):
             gamma = gamma_deg * np.pi / 180
-            omega = (v_lim) / (self.pp * np.sqrt(
-                (self.phi_m - self.Ib * np.sin(gamma) * self.ld) ** 2
-                + (self.Ib * self.ld * np.cos(gamma)) ** 2
-            ))
+            omega = (v_lim) / (
+                self.pp
+                * np.sqrt(
+                    (self.phi_m - self.Ib * np.sin(gamma) * self.ld) ** 2
+                    + (self.Ib * self.ld * np.cos(gamma)) ** 2
+                )
+            )
             t = 1.5 * self.pp * self.Ib * self.phi_m * np.cos(gamma)
             p = t * omega
             self.speed.append(omega * 30 / np.pi)
@@ -340,4 +407,3 @@ class SPM:
             self.gamma.append(gamma_deg)
             self.torque.append(t)
             self.power.append(p)
-

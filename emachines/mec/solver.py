@@ -84,40 +84,43 @@ MU0 = 4e-7 * math.pi
 # Internal branch descriptors
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class BranchType:
-    MESH       = "mesh"
+    MESH = "mesh"
     RELUCTANCE = "reluctance"
-    NODAL      = "nodal"
+    NODAL = "nodal"
 
 
 @dataclass
 class _Branch:
     """Internal representation of a single MEC branch."""
-    branch_id:    int
-    btype:        str
+
+    branch_id: int
+    btype: str
 
     # Mesh branch
-    mesh_id:      Optional[int]   = None
-    mmf:          float           = 0.0
+    mesh_id: Optional[int] = None
+    mmf: float = 0.0
 
     # Reluctance branch
-    length:       float           = 0.0
-    area:         float           = 0.0
-    model:        Optional[PermeabilityModel] = None
-    phi_source:   float           = 0.0    # PM Norton flux source [Wb]
-    meshes:       List[int]       = field(default_factory=list)
-    orientations: List[int]       = field(default_factory=list)
-    permeance:    Optional[float] = None   # pre-computed constant permeance
+    length: float = 0.0
+    area: float = 0.0
+    model: Optional[PermeabilityModel] = None
+    phi_source: float = 0.0  # PM Norton flux source [Wb]
+    meshes: List[int] = field(default_factory=list)
+    orientations: List[int] = field(default_factory=list)
+    permeance: Optional[float] = None  # pre-computed constant permeance
 
     # Nodal branch
-    node_from:    Optional[int]   = None
-    node_to:      Optional[int]   = None
+    node_from: Optional[int] = None
+    node_to: Optional[int] = None
 
 
 @dataclass
 class _Winding:
     """Internal descriptor of a multi-turn winding."""
-    winding_id:   Any
+
+    winding_id: Any
     # branch_id → signed turn count (positive = aligned with positive flux)
     branch_turns: Dict[int, float]
 
@@ -125,6 +128,7 @@ class _Winding:
 # ─────────────────────────────────────────────────────────────────────────────
 # MEC builder / solver
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class MEC:
     """
@@ -161,23 +165,21 @@ class MEC:
     def __init__(
         self,
         phi_base: Optional[float] = None,
-        F_base:   Optional[float] = None,
-        rtol:     float = 1e-6,
-        atol:     float = 1e-12,
-        max_iter: int   = 200,
+        F_base: Optional[float] = None,
+        rtol: float = 1e-6,
+        atol: float = 1e-12,
+        max_iter: int = 200,
     ) -> None:
         if (phi_base is None) != (F_base is None):
-            raise ValueError(
-                "phi_base and F_base must both be supplied or both omitted."
-            )
+            raise ValueError("phi_base and F_base must both be supplied or both omitted.")
         self.phi_base = phi_base
-        self.F_base   = F_base
-        self.rtol     = rtol
-        self.atol     = atol
+        self.F_base = F_base
+        self.rtol = rtol
+        self.atol = atol
         self.max_iter = max_iter
 
-        self._branches: Dict[int, _Branch]   = {}
-        self._windings: Dict[Any, _Winding]  = {}
+        self._branches: Dict[int, _Branch] = {}
+        self._windings: Dict[Any, _Winding] = {}
 
     # ── branch registration ───────────────────────────────────────────────
 
@@ -203,8 +205,10 @@ class MEC:
         """
         self._check_new(branch)
         self._branches[branch] = _Branch(
-            branch_id=branch, btype=BranchType.MESH,
-            mesh_id=mesh, mmf=mmf,
+            branch_id=branch,
+            btype=BranchType.MESH,
+            mesh_id=mesh,
+            mmf=mmf,
         )
         return self
 
@@ -237,9 +241,12 @@ class MEC:
         """
         self._check_new(branch)
         self._branches[branch] = _Branch(
-            branch_id=branch, btype=BranchType.RELUCTANCE,
-            permeance=permeance, mmf=mmf,
-            meshes=list(meshes), orientations=list(orientations),
+            branch_id=branch,
+            btype=BranchType.RELUCTANCE,
+            permeance=permeance,
+            mmf=mmf,
+            meshes=list(meshes),
+            orientations=list(orientations),
             phi_source=phi_source,
         )
         return self
@@ -279,9 +286,14 @@ class MEC:
         if model is None:
             model = LinearPermeabilityModel(mu_r=1.0)
         self._branches[branch] = _Branch(
-            branch_id=branch, btype=BranchType.RELUCTANCE,
-            length=length, area=area, model=model,
-            mmf=mmf, meshes=list(meshes), orientations=list(orientations),
+            branch_id=branch,
+            btype=BranchType.RELUCTANCE,
+            length=length,
+            area=area,
+            model=model,
+            mmf=mmf,
+            meshes=list(meshes),
+            orientations=list(orientations),
             phi_source=phi_source,
         )
         return self
@@ -318,10 +330,14 @@ class MEC:
         """
         self._check_new(branch)
         self._branches[branch] = _Branch(
-            branch_id=branch, btype=BranchType.NODAL,
-            permeance=permeance, mmf=mmf,
-            node_from=node_from, node_to=node_to,
-            meshes=list(meshes), orientations=list(orientations),
+            branch_id=branch,
+            btype=BranchType.NODAL,
+            permeance=permeance,
+            mmf=mmf,
+            node_from=node_from,
+            node_to=node_to,
+            meshes=list(meshes),
+            orientations=list(orientations),
         )
         return self
 
@@ -383,9 +399,7 @@ class MEC:
 
     # ── solve ─────────────────────────────────────────────────────────────
 
-    def solve(
-        self, phi0: Optional[Dict[int, float]] = None
-    ) -> MECSolution:
+    def solve(self, phi0: Optional[Dict[int, float]] = None) -> MECSolution:
         """
         Solve the MEC via Newton-Raphson iteration.
 
@@ -404,11 +418,11 @@ class MEC:
         Nen = len(nodal_b)
         Ntot = Nem + Nen
 
-        mesh_ids  = sorted(b.branch_id for b in mesh_b)
+        mesh_ids = sorted(b.branch_id for b in mesh_b)
         nodal_ids = sorted(b.branch_id for b in nodal_b)
 
-        mesh_idx  = {bid: i      for i, bid in enumerate(mesh_ids)}
-        nodal_idx = {bid: i+Nem  for i, bid in enumerate(nodal_ids)}
+        mesh_idx = {bid: i for i, bid in enumerate(mesh_ids)}
+        nodal_idx = {bid: i + Nem for i, bid in enumerate(nodal_ids)}
 
         # ── initial flux vector ──────────────────────────────────────────
         Phi = np.zeros(Ntot)
@@ -420,13 +434,14 @@ class MEC:
         # ── compute scale factor once from the initial (linear) assembly ──
         # This follows Horvath (2018): fix s before the NR loop so the
         # coordinate system is consistent across all iterations.
-        s = self._compute_scale(mesh_b, reluctance_b, nodal_b,
-                                mesh_ids, nodal_ids, mesh_idx, nodal_idx)
+        s = self._compute_scale(
+            mesh_b, reluctance_b, nodal_b, mesh_ids, nodal_ids, mesh_idx, nodal_idx
+        )
 
         # ── Newton-Raphson ───────────────────────────────────────────────
-        converged  = False
-        n_iter     = 0
-        residual   = float("inf")
+        converged = False
+        n_iter = 0
+        residual = float("inf")
         R_eff_map: Dict[int, float] = {}
         Fs_eff_map: Dict[int, float] = {}
 
@@ -437,20 +452,29 @@ class MEC:
             for b in reluctance_b:
                 phi_b = self._branch_flux(b, Phi, mesh_idx, nodal_idx)
                 R_eff, Fs_corr = self._linearise_branch(b, phi_b)
-                R_eff_map[b.branch_id]  = R_eff
+                R_eff_map[b.branch_id] = R_eff
                 Fs_eff_map[b.branch_id] = b.mmf + Fs_corr
 
             # Nodal branches are linear — constant R
             for b in nodal_b:
                 P = b.permeance or 0.0
-                R_eff_map[b.branch_id]  = 1.0 / P if P != 0 else 1e18
+                R_eff_map[b.branch_id] = 1.0 / P if P != 0 else 1e18
                 Fs_eff_map[b.branch_id] = b.mmf
 
             # Assemble and solve
             A, rhs = self._assemble(
-                Nem, Nen, mesh_ids, nodal_ids, mesh_idx, nodal_idx,
-                mesh_b, reluctance_b, nodal_b,
-                R_eff_map, Fs_eff_map, s,
+                Nem,
+                Nen,
+                mesh_ids,
+                nodal_ids,
+                mesh_idx,
+                nodal_idx,
+                mesh_b,
+                reluctance_b,
+                nodal_b,
+                R_eff_map,
+                Fs_eff_map,
+                s,
             )
             try:
                 x = np.linalg.solve(A, rhs)
@@ -464,12 +488,12 @@ class MEC:
                 Phi_new[Nem:] = x[Nem:] / s
 
             # Convergence check (MEC 3.2 criterion applied to scaled vars)
-            dPhi      = Phi_new - Phi_prev
+            dPhi = Phi_new - Phi_prev
             norm_dPhi = float(np.linalg.norm(dPhi))
-            norm_avg  = 0.5 * float(np.linalg.norm(Phi_new + Phi_prev))
-            residual  = norm_dPhi - (self.rtol * norm_avg + self.atol)
+            norm_avg = 0.5 * float(np.linalg.norm(Phi_new + Phi_prev))
+            residual = norm_dPhi - (self.rtol * norm_avg + self.atol)
 
-            Phi   = Phi_new
+            Phi = Phi_new
             n_iter = iteration + 1
 
             if residual <= 0.0:
@@ -478,10 +502,19 @@ class MEC:
 
         # ── post-process ──────────────────────────────────────────────────
         return self._build_solution(
-            Phi, mesh_ids, nodal_ids, mesh_idx, nodal_idx,
-            mesh_b, reluctance_b, nodal_b,
-            R_eff_map, Fs_eff_map,
-            converged, n_iter, abs(residual),
+            Phi,
+            mesh_ids,
+            nodal_ids,
+            mesh_idx,
+            nodal_idx,
+            mesh_b,
+            reluctance_b,
+            nodal_b,
+            R_eff_map,
+            Fs_eff_map,
+            converged,
+            n_iter,
+            abs(residual),
         )
 
     # ── internal: classification ──────────────────────────────────────────
@@ -491,17 +524,22 @@ class MEC:
             raise ValueError(f"Branch {branch} already exists.")
 
     def _classify(self):
-        mesh_b       = [b for b in self._branches.values() if b.btype == BranchType.MESH]
+        mesh_b = [b for b in self._branches.values() if b.btype == BranchType.MESH]
         reluctance_b = [b for b in self._branches.values() if b.btype == BranchType.RELUCTANCE]
-        nodal_b      = [b for b in self._branches.values() if b.btype == BranchType.NODAL]
+        nodal_b = [b for b in self._branches.values() if b.btype == BranchType.NODAL]
         return mesh_b, reluctance_b, nodal_b
 
     # ── internal: scale factor ────────────────────────────────────────────
 
     def _compute_scale(
         self,
-        mesh_b, reluctance_b, nodal_b,
-        mesh_ids, nodal_ids, mesh_idx, nodal_idx,
+        mesh_b,
+        reluctance_b,
+        nodal_b,
+        mesh_ids,
+        nodal_ids,
+        mesh_idx,
+        nodal_idx,
     ) -> float:
         """
         Return the scaling factor *s* for the nodal block.
@@ -521,7 +559,7 @@ class MEC:
 
         # ── per-unit (physics-based, preferred) ──────────────────────────
         if self.phi_base is not None:
-            return self.F_base / self.phi_base   # = R_base
+            return self.F_base / self.phi_base  # = R_base
 
         # ── heuristic from initial linear assembly ───────────────────────
         # Use R0 (not R_eff) for all reluctance branches at zero flux
@@ -529,18 +567,26 @@ class MEC:
         Fs_eff_init: Dict[int, float] = {}
         for b in reluctance_b:
             R0, _ = self._linearise_branch(b, 0.0)
-            R_eff_init[b.branch_id]  = R0
+            R_eff_init[b.branch_id] = R0
             Fs_eff_init[b.branch_id] = b.mmf
         for b in nodal_b:
             P = b.permeance or 0.0
-            R_eff_init[b.branch_id]  = 1.0 / P if P != 0 else 1e18
+            R_eff_init[b.branch_id] = 1.0 / P if P != 0 else 1e18
             Fs_eff_init[b.branch_id] = b.mmf
 
         A_init, _ = self._assemble(
-            Nem, Nen, mesh_ids, nodal_ids, mesh_idx, nodal_idx,
-            mesh_b, reluctance_b, nodal_b,
-            R_eff_init, Fs_eff_init,
-            s=1.0,     # un-scaled assembly to measure block magnitudes
+            Nem,
+            Nen,
+            mesh_ids,
+            nodal_ids,
+            mesh_idx,
+            nodal_idx,
+            mesh_b,
+            reluctance_b,
+            nodal_b,
+            R_eff_init,
+            Fs_eff_init,
+            s=1.0,  # un-scaled assembly to measure block magnitudes
         )
         a11 = A_init[:Nem, :Nem]
         a22 = A_init[Nem:, Nem:]
@@ -570,9 +616,7 @@ class MEC:
 
     # ── internal: NR linearisation ────────────────────────────────────────
 
-    def _linearise_branch(
-        self, b: _Branch, phi_b: float
-    ) -> Tuple[float, float]:
+    def _linearise_branch(self, b: _Branch, phi_b: float) -> Tuple[float, float]:
         """
         Return *(R_eff, Fs_corr)* for Newton-Raphson linearisation.
 
@@ -595,17 +639,17 @@ class MEC:
             return R0, 0.0
 
         # Nonlinear branch
-        B0     = (phi_b - b.phi_source) / b.area if b.area != 0 else 0.0
+        B0 = (phi_b - b.phi_source) / b.area if b.area != 0 else 0.0
         mu_val = b.model.mu(B0)
 
         if mu_val <= 0 or b.length == 0 or b.area == 0:
             return 0.0, 0.0
 
-        R0  = b.length / (mu_val * b.area)
+        R0 = b.length / (mu_val * b.area)
         dmu = b.model.dmu_dB(B0)
-        S0  = dmu * (phi_b - b.phi_source) / (mu_val * b.area)
+        S0 = dmu * (phi_b - b.phi_source) / (mu_val * b.area)
 
-        R_eff   = R0 * (1.0 - S0)
+        R_eff = R0 * (1.0 - S0)
         Fs_corr = -R0 * (S0 * phi_b - b.phi_source)
         return R_eff, Fs_corr
 
@@ -613,17 +657,18 @@ class MEC:
 
     def _assemble(
         self,
-        Nem: int, Nen: int,
-        mesh_ids:   List[int],
-        nodal_ids:  List[int],
-        mesh_idx:   Dict[int, int],
-        nodal_idx:  Dict[int, int],
-        mesh_b:     List[_Branch],
+        Nem: int,
+        Nen: int,
+        mesh_ids: List[int],
+        nodal_ids: List[int],
+        mesh_idx: Dict[int, int],
+        nodal_idx: Dict[int, int],
+        mesh_b: List[_Branch],
         reluctance_b: List[_Branch],
-        nodal_b:    List[_Branch],
-        R_eff_map:  Dict[int, float],
+        nodal_b: List[_Branch],
+        R_eff_map: Dict[int, float],
         Fs_eff_map: Dict[int, float],
-        s:          float,
+        s: float,
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Build the (Nem+Nen)×(Nem+Nen) scaled system and RHS.
@@ -641,8 +686,8 @@ class MEC:
         so that the two diagonal blocks have comparable magnitudes.
         """
         Ntot = Nem + Nen
-        A    = np.zeros((Ntot, Ntot))
-        rhs  = np.zeros(Ntot)
+        A = np.zeros((Ntot, Ntot))
+        rhs = np.zeros(Ntot)
 
         def mesh_col(m: int) -> int:
             for bid in mesh_ids:
@@ -666,12 +711,12 @@ class MEC:
             for b in reluctance_b:
                 if mb.mesh_id not in b.meshes:
                     continue
-                R_eff  = R_eff_map[b.branch_id]
+                R_eff = R_eff_map[b.branch_id]
                 Fs_eff = Fs_eff_map[b.branch_id]
                 orient_self = b.orientations[b.meshes.index(mb.mesh_id)]
 
                 # Diagonal entry
-                A[row, row] += R_eff   # orient² = 1
+                A[row, row] += R_eff  # orient² = 1
 
                 # Off-diagonal entries (other meshes sharing this branch)
                 for other_m, other_o in zip(b.meshes, b.orientations):
@@ -684,21 +729,21 @@ class MEC:
         # ── KCL rows (one per nodal branch) ─────────────────────────────
         for nb in nodal_b:
             row = nodal_idx[nb.branch_id]
-            P   = nb.permeance or 0.0
+            P = nb.permeance or 0.0
             R_nb = 1.0 / P if P != 0 else 1e18
-            col  = nodal_idx[nb.branch_id]
+            col = nodal_idx[nb.branch_id]
 
             A[row, col] += R_nb
-            rhs[row]    += nb.mmf
+            rhs[row] += nb.mmf
 
             for m, o in zip(nb.meshes, nb.orientations):
                 A[row, mesh_col(m)] += o * R_nb
 
         # ── apply scaling to nodal block ─────────────────────────────────
         if Nen > 0 and s != 1.0:
-            A[:, Nem:] *= s     # nodal columns → solution is û·s
-            A[Nem:, :] *= s     # nodal rows    → equation scaled by s
-            rhs[Nem:]  *= s
+            A[:, Nem:] *= s  # nodal columns → solution is û·s
+            A[Nem:, :] *= s  # nodal rows    → equation scaled by s
+            rhs[Nem:] *= s
 
         return A, rhs
 
@@ -706,22 +751,21 @@ class MEC:
 
     def _build_solution(
         self,
-        Phi:        np.ndarray,
-        mesh_ids:   List[int],
-        nodal_ids:  List[int],
-        mesh_idx:   Dict[int, int],
-        nodal_idx:  Dict[int, int],
-        mesh_b:     List[_Branch],
+        Phi: np.ndarray,
+        mesh_ids: List[int],
+        nodal_ids: List[int],
+        mesh_idx: Dict[int, int],
+        nodal_idx: Dict[int, int],
+        mesh_b: List[_Branch],
         reluctance_b: List[_Branch],
-        nodal_b:    List[_Branch],
-        R_eff_map:  Dict[int, float],
+        nodal_b: List[_Branch],
+        R_eff_map: Dict[int, float],
         Fs_eff_map: Dict[int, float],
-        converged:  bool,
-        n_iter:     int,
-        residual:   float,
+        converged: bool,
+        n_iter: int,
+        residual: float,
     ) -> MECSolution:
-
-        phi_mesh  = {bid: float(Phi[mesh_idx[bid]])  for bid in mesh_ids}
+        phi_mesh = {bid: float(Phi[mesh_idx[bid]]) for bid in mesh_ids}
         phi_nodal = {bid: float(Phi[nodal_idx[bid]]) for bid in nodal_ids}
 
         phi_branches: Dict[int, float] = {}
@@ -736,7 +780,7 @@ class MEC:
         for b in reluctance_b:
             phi_b = self._branch_flux(b, Phi, mesh_idx, nodal_idx)
             phi_branches[b.branch_id] = phi_b
-            R_eff  = R_eff_map.get(b.branch_id, 0.0)
+            R_eff = R_eff_map.get(b.branch_id, 0.0)
             Fs_eff = Fs_eff_map.get(b.branch_id, b.mmf)
             mmf_branches[b.branch_id] = Fs_eff - R_eff * phi_b
 
@@ -745,7 +789,7 @@ class MEC:
             phi_b = self._branch_flux(b, Phi, mesh_idx, nodal_idx)
             phi_branches[b.branch_id] = phi_b
             Fs_eff = Fs_eff_map.get(b.branch_id, b.mmf)
-            R_nb   = R_eff_map.get(b.branch_id, 0.0)
+            R_nb = R_eff_map.get(b.branch_id, 0.0)
             mmf_branches[b.branch_id] = Fs_eff - R_nb * phi_b
 
         # Field energy: Wf = ½ Σ R_eff · Φ²  (always positive)
@@ -757,10 +801,7 @@ class MEC:
         # Flux linkages for registered windings
         flux_linkages: Dict[Any, float] = {}
         for wid, winding in self._windings.items():
-            lam = sum(
-                N * phi_branches.get(bid, 0.0)
-                for bid, N in winding.branch_turns.items()
-            )
+            lam = sum(N * phi_branches.get(bid, 0.0) for bid, N in winding.branch_turns.items())
             flux_linkages[wid] = lam
 
         return MECSolution(

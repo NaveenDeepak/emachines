@@ -37,13 +37,13 @@ BranchType
 """
 
 from .mec import (
-    PermeabilityModel,
-    LinearPermeabilityModel,
-    SplinePermeabilityModel,
-    ShanesudhoffModel,
-    BranchType,
     MEC,
+    BranchType,
+    LinearPermeabilityModel,
     MECSolution,
+    PermeabilityModel,
+    ShanesudhoffModel,
+    SplinePermeabilityModel,
 )
 
 __all__ = [

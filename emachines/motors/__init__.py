@@ -1,28 +1,24 @@
 """Electric Motors module — DC and PMSM models."""
 
-from .motors import (
-    # DC Motor classes
+from .motors import (  # DC Motor classes; DC Motor functions; PMSM classes; PMSM functions
+    SPM,
     GeometricParams,
+    LumpedParams,
     MaterialProperties,
     OperatingConditions,
-    LumpedParams,
-    # DC Motor functions
-    calculate_carter_coefficient,
-    calculate_magnetic_circuit,
+    PMSMParams,
+    back_emf,
     calculate_armature_resistance,
+    calculate_carter_coefficient,
+    calculate_losses_and_efficiency,
+    calculate_lumped_parameters,
+    calculate_magnetic_circuit,
     calculate_motor_constants,
     calculate_rotor_inertia,
-    calculate_lumped_parameters,
     calculate_steady_state_performance,
-    calculate_losses_and_efficiency,
-    plot_efficiency_map,
-    # PMSM classes
-    PMSMParams,
-    SPM,
-    # PMSM functions
-    back_emf,
-    torque,
     dq_currents,
+    plot_efficiency_map,
+    torque,
 )
 
 __all__ = [

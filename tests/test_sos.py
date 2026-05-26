@@ -14,24 +14,26 @@ pole pitch in slots), NOT Q/p = Q/(P//2) (one electrical cycle).  Using
 coil_span = Q/P gives kp1 = 1; using Q/p gives kp1 = sin(π) = 0 (degenerate).
 """
 
-import pytest
-import numpy as np
-from emachines.winding.sos import (
-    get_basic_params,
-    build_star_of_slots,
-    build_coil_matrix,
-    assign_phases,
-    winding_factor_sos,
-    check_symmetry,
-    get_valid_coil_spans,
-    is_valid_combination,
-)
 from fractions import Fraction
 
+import numpy as np
+import pytest
+
+from emachines.winding.sos import (
+    assign_phases,
+    build_coil_matrix,
+    build_star_of_slots,
+    check_symmetry,
+    get_basic_params,
+    get_valid_coil_spans,
+    is_valid_combination,
+    winding_factor_sos,
+)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # get_basic_params
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestGetBasicParams:
     def test_integer_slot(self):
@@ -82,6 +84,7 @@ class TestGetBasicParams:
 # build_star_of_slots
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestBuildStarOfSlots:
     def test_shape(self):
         assert build_star_of_slots(12, 4).shape == (12,)
@@ -108,6 +111,7 @@ class TestBuildStarOfSlots:
 # build_coil_matrix
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestBuildCoilMatrix:
     def test_shape_single_layer(self):
         assert build_coil_matrix(12, 4, 3, layers=1).shape == (1, 12)
@@ -128,21 +132,20 @@ class TestBuildCoilMatrix:
         for Q, P in [(12, 4), (12, 10), (9, 8)]:
             mat = build_coil_matrix(Q, P, 3, layers=1)
             counts = [int(np.sum(np.abs(mat[0]) == k)) for k in [1, 2, 3]]
-            assert len(set(counts)) == 1, \
-                f"Unbalanced for Q={Q}, P={P}: counts={counts}"
+            assert len(set(counts)) == 1, f"Unbalanced for Q={Q}, P={P}: counts={counts}"
 
     def test_layer2_is_negated_shifted_layer1(self):
-        Q, P, w = 12, 4, 3   # standard full pitch w = Q/P = 3
+        Q, P, w = 12, 4, 3  # standard full pitch w = Q/P = 3
         mat = build_coil_matrix(Q, P, 3, layers=2, w=w)
         for i in range(Q):
             go_slot = (i - w + Q) % Q
-            assert mat[1, i] == -mat[0, go_slot], \
-                f"Layer 2 mismatch at slot {i}"
+            assert mat[1, i] == -mat[0, go_slot], f"Layer 2 mismatch at slot {i}"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # assign_phases
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestAssignPhases:
     def test_returns_m_phases(self):
@@ -167,13 +170,15 @@ class TestAssignPhases:
         phases = assign_phases(Q, P, 3, layers=2)
         for lyr_idx in range(2):
             slots = [abs(s) for ph in phases for s in ph[lyr_idx]]
-            assert sorted(slots) == list(range(1, Q + 1)), \
-                f"Layer {lyr_idx} doesn't cover all slots"
+            assert sorted(slots) == list(
+                range(1, Q + 1)
+            ), f"Layer {lyr_idx} doesn't cover all slots"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # winding_factor_sos
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestWindingFactorSos:
     """
@@ -183,20 +188,24 @@ class TestWindingFactorSos:
     Integer-slot cases: double-layer, w = Q/P (standard pole pitch, kp=1).
     """
 
-    @pytest.mark.parametrize("Q,P,w,layers,expected_kw1", [
-        # FSCW — double-layer tooth-coil (emetor reference values)
-        (12, 10, 1, 2, 0.933),
-        (12,  8, 1, 2, 0.866),
-        ( 9,  8, 1, 2, 0.945),
-        (12, 14, 1, 2, 0.933),
-        # Integer-slot — double-layer, standard full pitch w = Q/P
-        (12,  4, 3, 2, 1.000),   # q=1, w=Q/P=3: kp=1, kd=1
-        (24,  4, 6, 2, 0.966),   # q=2, w=Q/P=6: kp=1, kd1≈0.9659 for q=2
-    ])
+    @pytest.mark.parametrize(
+        "Q,P,w,layers,expected_kw1",
+        [
+            # FSCW — double-layer tooth-coil (emetor reference values)
+            (12, 10, 1, 2, 0.933),
+            (12, 8, 1, 2, 0.866),
+            (9, 8, 1, 2, 0.945),
+            (12, 14, 1, 2, 0.933),
+            # Integer-slot — double-layer, standard full pitch w = Q/P
+            (12, 4, 3, 2, 1.000),  # q=1, w=Q/P=3: kp=1, kd=1
+            (24, 4, 6, 2, 0.966),  # q=2, w=Q/P=6: kp=1, kd1≈0.9659 for q=2
+        ],
+    )
     def test_kw1_vs_emetor(self, Q, P, w, layers, expected_kw1):
         kw = winding_factor_sos(1, Q, P, m=3, layers=layers, w=w)
-        assert np.isclose(kw, expected_kw1, atol=0.01), \
-            f"Q={Q}, P={P}, w={w}, layers={layers}: kw1={kw:.4f}, expected≈{expected_kw1}"
+        assert np.isclose(
+            kw, expected_kw1, atol=0.01
+        ), f"Q={Q}, P={P}, w={w}, layers={layers}: kw1={kw:.4f}, expected≈{expected_kw1}"
 
     def test_fundamental_le_one(self):
         for Q, P in [(12, 10), (12, 8), (9, 8), (12, 14), (12, 4), (36, 6)]:
@@ -228,13 +237,12 @@ class TestWindingFactorSos:
                         phasor -= np.exp(1j * star[i])
                         n += 1
             kw_phases.append(abs(phasor) / n if n > 0 else 0.0)
-        assert np.allclose(kw_phases, kw_phases[0], atol=1e-10), \
-            f"Phases not balanced: {kw_phases}"
+        assert np.allclose(kw_phases, kw_phases[0], atol=1e-10), f"Phases not balanced: {kw_phases}"
 
     def test_full_pitch_integer_slot_kw1(self):
         """Full-pitch integer-slot: kw1 = kd1 (kp=1)."""
         # 12s/4p, q=1: kd=1, kp=1 → kw=1.0
-        kw = winding_factor_sos(1, 12, 4, m=3, layers=2, w=3)   # w=Q/P=3
+        kw = winding_factor_sos(1, 12, 4, m=3, layers=2, w=3)  # w=Q/P=3
         assert np.isclose(kw, 1.0, atol=1e-3)
 
     def test_chorded_integer_slot_kw1(self):
@@ -248,15 +256,19 @@ class TestWindingFactorSos:
 # check_symmetry
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestCheckSymmetry:
-    @pytest.mark.parametrize("Q,P,expected", [
-        (12,  4, True),
-        (12, 10, True),
-        ( 9,  8, True),
-        (36,  6, True),
-        (10,  4, False),
-        ( 6,  4, True),
-    ])
+    @pytest.mark.parametrize(
+        "Q,P,expected",
+        [
+            (12, 4, True),
+            (12, 10, True),
+            (9, 8, True),
+            (36, 6, True),
+            (10, 4, False),
+            (6, 4, True),
+        ],
+    )
     def test_symmetry(self, Q, P, expected):
         assert check_symmetry(Q, P) == expected
 
@@ -264,6 +276,7 @@ class TestCheckSymmetry:
 # ─────────────────────────────────────────────────────────────────────────────
 # get_valid_coil_spans
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestGetValidCoilSpans:
     def test_integer_slot(self):
@@ -284,15 +297,19 @@ class TestGetValidCoilSpans:
 # is_valid_combination
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestIsValidCombination:
-    @pytest.mark.parametrize("Q,P,expected", [
-        (12,  4, True),
-        (12, 10, True),
-        ( 9,  8, True),
-        (10,  4, False),
-        ( 2,  4, False),
-        (12, 12, False),
-        (12,  3, False),
-    ])
+    @pytest.mark.parametrize(
+        "Q,P,expected",
+        [
+            (12, 4, True),
+            (12, 10, True),
+            (9, 8, True),
+            (10, 4, False),
+            (2, 4, False),
+            (12, 12, False),
+            (12, 3, False),
+        ],
+    )
     def test_combinations(self, Q, P, expected):
         assert is_valid_combination(Q, P) == expected
