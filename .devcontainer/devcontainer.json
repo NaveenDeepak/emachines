@@ -1,0 +1,124 @@
+{
+  // VS Code Dev Container configuration for emachines
+  // Lets you open the project *inside* the Docker container with one click.
+  // Prerequisites: VS Code + "Dev Containers" extension (ms-vscode-remote.remote-containers)
+  //
+  // Usage:
+  //   1. Open this folder in VS Code
+  //   2. Press Cmd/Ctrl+Shift+P → "Dev Containers: Reopen in Container"
+  //   3. VS Code rebuilds the image and reconnects — you're inside Docker.
+
+  "name": "emachines Dev Container",
+
+  // Reuse the existing docker-compose service so the container config
+  // stays in one place (Dockerfile / docker-compose.yml).
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "emachines-dev",
+  "workspaceFolder": "/workspace",
+
+  // Override the default CMD so VS Code controls the process, not JupyterLab.
+  // JupyterLab is still available — run it manually from the VS Code terminal.
+  "overrideCommand": true,
+
+  // ---------------------------------------------------------------------------
+  // VS Code extensions installed automatically inside the container
+  // ---------------------------------------------------------------------------
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // Python core
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.mypy-type-checker",
+
+        // Formatting & linting
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "ms-python.flake8",
+
+        // Jupyter notebooks (inside container)
+        "ms-toolsai.jupyter",
+        "ms-toolsai.jupyter-keymap",
+        "ms-toolsai.jupyter-renderers",
+        "ms-toolsai.vscode-jupyter-cell-tags",
+
+        // Git & GitHub
+        "eamodio.gitlens",
+        "github.vscode-pull-request-github",
+        "github.vscode-github-actions",
+
+        // Code quality helpers
+        "streetsidesoftware.code-spell-checker",
+        "njpwerner.autodocstring",       // Auto-generate numpy/google docstrings
+        "visualstudioexptteam.vscodeintellicode",
+
+        // Markdown & docs
+        "yzhang.markdown-all-in-one",
+        "bierner.markdown-preview-github-styles",
+
+        // Docker visibility (handy even inside the container)
+        "ms-azuretools.vscode-docker",
+
+        // TOML (pyproject.toml editing)
+        "tamasfe.even-better-toml"
+      ],
+
+      "settings": {
+        // Python interpreter is the system Python inside the container
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+
+        // Black as the default formatter
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": true,
+        "[python]": {
+          "editor.defaultFormatter": "ms-python.black-formatter",
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+          }
+        },
+
+        // Match project's line-length convention (see .pre-commit-config.yaml)
+        "black-formatter.args": ["--line-length", "100"],
+        "isort.args": ["--profile", "black", "--line-length", "100"],
+        "flake8.args": ["--max-line-length", "100", "--extend-ignore", "E203,W503"],
+
+        // Mypy
+        "mypy-type-checker.args": ["--ignore-missing-imports"],
+
+        // Jupyter
+        "jupyter.notebookFileRoot": "${workspaceFolder}",
+        "jupyter.defaultKernel": "python3",
+
+        // Editor ergonomics
+        "editor.rulers": [100],
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+
+        // Test discovery
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": ["tests"],
+        "python.testing.unittestEnabled": false
+      }
+    }
+  },
+
+  // Ports forwarded automatically so you can still open JupyterLab in the browser
+  "forwardPorts": [8888],
+  "portsAttributes": {
+    "8888": {
+      "label": "JupyterLab",
+      "onAutoForward": "notify"
+    }
+  },
+
+  // Run after the container starts
+  "postStartCommand": "pre-commit install && echo '✅ Pre-commit hooks installed'",
+
+  // Useful terminal defaults
+  "remoteEnv": {
+    "JUPYTER_ENABLE_LAB": "yes"
+  }
+}

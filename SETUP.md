@@ -66,7 +66,7 @@ docker-compose exec emachines-dev bash
 Now you can run commands inside the container:
 ```bash
 pytest tests/                    # Run tests
-nbdev_build_lib                  # Build library from notebooks
+nbdev-export                  # Build library from notebooks
 python -m emachines.module_name  # Run code
 ```
 
@@ -110,7 +110,7 @@ Navigate to `http://localhost:8888` in your browser
 In the JupyterLab terminal or container bash:
 
 ```bash
-nbdev_build_lib
+nbdev-export
 ```
 
 This exports your notebook code to `/emachines/` Python modules.
@@ -148,7 +148,7 @@ nbdev is perfectly designed for this:
 
 2. **Export to Python** (automatic or manual)
    ```bash
-   nbdev_build_lib  # Exports to /emachines/
+   nbdev-export  # Exports to /emachines/
    ```
 
 3. **Tests run** (both in notebooks and pytest)
@@ -219,7 +219,7 @@ sudo usermod -aG docker $USER
 
 ```bash
 # Rebuild the library
-docker-compose exec emachines-dev nbdev_build_lib
+docker compose exec emachines-dev nbdev-export
 
 # Or restart the container
 docker-compose restart
