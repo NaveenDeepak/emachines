@@ -36,8 +36,6 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest",
-    "pytest-cov",
     "nbdev",
     "jupyter",
 ]
@@ -54,9 +52,6 @@ Documentation = "https://NaveenDeepak.github.io/emachines"
 [tool.hatch.build.targets.wheel]
 packages = ["emachines"]
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "--tb=short"
 
 [tool.nbdev]
 lib_name = "emachines"
@@ -73,3 +68,4 @@ copyright = "ND"
 branch = "main"
 git_url = "https://github.com/NaveenDeepak/emachines"
 min_python = "3.9"
+

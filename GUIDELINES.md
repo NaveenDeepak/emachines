@@ -4,12 +4,12 @@
 
 **Project Goal:** A collaborative, Docker-based electric motor simulation library using nbdev for notebook-driven development.
 
-**Current State (as of May 24, 2026):**
-- Motors module ✅ COMPLETE (nbs/02_motors.ipynb + emachines/motors/motors.py)
+**Current State (as of May 26, 2026):**
+- Motors module ✅ COMPLETE (nbs/02_dc_motors.ipynb + nbs/02_pmsm.ipynb + emachines/motors/motors.py)
 - Winding module ✅ COMPLETE (nbs/01_winding.ipynb + emachines/winding/winding.py)
 - Magnetics module ✅ COMPLETE (4 focused notebooks + combined magnetics.py)
-- Mec module ✅ COMPLETE (3 focused notebooks + combined mec.py)
-- Mec module ⏳ PENDING CONVERSION
+- Mec module ✅ COMPLETE + VERIFIED (3 notebooks, independently runnable, NR solver fixed)
+- settings.ini ✅ CREATED — nbdev_export operational
 
 **Key User Intent:** Establish a collaborative development environment with Docker consistency and nbdev notebook-driven development. The user plans to invite a collaborator.
 
@@ -359,67 +359,7 @@ When inviting the friend/collaborator:
 | Winding | ✅ | `nbs/01_winding.ipynb` | 32K | `emachines/winding/winding.py` | Reference pattern |
 | Motors | ✅ | `nbs/02_motors.ipynb` | 24K | `emachines/motors/motors.py` | DC + PMSM |
 | Magnetics | ✅ | 4 focused notebooks | 44K | `emachines/magnetics/magnetics.py` | COMPLETE - All verified ✓ |
-| Mec | ✅ | 3 focused notebooks | 23K | `emachines/mec/mec.py` | COMPLETE - All verified ✓ |
+| Mec | ✅ | 3 focused notebooks | 23K | `emachines/mec/mec.py` | COMPLETE - Notebooks independently runnable, NR solver fixed ✓ |
 
-**Completion:** 100% (4 of 4 core modules)|## Summary: Project Complete (May 24, 2026)
+**Completion:** 100% (4 of 4 core modules) + nbdev workflow verified
 
-| Module | Status | Files | Size | Generated | Notes |
-|--------|--------|-------|------|-----------|-------|
-| Winding | ✅ | `nbs/01_winding.ipynb` | 32K | `emachines/winding/winding.py` | Reference pattern |
-| Motors | ✅ | `nbs/02_motors.ipynb` | 24K | `emachines/motors/motors.py` | DC + PMSM |
-| Magnetics | ✅ | 4 focused notebooks | 44K | `emachines/magnetics/magnetics.py` | COMPLETE - All verified ✓ |
-| Mec | ✅ | 3 focused notebooks | 23K | `emachines/mec/mec.py` | COMPLETE - All verified ✓ |
-
-**Completion:** 100% (4 of 4 core modules)|## Summary: Project Complete (May 24, 2026)
-
-| Module | Status | Files | Size | Generated | Notes |
-|--------|--------|-------|------|-----------|-------|
-| Winding | ✅ | `nbs/01_winding.ipynb` | 32K | `emachines/winding/winding.py` | Reference pattern |
-| Motors | ✅ | `nbs/02_motors.ipynb` | 24K | `emachines/motors/motors.py` | DC + PMSM |
-| Magnetics | ✅ | 4 focused notebooks | 44K | `emachines/magnetics/magnetics.py` | COMPLETE - All verified ✓ |
-| Mec | ✅ | 3 focused notebooks | 23K | `emachines/mec/mec.py` | COMPLETE - All verified ✓ |
-
-**Completion:** 100% (4 of 4 core modules)|## Summary: Project Complete (May 24, 2026)
-
-| Module | Status | Files | Size | Generated | Notes |
-|--------|--------|-------|------|-----------|-------|
-| Winding | ✅ | `nbs/01_winding.ipynb` | 32K | `emachines/winding/winding.py` | Reference pattern |
-| Motors | ✅ | `nbs/02_motors.ipynb` | 24K | `emachines/motors/motors.py` | DC + PMSM |
-| Magnetics | ✅ | 4 focused notebooks | 44K | `emachines/magnetics/magnetics.py` | COMPLETE - All verified ✓ |
-| Mec | ✅ | 3 focused notebooks | 23K | `emachines/mec/mec.py` | COMPLETE - All verified ✓ |
-
-**Completion:** 100% (4 of 4 core modules)|## Summary: Project Complete (May 24, 2026)
-
-| Module | Status | Files | Size | Generated | Notes |
-|--------|--------|-------|------|-----------|-------|
-| Winding | ✅ | `nbs/01_winding.ipynb` | 32K | `emachines/winding/winding.py` | Reference pattern |
-| Motors | ✅ | `nbs/02_motors.ipynb` | 24K | `emachines/motors/motors.py` | DC + PMSM |
-| Magnetics | ✅ | 4 focused notebooks | 44K | `emachines/magnetics/magnetics.py` | COMPLETE - All verified ✓ |
-| Mec | ✅ | 3 focused notebooks | 23K | `emachines/mec/mec.py` | COMPLETE - All verified ✓ |
-
-**Completion:** 100% (4 of 4 core modules)---|## Summary: Project Complete (May 24, 2026)
-
-| Module | Status | Files | Size | Generated | Notes |
-|--------|--------|-------|------|-----------|-------|
-| Winding | ✅ | `nbs/01_winding.ipynb` | 32K | `emachines/winding/winding.py` | Reference pattern |
-| Motors | ✅ | `nbs/02_motors.ipynb` | 24K | `emachines/motors/motors.py` | DC + PMSM |
-| Magnetics | ✅ | 4 focused notebooks | 44K | `emachines/magnetics/magnetics.py` | COMPLETE - All verified ✓ |
-| Mec | ✅ | 3 focused notebooks | 23K | `emachines/mec/mec.py` | COMPLETE - All verified ✓ |
-
-**Completion:** 100% (4 of 4 core modules)|## Summary: Project Complete (May 24, 2026)
-
-| Module | Status | Files | Size | Generated | Notes |
-|--------|--------|-------|------|-----------|-------|
-| Winding | ✅ | `nbs/01_winding.ipynb` | 32K | `emachines/winding/winding.py` | Reference pattern |
-| Motors | ✅ | `nbs/02_motors.ipynb` | 24K | `emachines/motors/motors.py` | DC + PMSM |
-| Magnetics | ✅ | 4 focused notebooks | 44K | `emachines/magnetics/magnetics.py` | COMPLETE - All verified ✓ |
-| Mec | ✅ | 3 focused notebooks | 23K | `emachines/mec/mec.py` | COMPLETE - All verified ✓ |
-
-**Completion:** 100% (4 of 4 core modules)
-
----
-
-**Last Updated:** May 24, 2026
-**Project Status:** ✅ COMPLETE - All 4 core modules converted to nbdev
-**Next Action:** Push to GitHub, invite collaborator, set up CI/CD
-**Long-term:** Package for PyPI, expand documentation, add more analysis modules
