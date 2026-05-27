@@ -303,8 +303,8 @@ class MEC:
         self,
         phi_base: Optional[float] = None,
         F_base: Optional[float] = None,
-        rtol: float = 1e-3,
-        atol: float = 1e-6,
+        rtol: float = 1e-6,
+        atol: float = 1e-9,
         max_iter: int = 20,
     ) -> None:
         if (phi_base is None) != (F_base is None):
@@ -324,30 +324,120 @@ class MEC:
 
     def add_mesh_branch(
         self,
+        branch: int,
+        mesh: int = 1,
         mmf: float = 0.0,
     ) -> int:
-        """Add a mesh (loop current) branch.
+        """Add a mesh (loop current) branch with an explicit branch ID.
 
         Parameters
         ----------
+        branch : int
+            User-assigned branch ID (must be unique).
+        mesh : int
+            Mesh number label (informational; branch ID is used for topology).
         mmf : float
             Magnetomotive force source [A-turns].
 
         Returns
         -------
         branch_id : int
-            Unique identifier for this branch.
+            The branch ID assigned (same as *branch*).
         """
-        bid = self._next_branch_id
-        self._branches[bid] = _Branch(
-            branch_id=bid,
+        self._branches[branch] = _Branch(
+            branch_id=branch,
             btype=BranchType.MESH,
-            mesh_id=self._mesh_count,
+            mesh_id=mesh,
             mmf=mmf,
         )
-        self._next_branch_id += 1
         self._mesh_count += 1
-        return bid
+        return branch
+
+    def add_linear_branch(
+        self,
+        branch: int,
+        permeance: float,
+        meshes: Sequence[int] = (),
+        orientations: Sequence[int] = (),
+        mmf: float = 0.0,
+    ) -> int:
+        """Add a linear (fixed permeance) branch with an explicit branch ID.
+
+        Parameters
+        ----------
+        branch : int
+            User-assigned branch ID (must be unique).
+        permeance : float
+            Fixed permeance P = μA/l [Wb/A-turns].
+        meshes : sequence of int
+            Branch IDs of the mesh branches this branch belongs to.
+        orientations : sequence of int
+            +1 or -1 for each mesh (flux direction relative to mesh).
+        mmf : float
+            Magnetomotive force source [A-turns].
+
+        Returns
+        -------
+        branch_id : int
+        """
+        self._branches[branch] = _Branch(
+            branch_id=branch,
+            btype=BranchType.RELUCTANCE,
+            permeance=permeance,
+            mmf=mmf,
+            meshes=list(meshes),
+            orientations=list(orientations),
+        )
+        return branch
+
+    def add_nonlinear_branch(
+        self,
+        branch: int,
+        length: float,
+        area: float,
+        model: Any,
+        meshes: Sequence[int] = (),
+        orientations: Sequence[int] = (),
+        mmf: float = 0.0,
+        phi_source: float = 0.0,
+    ) -> int:
+        """Add a nonlinear (model-based) reluctance branch with an explicit branch ID.
+
+        Parameters
+        ----------
+        branch : int
+            User-assigned branch ID (must be unique).
+        length : float
+            Core length [m].
+        area : float
+            Cross-sectional area [m²].
+        model : PermeabilityModel
+            Permeability model with mu() and dmu_dB() methods.
+        meshes : sequence of int
+            Branch IDs of mesh branches this branch belongs to.
+        orientations : sequence of int
+            +1 or -1 for each mesh.
+        mmf : float
+            Magnetomotive force source [A-turns].
+        phi_source : float
+            PM flux source [Wb].
+
+        Returns
+        -------
+        branch_id : int
+        """
+        self._branches[branch] = _Branch(
+            branch_id=branch,
+            btype=BranchType.RELUCTANCE,
+            length=length,
+            area=area,
+            model=model,
+            mmf=mmf,
+            phi_source=phi_source,
+            meshes=list(meshes),
+            orientations=list(orientations),
+        )
+        return branch
 
     def add_reluctance_branch(
         self,
@@ -502,34 +592,42 @@ class MEC:
                         # Compute flux through this reluctance
                         phi_b = self._branch_flux_simple(reluctance, Phi, mesh_idx)
 
-                        # Nonlinear reluctance equation
-                        if reluctance.model is not None:
-                            # Get B from flux
+                        # Linear branch (fixed permeance) or nonlinear (model-based)
+                        if reluctance.model is None and reluctance.permeance is not None:
+                            R_eff = (
+                                1.0 / reluctance.permeance
+                                if reluctance.permeance > 0
+                                else float("inf")
+                            )
+                            Fs_eff = reluctance.mmf
+                        elif reluctance.model is not None:
                             B = phi_b / reluctance.area if reluctance.area > 0 else 0
                             mu = reluctance.model.mu(B)
                             dmu_dB = reluctance.model.dmu_dB(B)
-
                             R0 = (
                                 reluctance.length / (mu * reluctance.area)
                                 if mu > 0 and reluctance.area > 0
                                 else float("inf")
                             )
-                            if mu > 0:
-                                S0 = (dmu_dB * B / mu) if abs(mu) > 1e-15 else 0
-                            else:
-                                S0 = 0
-
+                            S0 = (dmu_dB * B / mu) if mu > 0 and abs(mu) > 1e-15 else 0
                             R_eff = R0 * (1 - S0) if R0 < float("inf") else float("inf")
                             Fs_eff = reluctance.mmf - R0 * (S0 * phi_b - reluctance.phi_source)
+                        else:
+                            R_eff = float("inf")
+                            Fs_eff = reluctance.mmf
 
-                            R_eff_map[reluctance.branch_id] = R_eff
-                            Fs_eff_map[reluctance.branch_id] = Fs_eff
+                        R_eff_map[reluctance.branch_id] = R_eff
+                        Fs_eff_map[reluctance.branch_id] = Fs_eff
 
-                            mmf_sum -= R_eff * phi_b - Fs_eff
+                        # MMF drop in this mesh's direction = orientation * R * phi_b
+                        mmf_sum -= orientation * R_eff * phi_b - Fs_eff
 
-                            # Jacobian entry
-                            if R_eff < float("inf"):
-                                J[i, i] -= orientation * R_eff
+                        # Full Jacobian: accounts for off-diagonal coupling
+                        # ∂(orientation_i * R * phi_b) / ∂Phi_j = orientation_i * R * orientation_j
+                        if R_eff < float("inf"):
+                            for m_id, o_j in zip(reluctance.meshes, reluctance.orientations):
+                                if m_id in mesh_idx:
+                                    J[i, mesh_idx[m_id]] -= orientation * R_eff * o_j
 
                 F_vec[i] = mmf_sum
 
