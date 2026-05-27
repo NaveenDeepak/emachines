@@ -4,12 +4,12 @@
 
 **Project Goal:** A collaborative, Docker-based electric motor simulation library using nbdev for notebook-driven development.
 
-**Current State (as of May 26, 2026):**
+**Current State (as of May 27, 2026):**
 - Motors module ✅ COMPLETE (nbs/02_dc_motors.ipynb + nbs/02_pmsm.ipynb + emachines/motors/motors.py)
-- Winding module ✅ COMPLETE (nbs/01_winding.ipynb + emachines/winding/winding.py)
-- Magnetics module ✅ COMPLETE (4 focused notebooks + combined magnetics.py)
-- Mec module ✅ COMPLETE + VERIFIED (3 notebooks, independently runnable, NR solver fixed)
-- settings.ini ✅ CREATED — nbdev_export operational
+- Winding module ✅ COMPLETE (nbs/01_winding.ipynb + emachines/winding/factors.py + sos.py)
+- Magnetics module ✅ COMPLETE (4 focused notebooks)
+- Mec module ✅ COMPLETE + VERIFIED (3 notebooks, NR solver fixed)
+- CI/CD ✅ FULLY NBDEV-NATIVE — export + nbtest + mypy, all checks green on main
 
 **Key User Intent:** Establish a collaborative development environment with Docker consistency and nbdev notebook-driven development. The user plans to invite a collaborator.
 
@@ -352,14 +352,22 @@ When inviting the friend/collaborator:
 
 ---
 
-## Summary: Project Complete (May 24, 2026)
+## Summary: Project State (May 27, 2026)
 
-| Module | Status | Files | Size | Generated | Notes |
-|--------|--------|-------|------|-----------|-------|
-| Winding | ✅ | `nbs/01_winding.ipynb` | 32K | `emachines/winding/winding.py` | Reference pattern |
-| Motors | ✅ | `nbs/02_motors.ipynb` | 24K | `emachines/motors/motors.py` | DC + PMSM |
-| Magnetics | ✅ | 4 focused notebooks | 44K | `emachines/magnetics/magnetics.py` | COMPLETE - All verified ✓ |
-| Mec | ✅ | 3 focused notebooks | 23K | `emachines/mec/mec.py` | COMPLETE - Notebooks independently runnable, NR solver fixed ✓ |
+| Module | Status | Notebooks | Library files | Notes |
+|--------|--------|-----------|---------------|-------|
+| Winding | ✅ | `nbs/01_winding.ipynb` | `winding/factors.py`, `winding/sos.py` | Complete, tested |
+| Motors | ✅ | `nbs/02_dc_motors.ipynb`, `nbs/02_pmsm.ipynb` | `motors/dc_motor.py`, `motors/pmsm.py` | DC + PMSM |
+| Magnetics | ✅ | 4 focused notebooks | `magnetics/*.py` | BH, iron loss, electrical steel, PM |
+| MEC | ✅ | `nbs/04_mec_solver.ipynb` + 2 support nbs | `mec/mec.py`, `mec/solver.py`, etc. | NR solver fixed |
 
-**Completion:** 100% (4 of 4 core modules) + nbdev workflow verified
+**CI/CD (as of May 27, 2026):**
+- Pipeline: `nbdev-export` check → `nbdev-test` + `mypy` (parallel)
+- All checks green on `main` ✅
+- Tests live in notebooks as `#| hide` assertion cells (140 assertions across 5 notebooks)
+- No black/isort/flake8/pytest — fully nbdev-native
+
+**Pending (next steps):**
+- Add `#| default_exp` to all 10 main notebooks so `nbdev-export` generates library files
+  (currently library files are hand-written; export check only guards `test_verify.py`)
 
