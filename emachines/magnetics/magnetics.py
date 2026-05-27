@@ -17,10 +17,10 @@ import os
 import pickle
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import pandas as pd
+from scipy.optimize import curve_fit
 
 __all__ = [
     # BH Models

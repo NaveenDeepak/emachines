@@ -9,9 +9,8 @@ Auto-generated from nbdev notebooks:
 import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence
 
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import CubicSpline
 
@@ -25,12 +24,6 @@ __all__ = [
     "MECSolution",
 ]
 
-import math
-from abc import ABC, abstractmethod
-
-import matplotlib.pyplot as plt
-import numpy as np
-from scipy.interpolate import CubicSpline
 
 MU0 = 4e-7 * np.pi  # H/m
 
@@ -246,14 +239,6 @@ class ShanesudhoffModel(PermeabilityModel):
             b=[431.1763, 2.29503, 15.04824, 74.28908],
             gamma=[0.4742, 2.7955, 0.59862, 0.43996],
         )
-
-
-import math
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence, Tuple
-
-import matplotlib.pyplot as plt
-import numpy as np
 
 
 class BranchType:
@@ -486,7 +471,6 @@ class MEC(MEC):  # Continue the class
         # Separate branches by type
         mesh_b = [b for b in self._branches.values() if b.btype == BranchType.MESH]
         reluctance_b = [b for b in self._branches.values() if b.btype == BranchType.RELUCTANCE]
-        nodal_b = [b for b in self._branches.values() if b.btype == BranchType.NODAL]
 
         # Initialize
         n_mesh = len(mesh_b)
@@ -495,7 +479,6 @@ class MEC(MEC):  # Continue the class
 
         # Index mappings
         mesh_idx = {b.branch_id: i for i, b in enumerate(mesh_b)}
-        nodal_idx = {b.node_to: i + n_mesh for b in nodal_b}  # Simplified mapping
 
         Phi = np.zeros(n_vars)
 

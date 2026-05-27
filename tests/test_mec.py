@@ -16,13 +16,7 @@ import math
 import numpy as np
 import pytest
 
-from emachines.mec import (
-    MEC,
-    LinearPermeabilityModel,
-    MECSolution,
-    ShanesudhoffModel,
-    SplinePermeabilityModel,
-)
+from emachines.mec import MEC, ShanesudhoffModel, SplinePermeabilityModel
 
 MU0 = 4e-7 * math.pi
 

@@ -250,8 +250,6 @@ class ShanesudhoffModel(PermeabilityModel):
     def _f_and_df(self, absB: float):
         """Return (f, df/d|B|) at |B|."""
         eb = np.exp(-self._b * absB)
-        denom = self._e + self._z * eb  # eₙ + zₙ·exp(−bₙ|B|) — wait
-
         # Recheck formula: log(eₙ + zₙ·exp(−bₙ|B|))
         # z_n = (γ-1)/γ,  e_n = 1 + z_n = 1/γ + ... — let's use the
         # original MEC 3.2 muB.m directly:
