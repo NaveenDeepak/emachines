@@ -12,6 +12,8 @@ This module is auto-generated from Jupyter notebooks using nbdev:
 To modify this module, edit the notebooks, not this file directly.
 """
 
+from __future__ import annotations
+
 import functools
 import os
 import pickle

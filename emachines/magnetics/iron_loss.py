@@ -14,6 +14,8 @@ References:
         loss with nonsinusoidal waveforms. COMPEL, 21(4).
 """
 
+from __future__ import annotations
+
 import numpy as np
 from scipy.optimize import curve_fit
 
