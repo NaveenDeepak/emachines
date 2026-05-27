@@ -5,4 +5,5 @@ __all__ = ['test_function']
 
 # %% ../nbs/test_verify.ipynb #d08d1201-4445-44a7-b2f9-72b11a05af41
 def test_function(x: int) -> int:
-    return x + 1
+    """Simple test function."""
+    return x * 2
