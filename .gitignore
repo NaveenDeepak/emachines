@@ -45,3 +45,4 @@ KnowledgeBase/
 
 # isort temp files
 *.isorted
+settings.ini

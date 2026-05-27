@@ -3,8 +3,8 @@
 # ============================================================
 #
 # Jobs:
-#   1. export    — nbdev_export; fail if notebooks and .py files diverge
-#   2. nbtest    — nbdev_test; run all test cells inside notebooks
+#   1. export    — nbdev-export; fail if notebooks and .py files diverge
+#   2. nbtest    — nbdev-test; run all test cells inside notebooks
 #   3. typecheck — mypy on the generated emachines/ package
 #
 # There is no separate pytest job: tests live in the notebooks
@@ -32,7 +32,7 @@ jobs:
   # ----------------------------------------------------------
   # Job 1 — Notebook export check
   # Core nbdev gate: fails if any notebook has not been exported.
-  # Always run `nbdev_export` locally before pushing.
+  # Always run `nbdev-export` locally before pushing.
   # ----------------------------------------------------------
   export:
     name: Notebook Export Check
@@ -50,14 +50,14 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -e ".[dev]"
-          pip install "nbdev>=2.3.0" "jupyterlab>=4.0.0"
+          pip install "nbdev>=3.0.0" "jupyterlab>=4.0.0"
 
       - name: Export notebooks and check for drift
         run: |
-          nbdev_export
+          nbdev-export
           git diff --exit-code emachines/ || {
             echo "❌ Notebooks and generated Python files are out of sync."
-            echo "   Run 'nbdev_export' locally and commit the result."
+            echo "   Run 'nbdev-export' locally and commit the result."
             exit 1
           }
 
@@ -83,10 +83,10 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -e ".[dev]"
-          pip install "nbdev>=2.3.0" "jupyterlab>=4.0.0"
+          pip install "nbdev>=3.0.0" "jupyterlab>=4.0.0"
 
       - name: Run notebook tests
-        run: nbdev_test --do_print --timing
+        run: nbdev-test --do_print --timing
 
   # ----------------------------------------------------------
   # Job 3 — Type checking
