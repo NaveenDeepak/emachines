@@ -466,13 +466,13 @@ class SteelDatabase:
 
     def _load_file(self, path: str) -> tuple[pd.DataFrame, pd.DataFrame]:
         """Load BH and loss DataFrames."""
-        path = Path(path)
-        if path.suffix == ".pkl":
-            return self._from_pickle(path)
-        cache_path = self._cache_dir / (path.stem + ".pkl")
+        path_obj = Path(path)
+        if path_obj.suffix == ".pkl":
+            return self._from_pickle(path_obj)
+        cache_path = self._cache_dir / (path_obj.stem + ".pkl")
         if cache_path.exists():
             return self._from_pickle(cache_path)
-        return self._from_excel(path)
+        return self._from_excel(path_obj)
 
     @staticmethod
     def _from_pickle(path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:

@@ -225,25 +225,25 @@ class ShanesudhoffModel(PermeabilityModel):
         gamma: Sequence[float],
         mu0: float = MU0,
     ) -> None:
-        a = np.asarray(a, dtype=float)
-        b = np.asarray(b, dtype=float)
-        gamma = np.asarray(gamma, dtype=float)
-        if not (len(a) == len(b) == len(gamma)):
+        a_arr: np.ndarray = np.asarray(a, dtype=float)
+        b_arr: np.ndarray = np.asarray(b, dtype=float)
+        gamma_arr: np.ndarray = np.asarray(gamma, dtype=float)
+        if not (len(a_arr) == len(b_arr) == len(gamma_arr)):
             raise ValueError("a, b, gamma must all have the same length.")
 
         self._mu_r = float(mu_r)
-        self._a = a
-        self._b = b
+        self._a: np.ndarray = a_arr
+        self._b: np.ndarray = b_arr
         self._mu0 = float(mu0)
 
         # Pre-compute derived constants (n-vectors)
-        self._d = a / b  # dₙ
-        self._z = (gamma - 1.0) / gamma  # zₙ
+        self._d: np.ndarray = a_arr / b_arr  # dₙ
+        self._z: np.ndarray = (gamma_arr - 1.0) / gamma_arr  # zₙ
         self._e = 1.0 - self._z  # eₙ = 1 − zₙ (ensures log=0 at B=0)
 
         # For dmu/dB: h_n = mu0 * a_n / b_n * b_n = mu0 * a_n
         # Full derivation gives: h_n coefficient in numerator
-        self._h = self._mu0 * a * self._z * b  # mu0 * a_n * z_n * b_n
+        self._h: np.ndarray = self._mu0 * a_arr * self._z * b_arr  # mu0 * a_n * z_n * b_n
 
     # ── internal helpers ──────────────────────────────────────────────────
 

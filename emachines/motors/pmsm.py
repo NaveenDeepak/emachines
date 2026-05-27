@@ -45,7 +45,7 @@ class PMSMParams:
     @property
     def is_spm(self) -> bool:
         """True if surface-mount (Ld ≈ Lq, no reluctance torque)."""
-        return np.isclose(self.Ld, self.Lq, rtol=0.05)
+        return bool(np.isclose(self.Ld, self.Lq, rtol=0.05))
 
 
 def back_emf(omega_e: float, psi_m: float) -> float:

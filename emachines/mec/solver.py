@@ -559,6 +559,7 @@ class MEC:
 
         # ── per-unit (physics-based, preferred) ──────────────────────────
         if self.phi_base is not None:
+            assert self.F_base is not None
             return self.F_base / self.phi_base  # = R_base
 
         # ── heuristic from initial linear assembly ───────────────────────
@@ -640,6 +641,7 @@ class MEC:
 
         # Nonlinear branch
         B0 = (phi_b - b.phi_source) / b.area if b.area != 0 else 0.0
+        assert b.model is not None, "Reluctance branch must have a permeability model"
         mu_val = b.model.mu(B0)
 
         if mu_val <= 0 or b.length == 0 or b.area == 0:

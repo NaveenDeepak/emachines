@@ -178,7 +178,7 @@ class ShanesudhoffModel(PermeabilityModel):
         a,  # Sequence[float]
         b,  # Sequence[float]
         gamma,  # Sequence[float]
-        mu0: float = None,
+        mu0: Optional[float] = None,
     ) -> None:
         if mu0 is None:
             mu0 = MU0
@@ -322,8 +322,6 @@ class MEC:
         self._mesh_count = 0
         self._node_count = 0
 
-
-class MEC(MEC):  # Continue the class
     def add_mesh_branch(
         self,
         mmf: float = 0.0,
@@ -436,8 +434,6 @@ class MEC(MEC):  # Continue the class
         self._next_branch_id += 1
         return bid
 
-
-class MEC(MEC):  # Continue the class
     def add_winding(
         self,
         winding_id: Any,
@@ -458,8 +454,6 @@ class MEC(MEC):  # Continue the class
             branch_turns=dict(branch_turns),
         )
 
-
-class MEC(MEC):  # Continue the class
     def solve(self) -> Any:  # Returns MECSolution
         """Solve the MEC using Newton-Raphson iteration.
 
@@ -551,8 +545,8 @@ class MEC(MEC):  # Continue the class
             Phi -= dPhi
 
             # Check convergence
-            norm_Phi = 0.5 * (np.linalg.norm(Phi) + np.linalg.norm(Phi_old))
-            residual = np.linalg.norm(dPhi)
+            norm_Phi: float = float(0.5 * (np.linalg.norm(Phi) + np.linalg.norm(Phi_old)))
+            residual = float(np.linalg.norm(dPhi))
 
             tol = self.rtol * norm_Phi + self.atol
             if residual <= tol:
@@ -561,7 +555,7 @@ class MEC(MEC):  # Continue the class
 
         # Extract results
         phi_mesh = {b.branch_id: Phi[mesh_idx[b.branch_id]] for b in mesh_b}
-        phi_nodal = {}
+        phi_nodal: Dict[int, float] = {}
         phi_branches = {}
         mmf_branches = {}
 
@@ -618,8 +612,6 @@ class MEC(MEC):  # Continue the class
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
-import numpy as np
-
 
 @dataclass
 class MECSolution:
@@ -669,8 +661,6 @@ class MECSolution:
     phi_base: Optional[float] = None
     F_base: Optional[float] = None
 
-
-class MECSolution(MECSolution):  # Continue the class
     def flux(self, branch: int) -> float:
         """Return the net flux through *branch* [Wb]."""
         return self.phi_branches.get(branch, 0.0)

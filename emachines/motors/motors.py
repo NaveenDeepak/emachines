@@ -315,7 +315,7 @@ class PMSMParams:
     @property
     def is_spm(self) -> bool:
         """True if surface-mount (Ld ≈ Lq)."""
-        return np.isclose(self.Ld, self.Lq, rtol=0.05)
+        return bool(np.isclose(self.Ld, self.Lq, rtol=0.05))
 
 
 def back_emf(omega_e: float, psi_m: float) -> float:
@@ -349,11 +349,11 @@ class SPM:
         self.Ib = Ib
         self.Pb = 1.5 * Vb * Ib
         self.pp = pp
-        self.speed = []
-        self.torque = []
-        self.voltage = []
-        self.gamma = []
-        self.power = []
+        self.speed: list[float] = []
+        self.torque: list[float] = []
+        self.voltage: list[float] = []
+        self.gamma: list[float] = []
+        self.power: list[float] = []
         self.valid = 0
 
     def validate(self) -> bool:

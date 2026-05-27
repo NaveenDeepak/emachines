@@ -243,19 +243,19 @@ class SteelDatabase:
 
     def _load_file(self, path: str) -> tuple[pd.DataFrame, pd.DataFrame]:
         """Load BH and loss DataFrames from pickle or Excel."""
-        path = Path(path)
+        path_obj = Path(path)
 
         # Try pickle cache first
-        if path.suffix == ".pkl":
-            return self._from_pickle(path)
+        if path_obj.suffix == ".pkl":
+            return self._from_pickle(path_obj)
 
         # Check if a pickle cache exists for this Excel file
-        cache_path = self._cache_dir / (path.stem + ".pkl")
+        cache_path = self._cache_dir / (path_obj.stem + ".pkl")
         if cache_path.exists():
             return self._from_pickle(cache_path)
 
         # Fall back to Excel
-        return self._from_excel(path)
+        return self._from_excel(path_obj)
 
     @staticmethod
     def _from_pickle(path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
