@@ -7,7 +7,7 @@ name = "emachines"
 version = "0.6.0"
 description = "Analytical electromechanical machine design library"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "ND", email = "NaveenDeepak@gmail.com" }]
 keywords = [
@@ -21,7 +21,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Physics",
     "Topic :: Scientific/Engineering :: Mathematics",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
+    
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -67,5 +67,5 @@ license = "MIT"
 copyright = "ND"
 branch = "main"
 git_url = "https://github.com/NaveenDeepak/emachines"
-min_python = "3.9"
+min_python = "3.10"
 
