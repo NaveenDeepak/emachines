@@ -5,6 +5,7 @@
 # Jobs:
 #   1. export    — nbdev-export; fail if notebooks and .py files diverge
 #   2. nbtest    — nbdev-test; run all test cells inside notebooks
+#                  Matrix: Python 3.9, 3.10, 3.11
 #   3. typecheck — mypy on the generated emachines/ package
 #
 # There is no separate pytest job: tests live in the notebooks
@@ -62,21 +63,27 @@ jobs:
           }
 
   # ----------------------------------------------------------
-  # Job 2 — Notebook tests
-  # Runs every test cell (cells not marked #| eval: false) in
-  # every notebook. This is the nbdev-native test path.
+  # Job 2 — Notebook tests (matrix across supported Python versions)
+  # Runs every test cell in every notebook.
+  # pyproject.toml declares python_requires >= 3.9, so all three
+  # versions are tested to catch any version-specific regressions.
   # ----------------------------------------------------------
   nbtest:
-    name: Notebook Tests
+    name: Notebook Tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     needs: export
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: ${{ matrix.python-version }}
           cache: "pip"
 
       - name: Install nbdev and project
