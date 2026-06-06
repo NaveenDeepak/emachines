@@ -1,53 +1,39 @@
-# Pre-commit hooks configuration
-# These hooks run automatically before each commit to enforce code quality standards
-# Install with: pre-commit install
-# Run manually with: pre-commit run --all-files
+# Pre-commit hooks for emachines
+#
+# IMPORTANT — nbdev compatibility note:
+# black, isort, and flake8 are NOT used as pre-commit gates.
+# nbdev-export regenerates Python files in its own style; running
+# a reformatter on those files creates a permanent conflict loop.
+#
+# Instead, we use nbdev_clean (strips notebook output and metadata)
+# to keep notebooks diff-friendly, and rely on CI for correctness checks:
+#   - nbdev-export: ensures notebooks and .py files are in sync
+#   - nbdev-test:   runs all test cells
+#   - mypy:         type checks generated modules
+#
+# Install hooks:  pre-commit install
+# Run manually:   pre-commit run --all-files
 
 repos:
-  # Code formatting with black
-  - repo: https://github.com/psf/black
-    rev: 23.7.0
+  # nbdev: strip notebook outputs and transient metadata before committing.
+  # This keeps notebook diffs readable (no noisy output or execution counts).
+  - repo: https://github.com/fastai/nbdev
+    rev: 2.3.12
     hooks:
-      - id: black
-        language_version: python3.10
-        args: ['--line-length=100']
+      - id: nbdev_clean
 
-  # Import sorting with isort
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        args: ['--profile=black', '--line-length=100']
-
-  # Linting with flake8
-  - repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
-    hooks:
-      - id: flake8
-        args: ['--max-line-length=100', '--extend-ignore=E203,W503']
-        additional_dependencies: ['flake8-docstrings', 'flake8-bugbear']
-
-  # Type checking with mypy
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.4.1
-    hooks:
-      - id: mypy
-        additional_dependencies: ['types-all']
-        args: ['--ignore-missing-imports']
-
-  # General file checks
+  # General file hygiene
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
       - id: trailing-whitespace
+        exclude: "nbs/.*\\.ipynb"   # nbdev manages notebook whitespace
       - id: end-of-file-fixer
+        exclude: "nbs/.*\\.ipynb"
       - id: check-yaml
       - id: check-json
+        exclude: "nbs/.*\\.ipynb"   # notebooks are JSON but nbdev owns their format
       - id: check-merge-conflict
       - id: check-added-large-files
-        args: ['--maxkb=1000']
+        args: ["--maxkb=1000"]
       - id: detect-private-key
-
-# Configuration for skipping hooks
-# To skip a hook temporarily: SKIP=hook_id git commit
-# Example: SKIP=black git commit -m "WIP: testing"
