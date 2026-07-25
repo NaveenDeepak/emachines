@@ -20,4 +20,6 @@ d = { 'settings': { 'branch': 'main',
             'emachines.test_verify': { 'emachines.test_verify.test_function': ( 'test_verify.html#test_function',
                                                                                 'emachines/test_verify.py')},
             'emachines.winding.factors': {},
-            'emachines.winding.sos': {}}}
+            'emachines.winding.mmf': {},
+            'emachines.winding.sos': {},
+            'emachines.winding.winding_factors': {}}}
