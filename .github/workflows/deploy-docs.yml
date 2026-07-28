@@ -48,7 +48,7 @@ jobs:
           pip install "nbdev==3.3.2" "jupyterlab>=4.0.0"
 
       - name: Build docs with nbdev
-        run: nbdev_docs
+        run: nbdev-docs
 
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v3
