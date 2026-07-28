@@ -280,7 +280,7 @@ class MEC(MEC):  # Continue the class
             Phi    -= dPhi
 
             norm_Phi = 0.5 * (np.linalg.norm(Phi) + np.linalg.norm(Phi_old))
-            residual = np.linalg.norm(dPhi)
+            residual: float = float(np.linalg.norm(dPhi))
             if residual <= self.rtol * norm_Phi + self.atol:
                 converged = True
                 break
