@@ -36,11 +36,11 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "nbdev",
+    "nbdev==3.3.2",
     "jupyter",
 ]
 docs = [
-    "nbdev",
+    "nbdev==3.3.2",
     "quarto",
 ]
 

@@ -51,7 +51,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -e ".[dev]"
-          pip install "nbdev>=3.0.0" "jupyterlab>=4.0.0"
+          pip install "nbdev==3.3.2" "jupyterlab>=4.0.0"
 
       - name: Export notebooks and check for drift
         run: |
@@ -90,7 +90,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -e ".[dev]"
-          pip install "nbdev>=3.0.0" "jupyterlab>=4.0.0"
+          pip install "nbdev==3.3.2" "jupyterlab>=4.0.0"
 
       - name: Run notebook tests
         run: nbdev-test --do_print --timing

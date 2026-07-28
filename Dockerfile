@@ -24,7 +24,7 @@ RUN pip install --upgrade pip setuptools wheel
 # Install nbdev and dev tools BEFORE copying project files
 # so this expensive layer is cached independently of code changes
 RUN pip install \
-    nbdev>=3.0.0 \
+    nbdev==3.3.2 \
     jupyterlab>=4.0.0 \
     black>=23.7.0 \
     isort>=5.12.0 \
