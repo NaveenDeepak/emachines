@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 
 # %% auto #0
-__all__ = ['SAMPLE_BH', 'SAMPLE_LOSS', 'SteelGrade', 'load_literature_database', 'get_steel_library']
+__all__ = ['SAMPLE_BH', 'SAMPLE_LOSS', 'SteelGrade', 'SteelDatabase', 'load_literature_database', 'get_steel_library']
 
 # %% ../../nbs/03_electrical_steel.ipynb #e70d1604
 @dataclass
@@ -49,12 +49,125 @@ class SteelGrade:
         subset = self.loss_data[self.loss_data["frequency [Hz]"] == freq].sort_values(b_col)
         return float(np.interp(B, subset[b_col].values, subset[loss_col].values))
 
+# %% ../../nbs/03_electrical_steel.ipynb #d4e5f6a7
+class SteelDatabase:
+    """
+    Unified loader for electrical steel manufacturer data.
+
+    Supports Voestalpine (isovac), ThyssenKrupp (PowerCore), and SURA grades.
+    Data is loaded from pickle caches on first access and cached in memory.
+
+    Args:
+        data_dir: Path to the datasheets root directory.
+    """
+    _CACHE_SUBDIR = 'steel_data_cache'
+    _VOEST_SUBDIR = 'Voelstapine Electrical Steel'
+
+    def __init__(self, data_dir: str) -> None:
+        self._data_dir = Path(data_dir)
+        self._cache_dir = self._data_dir / self._CACHE_SUBDIR
+        self._voest_dir = self._data_dir / self._VOEST_SUBDIR
+        self._index: dict[str, tuple[str, str]] | None = None
+
+    def _build_index(self) -> dict[str, tuple[str, str]]:
+        index: dict[str, tuple[str, str]] = {}
+        if self._voest_dir.exists():
+            for f in os.listdir(self._voest_dir):
+                if f.endswith('.xlsx') and f.startswith('Simulation-data-isovac'):
+                    parts = f.replace('Simulation-data-', '').replace('-voestalpine', '').split('-')
+                    if len(parts) >= 2:
+                        grade = f'ISOVAC{parts[0]} {parts[1]}'
+                        index[grade] = ('voestalpine', str(self._voest_dir / f))
+        if self._cache_dir.exists():
+            for f in os.listdir(self._cache_dir):
+                if not f.endswith('.pkl'):
+                    continue
+                pkl_path = str(self._cache_dir / f)
+                try:
+                    with open(pkl_path, 'rb') as fh:
+                        data = pickle.load(fh)
+                    grade = data.get('grade')
+                    if not grade:
+                        continue
+                    if 'powercore' in f.lower():
+                        index[grade] = ('thyssenkrupp', pkl_path)
+                    elif f.lower().startswith('sura_'):
+                        index[grade] = ('sura', pkl_path)
+                except Exception:
+                    pass
+        return index
+
+    @property
+    def index(self) -> dict[str, tuple[str, str]]:
+        if self._index is None:
+            self._index = self._build_index()
+        return self._index
+
+    @property
+    def grades(self) -> list[str]:
+        return sorted(self.index.keys())
+
+    @property
+    def manufacturers(self) -> dict[str, list[str]]:
+        result: dict[str, list[str]] = {}
+        for grade, (mfr, _) in self.index.items():
+            result.setdefault(mfr, []).append(grade)
+        return {k: sorted(v) for k, v in result.items()}
+
+    @functools.lru_cache(maxsize=64)
+    def load(self, grade: str) -> 'SteelGrade':
+        """Load a grade by name. Cached in memory."""
+        if grade not in self.index:
+            raise KeyError(f"Grade '{grade}' not found. Available: {self.grades}")
+        mfr, path = self.index[grade]
+        bh_df, loss_df = self._load_file(path)
+        return SteelGrade(name=grade, manufacturer=mfr, bh_data=bh_df, loss_data=loss_df, source_file=path)
+
+    def _load_file(self, path: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+        p = Path(path)
+        if p.suffix == '.pkl':
+            return self._from_pickle(p)
+        cache_path = self._cache_dir / (p.stem + '.pkl')
+        if cache_path.exists():
+            return self._from_pickle(cache_path)
+        return self._from_excel(p)
+
+    @staticmethod
+    def _from_pickle(path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
+        with open(path, 'rb') as f:
+            d = pickle.load(f)
+        return d.get('bh_data', pd.DataFrame()), d.get('loss_data', pd.DataFrame())
+
+    @staticmethod
+    def _from_excel(path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
+        mu0 = 4 * np.pi * 1e-7
+        try:
+            xls = pd.ExcelFile(path, engine='openpyxl')
+            sheet = next((n for n in xls.sheet_names if n.lower() in ('simulation data', 'datasheet')), None)
+            if sheet is None:
+                return pd.DataFrame(), pd.DataFrame()
+            df = pd.read_excel(path, sheet_name=sheet, header=1, engine='openpyxl')
+            df = df[:-2].dropna(subset=['grade'])
+            bh   = df[df['frequency [Hz]'] == 0].copy()
+            loss = df[df['frequency [Hz]'] > 0].copy()
+            for part in (bh, loss):
+                if part.empty:
+                    continue
+                if 'permeability µr [1]' in part.columns:
+                    part['B [T]'] = part['permeability µr [1]'] * mu0 * part['field strength H [A/m]']
+                else:
+                    part['B [T]'] = mu0 * part['field strength H [A/m]'] + part['polarisation J [T]']
+            return bh, loss
+        except Exception:
+            return pd.DataFrame(), pd.DataFrame()
+
+
 # %% ../../nbs/03_electrical_steel.ipynb #eea0b7f7
 # Note: The SteelDatabase class in the compiled module handles
 # loading steel data from the literature folder.
 # This section demonstrates how to use it.
 
-def load_literature_database(literature_path: str | Path = None) -> 'SteelDatabase':
+def load_literature_database(literature_path: str | Path | None = None) -> 'SteelDatabase':
     """
     Create a SteelDatabase instance from the literature folder.
     
@@ -114,7 +227,7 @@ def load_literature_database(literature_path: str | Path = None) -> 'SteelDataba
             f"Expected structure: KnowledgeBase/literature/datasheets/"
         )
     
-    return SteelDatabase(str(literature_path))
+    return SteelDatabase(str(literature_path))  # type: ignore[arg-type]
 
 # %% ../../nbs/03_electrical_steel.ipynb #408bea4c
 # Load all real steel grades from literature
@@ -140,7 +253,7 @@ def get_steel_library(reload: bool = False) -> dict[str, 'SteelGrade']:
     global _LITERATURE_STEELS
     if reload or not _LITERATURE_STEELS:
         try:
-            _LITERATURE_STEELS = load_literature_steels()
+            _LITERATURE_STEELS = load_literature_database()
         except FileNotFoundError:
             print("Warning: Literature folder not found. Using sample data only.")
             _LITERATURE_STEELS = {}

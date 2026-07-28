@@ -69,3 +69,15 @@ branch = "main"
 git_url = "https://github.com/NaveenDeepak/emachines"
 min_python = "3.10"
 
+
+[tool.mypy]
+ignore_missing_imports = true
+disable_error_code = ["no-redef", "var-annotated"]
+
+[[tool.mypy.overrides]]
+module = "emachines.mec.mec"
+disable_error_code = ["name-defined"]
+
+[[tool.mypy.overrides]]
+module = "emachines.magnetics.electrical_steel"
+disable_error_code = ["name-defined", "assignment", "union-attr"]

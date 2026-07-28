@@ -13,7 +13,5 @@ __all__ = []
 # %% ../nbs/00_init.ipynb #c3d4e5f6
 """emachines — Analytical electromechanical machine design library."""
 
-from typing import List
-
 __version__ = "0.6.0"
-__all__: List[str] = []
+

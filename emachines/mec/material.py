@@ -167,7 +167,7 @@ class ShanesudhoffModel(PermeabilityModel):
         a,  # Sequence[float]
         b,  # Sequence[float]
         gamma,  # Sequence[float]
-        mu0: float = None,
+        mu0: float | None = None,
     ) -> None:
         if mu0 is None:
             mu0 = MU0
