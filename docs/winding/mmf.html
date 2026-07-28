@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>MMF Analysis of AC Windings – emachines</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-2781e67094e4fa2fc9b7ed98c653280b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="MMF Analysis of AC Windings – emachines">
+<meta property="og:description" content="Analytical electromechanical machine design library">
+<meta property="og:site_name" content="emachines">
+<meta name="twitter:title" content="MMF Analysis of AC Windings – emachines">
+<meta name="twitter:description" content="Analytical electromechanical machine design library">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">emachines</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../winding/factors.html">winding</a></li><li class="breadcrumb-item"><a href="../winding/mmf.html">MMF Analysis of AC Windings</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">emachines</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../init.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">emachines root package</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">magnetics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../magnetics/bh_models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">BH Curve Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../magnetics/electrical_steel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Electrical Steel Database</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../magnetics/iron_loss.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Iron Loss Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../magnetics/pm_materials.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Permanent Magnet Materials</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../magnetics/api.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Magnetics Public API</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">mec</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../mec/material_models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Permeability Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../mec/solver.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Magnetic Equivalent Circuit (MEC) Solver</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../mec/api.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MEC Public API</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../mec/results.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MEC Solution and Results</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">motors</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../motors/01_pmsm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Back-EMF (Electromotive Force)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../motors/dc_motors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DC Motors</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../motors/api.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Motors Public API</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">winding</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../winding/factors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Winding Factors and Harmonic Spectrum</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../winding/mmf.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">MMF Analysis of AC Windings</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../winding/sos.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Star-of-Slots Winding Layout</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../winding/api.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Winding Public API</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#executive-summary" id="toc-executive-summary" class="nav-link active" data-scroll-target="#executive-summary">Executive Summary</a>
+  <ul class="collapse">
+  <li><a href="#why-it-matters" id="toc-why-it-matters" class="nav-link" data-scroll-target="#why-it-matters">Why It Matters</a></li>
+  </ul></li>
+  <li><a href="#how-it-fits-into-motor-design" id="toc-how-it-fits-into-motor-design" class="nav-link" data-scroll-target="#how-it-fits-into-motor-design">How It Fits Into Motor Design</a></li>
+  <li><a href="#what-you-provide-inputs" id="toc-what-you-provide-inputs" class="nav-link" data-scroll-target="#what-you-provide-inputs">What You Provide (Inputs)</a></li>
+  <li><a href="#what-you-get-outputs" id="toc-what-you-get-outputs" class="nav-link" data-scroll-target="#what-you-get-outputs">What You Get (Outputs)</a>
+  <ul class="collapse">
+  <li><a href="#quick-example" id="toc-quick-example" class="nav-link" data-scroll-target="#quick-example">Quick Example</a></li>
+  </ul></li>
+  <li><a href="#abbreviations-and-notation" id="toc-abbreviations-and-notation" class="nav-link" data-scroll-target="#abbreviations-and-notation">Abbreviations and Notation</a></li>
+  <li><a href="#imports-and-setup" id="toc-imports-and-setup" class="nav-link" data-scroll-target="#imports-and-setup">Imports and Setup</a></li>
+  <li><a href="#background-mmf-in-ac-windings" id="toc-background-mmf-in-ac-windings" class="nav-link" data-scroll-target="#background-mmf-in-ac-windings">Background: MMF in AC Windings</a></li>
+  <li><a href="#mmf_distribution-ampere-conductor-distribution" id="toc-mmf_distribution-ampere-conductor-distribution" class="nav-link" data-scroll-target="#mmf_distribution-ampere-conductor-distribution"><code>mmf_distribution</code>: Ampere-Conductor Distribution</a>
+  <ul class="collapse">
+  <li><a href="#theory" id="toc-theory" class="nav-link" data-scroll-target="#theory">Theory</a></li>
+  <li><a href="#mmf_distribution-implementation" id="toc-mmf_distribution-implementation" class="nav-link" data-scroll-target="#mmf_distribution-implementation"><code>mmf_distribution</code>: Implementation</a></li>
+  <li><a href="#mmf_distribution" id="toc-mmf_distribution" class="nav-link" data-scroll-target="#mmf_distribution">mmf_distribution</a></li>
+  <li><a href="#mmf_distribution-example" id="toc-mmf_distribution-example" class="nav-link" data-scroll-target="#mmf_distribution-example"><code>mmf_distribution</code>: Example</a></li>
+  </ul></li>
+  <li><a href="#mmf_waveform-mmf-staircase" id="toc-mmf_waveform-mmf-staircase" class="nav-link" data-scroll-target="#mmf_waveform-mmf-staircase"><code>mmf_waveform</code>: MMF Staircase</a>
+  <ul class="collapse">
+  <li><a href="#theory-1" id="toc-theory-1" class="nav-link" data-scroll-target="#theory-1">Theory</a></li>
+  <li><a href="#mmf_waveform-implementation" id="toc-mmf_waveform-implementation" class="nav-link" data-scroll-target="#mmf_waveform-implementation"><code>mmf_waveform</code>: Implementation</a></li>
+  <li><a href="#mmf_waveform" id="toc-mmf_waveform" class="nav-link" data-scroll-target="#mmf_waveform">mmf_waveform</a></li>
+  <li><a href="#mmf_waveform-example-effect-of-electrical-time-angle" id="toc-mmf_waveform-example-effect-of-electrical-time-angle" class="nav-link" data-scroll-target="#mmf_waveform-example-effect-of-electrical-time-angle"><code>mmf_waveform</code>: Example — Effect of Electrical Time Angle</a></li>
+  </ul></li>
+  <li><a href="#winding_factor_spectrum-winding-factor-vs.-harmonic-order" id="toc-winding_factor_spectrum-winding-factor-vs.-harmonic-order" class="nav-link" data-scroll-target="#winding_factor_spectrum-winding-factor-vs.-harmonic-order"><code>winding_factor_spectrum</code>: Winding Factor vs.&nbsp;Harmonic Order</a>
+  <ul class="collapse">
+  <li><a href="#theory-2" id="toc-theory-2" class="nav-link" data-scroll-target="#theory-2">Theory</a></li>
+  <li><a href="#winding_factor_spectrum-implementation" id="toc-winding_factor_spectrum-implementation" class="nav-link" data-scroll-target="#winding_factor_spectrum-implementation"><code>winding_factor_spectrum</code>: Implementation</a></li>
+  <li><a href="#winding_factor_spectrum-example-integer-slot-vs.-fscw" id="toc-winding_factor_spectrum-example-integer-slot-vs.-fscw" class="nav-link" data-scroll-target="#winding_factor_spectrum-example-integer-slot-vs.-fscw"><code>winding_factor_spectrum</code>: Example — Integer-slot vs.&nbsp;FSCW</a></li>
+  </ul></li>
+  <li><a href="#mmf_harmonics-mmf-harmonic-amplitude-spectrum" id="toc-mmf_harmonics-mmf-harmonic-amplitude-spectrum" class="nav-link" data-scroll-target="#mmf_harmonics-mmf-harmonic-amplitude-spectrum"><code>mmf_harmonics</code>: MMF Harmonic Amplitude Spectrum</a>
+  <ul class="collapse">
+  <li><a href="#theory-3" id="toc-theory-3" class="nav-link" data-scroll-target="#theory-3">Theory</a></li>
+  <li><a href="#mmf_harmonics-implementation" id="toc-mmf_harmonics-implementation" class="nav-link" data-scroll-target="#mmf_harmonics-implementation"><code>mmf_harmonics</code>: Implementation</a></li>
+  <li><a href="#mmf_harmonics" id="toc-mmf_harmonics" class="nav-link" data-scroll-target="#mmf_harmonics">mmf_harmonics</a></li>
+  <li><a href="#mmf_harmonics-example-single-layer-vs.-double-layer" id="toc-mmf_harmonics-example-single-layer-vs.-double-layer" class="nav-link" data-scroll-target="#mmf_harmonics-example-single-layer-vs.-double-layer"><code>mmf_harmonics</code>: Example — Single-layer vs.&nbsp;Double-layer</a></li>
+  <li><a href="#mmf_harmonics-comprehensive-comparison-integer-slot-vs.-fscw" id="toc-mmf_harmonics-comprehensive-comparison-integer-slot-vs.-fscw" class="nav-link" data-scroll-target="#mmf_harmonics-comprehensive-comparison-integer-slot-vs.-fscw"><code>mmf_harmonics</code>: Comprehensive comparison — Integer-slot vs.&nbsp;FSCW</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  <li><a href="#tests" id="toc-tests" class="nav-link" data-scroll-target="#tests">Tests</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/NaveenDeepak/emachines/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div><div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="mmf.html.md"><i class="bi bi-file-code"></i>Markdown</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../winding/factors.html">winding</a></li><li class="breadcrumb-item"><a href="../winding/mmf.html">MMF Analysis of AC Windings</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">MMF Analysis of AC Windings</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<section id="executive-summary" class="level2">
+<h2 class="anchored" data-anchor-id="executive-summary">Executive Summary</h2>
+<p>This notebook computes the <strong>magnetomotive force (MMF) waveform and harmonic spectrum</strong> produced by an AC stator winding.</p>
+<section id="why-it-matters" class="level3">
+<h3 class="anchored" data-anchor-id="why-it-matters">Why It Matters</h3>
+<p>The spatial shape of the airgap MMF directly determines: - <strong>Torque production</strong> — the working harmonic (ν = p) drives the fundamental torque. - <strong>Torque ripple</strong> — sub- and super-harmonics create pulsating torque components. - <strong>Rotor losses</strong> — higher-order harmonics induce eddy currents in the rotor magnets and back-iron, causing heating and efficiency loss. - <strong>Acoustic noise</strong> — MMF harmonics that coincide with structural resonances generate audible noise.</p>
+<p>Designers use the MMF spectrum to compare winding configurations, choose slot/pole combinations, and decide between single- and double-layer layouts before running finite-element analysis.</p>
+</section>
+</section>
+<section id="how-it-fits-into-motor-design" class="level2">
+<h2 class="anchored" data-anchor-id="how-it-fits-into-motor-design">How It Fits Into Motor Design</h2>
+<pre><code>emachines workflow:
+
+  01_winding.ipynb
+  (winding factors, star-of-slots)
+        │
+        ▼
+  01_winding_mmf.ipynb   ←── YOU ARE HERE
+  (MMF waveform &amp; spectrum)
+        │
+        ▼
+  02_pmsm.ipynb          (torque, back-EMF via kw and MMF)
+  04_mec_solver.ipynb    (flux linkage in magnetic circuit)</code></pre>
+<p><strong>Depends on:</strong> <code>01_winding.ipynb</code> — uses <code>build_coil_matrix</code>, <code>get_valid_coil_spans</code> from <code>emachines.winding.sos</code>.</p>
+<p><strong>Feeds into:</strong> <code>02_pmsm.ipynb</code>, <code>04_mec_solver.ipynb</code>.</p>
+</section>
+<section id="what-you-provide-inputs" class="level2">
+<h2 class="anchored" data-anchor-id="what-you-provide-inputs">What You Provide (Inputs)</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 14%">
+<col style="width: 24%">
+<col style="width: 12%">
+<col style="width: 27%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Symbol</th>
+<th>Description</th>
+<th>Units</th>
+<th>Typical Range</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Stator slots</td>
+<td>Q</td>
+<td>Total number of stator slots</td>
+<td>—</td>
+<td>6 – 72</td>
+</tr>
+<tr class="even">
+<td>Poles</td>
+<td>P</td>
+<td>Number of poles (even)</td>
+<td>—</td>
+<td>2 – 20</td>
+</tr>
+<tr class="odd">
+<td>Phases</td>
+<td>m</td>
+<td>Number of phases</td>
+<td>—</td>
+<td>3 (three-phase)</td>
+</tr>
+<tr class="even">
+<td>Layers</td>
+<td>layers</td>
+<td>Single- or double-layer winding</td>
+<td>—</td>
+<td>1 or 2</td>
+</tr>
+<tr class="odd">
+<td>Coil span</td>
+<td>w</td>
+<td>Span of each coil in slots</td>
+<td>slots</td>
+<td>1 – Q/p</td>
+</tr>
+<tr class="even">
+<td>Time angle</td>
+<td>θ_e</td>
+<td>Electrical time angle</td>
+<td>rad</td>
+<td>0 – 2π</td>
+</tr>
+<tr class="odd">
+<td>Mode</td>
+<td>mode</td>
+<td><code>"three_phase"</code>, <code>"single_phase"</code>, <code>"winding_factor"</code></td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>Max harmonic</td>
+<td>nu_max</td>
+<td>Highest spatial harmonic to evaluate</td>
+<td>—</td>
+<td>20 – 50</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="what-you-get-outputs" class="level2">
+<h2 class="anchored" data-anchor-id="what-you-get-outputs">What You Get (Outputs)</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 32%">
+<col style="width: 32%">
+<col style="width: 36%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Result</th>
+<th>Symbol</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Conductor distribution</td>
+<td>n[i]</td>
+<td>Signed A·turns per slot at angle θ_e</td>
+</tr>
+<tr class="even">
+<td>MMF waveform</td>
+<td>F(θ)</td>
+<td>Staircase MMF along the airgap</td>
+</tr>
+<tr class="odd">
+<td>Winding factor spectrum</td>
+<td>kw(ν)</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>MMF harmonic amplitudes</td>
+<td>F̂(ν)</td>
+<td>kw(ν)·p/ν, balanced 3-phase cancellation applied</td>
+</tr>
+</tbody>
+</table>
+<section id="quick-example" class="level3">
+<h3 class="anchored" data-anchor-id="quick-example">Quick Example</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> emachines.winding.mmf <span class="im">import</span> mmf_waveform, mmf_harmonics</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 12-slot / 10-pole double-layer FSCW at θ_e = 0</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>angles, F <span class="op">=</span> mmf_waveform(<span class="dv">12</span>, <span class="dv">10</span>, layers<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Three-phase MMF harmonic spectrum, normalised</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>nu, amp <span class="op">=</span> mmf_harmonics(<span class="dv">12</span>, <span class="dv">10</span>, layers<span class="op">=</span><span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="abbreviations-and-notation" class="level2">
+<h2 class="anchored" data-anchor-id="abbreviations-and-notation">Abbreviations and Notation</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Symbol</th>
+<th>Definition</th>
+<th>Units</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Q</td>
+<td>Number of stator slots</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>P</td>
+<td>Number of poles</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td>p</td>
+<td>Pole pairs, p = P/2</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>m</td>
+<td>Number of phases</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td>ν</td>
+<td>Mechanical spatial harmonic order</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>w</td>
+<td>Coil span in slots</td>
+<td>slots</td>
+</tr>
+<tr class="odd">
+<td>θ_e</td>
+<td>Electrical time angle</td>
+<td>rad</td>
+</tr>
+<tr class="even">
+<td>n_i</td>
+<td>Signed ampere-conductor value at slot i</td>
+<td>A·turns (pu)</td>
+</tr>
+<tr class="odd">
+<td>F(θ)</td>
+<td>MMF waveform along the airgap</td>
+<td>A·turns (pu)</td>
+</tr>
+<tr class="even">
+<td>kw(ν)</td>
+<td>Winding factor magnitude at harmonic ν</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td>F̂(ν)</td>
+<td>MMF harmonic amplitude = kw(ν)·p/ν</td>
+<td>A·turns (pu)</td>
+</tr>
+<tr class="even">
+<td>t</td>
+<td>Winding periodicity = gcd(Q, p)</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="imports-and-setup" class="level2">
+<h2 class="anchored" data-anchor-id="imports-and-setup">Imports and Setup</h2>
+</section>
+<section id="background-mmf-in-ac-windings" class="level2">
+<h2 class="anchored" data-anchor-id="background-mmf-in-ac-windings">Background: MMF in AC Windings</h2>
+<p>When alternating current flows through a stator winding, each conductor contributes a localised magnetomotive force proportional to the current it carries and its winding direction. Summing these contributions around the airgap circumference via Ampere’s law yields the <strong>MMF waveform</strong> F(θ).</p>
+<p>For a sinusoidal balanced three-phase supply: <span class="math display">\[
+i_k(\theta_e) = \hat{I}\cos\!\left(\theta_e - \frac{2\pi k}{m}\right),\quad k = 0,1,\ldots,m-1
+\]</span></p>
+<p>The MMF waveform is computed in three steps:</p>
+<ol type="1">
+<li><strong>Slot assignment</strong> — <code>build_coil_matrix</code> maps each slot conductor to a phase and current direction.</li>
+<li><strong>Ampere-conductor distribution</strong> — multiply signed conductor occupancy by instantaneous phase currents to get n[i] at each slot.</li>
+<li><strong>Cumulative sum</strong> — integrate n[i] around the circumference (Ampere’s law) and remove the DC offset.</li>
+</ol>
+<p>The resulting staircase is then decomposed by spatial Fourier analysis into its harmonic spectrum.</p>
+<hr>
+</section>
+<section id="mmf_distribution-ampere-conductor-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="mmf_distribution-ampere-conductor-distribution"><code>mmf_distribution</code>: Ampere-Conductor Distribution</h2>
+<section id="theory" class="level3">
+<h3 class="anchored" data-anchor-id="theory">Theory</h3>
+<p>The <strong>ampere-conductor distribution</strong> n(θ) is a step function that equals the net signed conductor current at each slot position:</p>
+<p><span class="math display">\[
+n_i = \sum_{\text{layer}} \operatorname{sign}(\text{code}_{i,\text{layer}}) \cdot i_{\,|\text{code}|-1}(\theta_e)
+\]</span></p>
+<p>where <code>code</code> is the signed conductor occupancy from <code>build_coil_matrix</code> (+k = phase k forward, −k = phase k return), and <span class="math inline">\(i_k(\theta_e)\)</span> is the instantaneous current of phase k.</p>
+<p><strong>Physical meaning:</strong> n(θ) is the “source density” of MMF. The MMF itself is its spatial running integral (cumulative sum around the bore).</p>
+<p><strong>Design insight:</strong> The distribution of conductors across slots determines which spatial harmonics are present and how strongly. Distributed windings spread conductors to suppress low-order harmonics; concentrated windings concentrate them for high torque density at the cost of richer harmonic content.</p>
+<p><strong>References:</strong> Pyrhönen et al.&nbsp;(2014), §2.4; Müller, Vogt &amp; Ponick (2008), §3.4.</p>
+</section>
+<section id="mmf_distribution-implementation" class="level3">
+<h3 class="anchored" data-anchor-id="mmf_distribution-implementation"><code>mmf_distribution</code>: Implementation</h3>
+<hr>
+</section>
+<section id="mmf_distribution" class="level3">
+<h3 class="anchored" data-anchor-id="mmf_distribution">mmf_distribution</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mmf_distribution(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    Q:<span class="bu">int</span>, P:<span class="bu">int</span>, m:<span class="bu">int</span><span class="op">=</span><span class="dv">3</span>, layers:<span class="bu">int</span><span class="op">=</span><span class="dv">1</span>, w:<span class="bu">int</span> <span class="op">|</span> <span class="va">None</span><span class="op">=</span><span class="va">None</span>, <span class="co"># Coil span in slots. ``None`` → coil span that</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># maximises the fundamental winding factor.</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    theta_electrical:<span class="bu">float</span><span class="op">=</span><span class="fl">0.0</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span>np.ndarray: <span class="co"># Signed ampere-conductor value at each slot. Per-unit (peak = 1 A·turn).</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Instantaneous signed ampere-conductor distribution along the airgap.</em></p>
+<p>For each slot position <em>i</em> (mechanical angle θᵢ = 2π·i/Q), <code>n[i]</code> is the sum of signed conductor currents across all winding layers:</p>
+<p>.. math:: n_i = <em>{} (</em>{i,}) i_{,||-1}(_e)</p>
+</section>
+<section id="mmf_distribution-example" class="level3">
+<h3 class="anchored" data-anchor-id="mmf_distribution-example"><code>mmf_distribution</code>: Example</h3>
+<div id="f83b50b5" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> emachines.winding.mmf <span class="im">import</span> mmf_distribution</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 12s/10p double-layer FSCW at θ_e = 0  (phase A at positive peak)</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> mmf_distribution(<span class="dv">12</span>, <span class="dv">10</span>, layers<span class="op">=</span><span class="dv">2</span>, theta_electrical<span class="op">=</span><span class="fl">0.0</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"12-slot / 10-pole double-layer FSCW, θ_e = 0°"</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Slot conductors: </span><span class="sc">{</span>np<span class="sc">.</span><span class="bu">round</span>(n, <span class="dv">4</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Sum (should be ≈ 0): </span><span class="sc">{</span>n<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:.2e}</span><span class="ss">"</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Interpretation: positive = net A·turns in forward direction,"</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"                negative = net A·turns in return direction."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>12-slot / 10-pole double-layer FSCW, θ_e = 0°
+Slot conductors: [ 2.  -1.5  1.  -1.   1.   0.5 -2.   1.5 -1.   1.  -1.  -0.5]
+Sum (should be ≈ 0): 0.00e+00
+
+Interpretation: positive = net A·turns in forward direction,
+                negative = net A·turns in return direction.</code></pre>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="mmf_waveform-mmf-staircase" class="level2">
+<h2 class="anchored" data-anchor-id="mmf_waveform-mmf-staircase"><code>mmf_waveform</code>: MMF Staircase</h2>
+<section id="theory-1" class="level3">
+<h3 class="anchored" data-anchor-id="theory-1">Theory</h3>
+<p>The MMF waveform is obtained by applying Ampere’s law around the stator bore. Integrating the ampere-conductor distribution n(θ) in the positive θ direction gives:</p>
+<p><span class="math display">\[
+F(\theta_i) = \sum_{j=0}^{i-1} n_j - \overline{F}
+\]</span></p>
+<p>where <span class="math inline">\(\overline{F}\)</span> is the spatial mean, subtracted to enforce zero net MMF around the closed path (no DC offset).</p>
+<p>The result is a <strong>staircase waveform</strong> — constant between slots, stepping at each slot opening. In the limit of many slots (large Q) it approaches a sinusoid; for concentrated windings with few slots per phase it is highly non-sinusoidal.</p>
+<p><strong>Design insight:</strong> The ratio of fundamental amplitude to harmonic content directly determines torque quality. A near-sinusoidal MMF (many slots, distributed winding) gives low ripple; a square-wave MMF (concentrated winding) is rich in harmonics but simpler to manufacture.</p>
+<p><strong>References:</strong> Pyrhönen et al.&nbsp;(2014), §2.4, eq. (2.73); Müller, Vogt &amp; Ponick (2008), §3.4.</p>
+</section>
+<section id="mmf_waveform-implementation" class="level3">
+<h3 class="anchored" data-anchor-id="mmf_waveform-implementation"><code>mmf_waveform</code>: Implementation</h3>
+<hr>
+</section>
+<section id="mmf_waveform" class="level3">
+<h3 class="anchored" data-anchor-id="mmf_waveform">mmf_waveform</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mmf_waveform(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    Q:<span class="bu">int</span>, P:<span class="bu">int</span>, m:<span class="bu">int</span><span class="op">=</span><span class="dv">3</span>, layers:<span class="bu">int</span><span class="op">=</span><span class="dv">1</span>, w:<span class="bu">int</span> <span class="op">|</span> <span class="va">None</span><span class="op">=</span><span class="va">None</span>, theta_electrical:<span class="bu">float</span><span class="op">=</span><span class="fl">0.0</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="bu">tuple</span>[np.ndarray, np.ndarray]: <span class="co"># Mechanical angles in degrees, 0° … 360° inclusive.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Instantaneous MMF staircase waveform along the airgap.</em></p>
+<p>Applies Ampere’s law around the stator bore: the MMF at mechanical angle θ equals the cumulative sum of ampere-conductors from slot 0 up to the slot preceding θ, with the DC offset removed.</p>
+<p>.. math:: F(<em>i) = </em>{j=0}^{i-1} n_j - </p>
+<p>The staircase is returned <em>closed</em> (first point repeated at 360°) for direct use in step-line plots.</p>
+</section>
+<section id="mmf_waveform-example-effect-of-electrical-time-angle" class="level3">
+<h3 class="anchored" data-anchor-id="mmf_waveform-example-effect-of-electrical-time-angle"><code>mmf_waveform</code>: Example — Effect of Electrical Time Angle</h3>
+<div id="c3c28e3f" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> emachines.winding.mmf <span class="im">import</span> mmf_waveform</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"MMF waveform at three electrical time angles"</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"12-slot / 10-pole double-layer FSCW"</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> theta_deg <span class="kw">in</span> [<span class="dv">0</span>, <span class="dv">30</span>, <span class="dv">90</span>]:</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    angles, F <span class="op">=</span> mmf_waveform(<span class="dv">12</span>, <span class="dv">10</span>, layers<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>                              theta_electrical<span class="op">=</span>np.radians(theta_deg))</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  θ_e = </span><span class="sc">{</span>theta_deg<span class="sc">:3d}</span><span class="ss">°  |  peak MMF = </span><span class="sc">{</span>np<span class="sc">.</span><span class="bu">max</span>(np.<span class="bu">abs</span>(F[:<span class="op">-</span><span class="dv">1</span>]))<span class="sc">:.4f}</span><span class="ss"> pu"</span>)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Observation: the peak MMF is the same at all time angles (rotating wave)."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>MMF waveform at three electrical time angles
+12-slot / 10-pole double-layer FSCW
+
+  θ_e =   0°  |  peak MMF = 1.0000 pu
+  θ_e =  30°  |  peak MMF = 0.8660 pu
+  θ_e =  90°  |  peak MMF = 0.8660 pu
+
+Observation: the peak MMF is the same at all time angles (rotating wave).</code></pre>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="winding_factor_spectrum-winding-factor-vs.-harmonic-order" class="level2">
+<h2 class="anchored" data-anchor-id="winding_factor_spectrum-winding-factor-vs.-harmonic-order"><code>winding_factor_spectrum</code>: Winding Factor vs.&nbsp;Harmonic Order</h2>
+<section id="theory-2" class="level3">
+<h3 class="anchored" data-anchor-id="theory-2">Theory</h3>
+<p>The winding factor for mechanical harmonic ν is the ratio of the actual phasor sum of conductor voltages to the arithmetic sum (i.e.&nbsp;the ideal case where all conductors are in one slot):</p>
+<p><span class="math display">\[
+k_{w\nu} = \frac{1}{m} \sum_{k=0}^{m-1}
+           \frac{\left|\displaystyle\sum_{i,\,\text{lyr}} s_{i,\text{lyr}}
+           \cdot e^{j\,\nu\,\frac{2\pi i}{Q}}\right|}{N_k}
+\]</span></p>
+<p>where the inner sum runs over all conductors (across all layers) of phase k, <span class="math inline">\(s_{i,\text{lyr}} \in \{+1,-1\}\)</span> is the conductor direction, and <span class="math inline">\(N_k\)</span> is the total conductor count for phase k.</p>
+<p><strong>Mechanical vs.&nbsp;electrical harmonics:</strong> ν is the <em>mechanical</em> harmonic order — the number of complete cycles of the waveform around the full 360° mechanical circumference. The <em>working harmonic</em> (the one that produces torque with P poles) is at <strong>ν = p = P/2</strong>.</p>
+<p><strong>Design insight:</strong> Harmonics with high kw(ν) are efficiently produced. For a PMSM, harmonics other than ν = p are parasitic — they store reactive energy and cause rotor losses. A good winding has kw(p) ≈ 0.9–1.0 and kw(ν) ≈ 0 for all other significant ν.</p>
+<p><strong>References:</strong> Bianchi &amp; Bolognani (2002); Müller, Vogt &amp; Ponick (2008), eq. (3.65).</p>
+</section>
+<section id="winding_factor_spectrum-implementation" class="level3">
+<h3 class="anchored" data-anchor-id="winding_factor_spectrum-implementation"><code>winding_factor_spectrum</code>: Implementation</h3>
+<div id="3a7b2e0f" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># winding_factor_spectrum is defined in emachines.winding.winding_factors</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># and imported into this module via the setup cell above.</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># It is re-exported from emachines.winding for convenience.</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> emachines.winding.winding_factors <span class="im">import</span> winding_factor_spectrum  <span class="co"># noqa: F401</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="winding_factor_spectrum-example-integer-slot-vs.-fscw" class="level3">
+<h3 class="anchored" data-anchor-id="winding_factor_spectrum-example-integer-slot-vs.-fscw"><code>winding_factor_spectrum</code>: Example — Integer-slot vs.&nbsp;FSCW</h3>
+<div id="a0f1f832" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> emachines.winding.mmf <span class="im">import</span> winding_factor_spectrum</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>configs <span class="op">=</span> [</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">dict</span>(Q<span class="op">=</span><span class="dv">24</span>, P<span class="op">=</span><span class="dv">4</span>,  layers<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">"24s/4p  integer-slot (q=2)"</span>),</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">dict</span>(Q<span class="op">=</span><span class="dv">12</span>, P<span class="op">=</span><span class="dv">10</span>, layers<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">"12s/10p FSCW (q=2/5)"</span>),</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">dict</span>(Q<span class="op">=</span><span class="dv">9</span>,  P<span class="op">=</span><span class="dv">8</span>,  layers<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">"9s/8p   FSCW (q=3/8)"</span>),</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="st">'Harmonic ν'</span><span class="sc">:&gt;12}</span><span class="ss">"</span>, end<span class="op">=</span><span class="st">""</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> cfg <span class="kw">in</span> configs:</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>cfg[<span class="st">'label'</span>]<span class="sc">:&gt;28}</span><span class="ss">"</span>, end<span class="op">=</span><span class="st">""</span>)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"-"</span> <span class="op">*</span> <span class="dv">95</span>)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>nu_max <span class="op">=</span> <span class="dv">15</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>nu_arr <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> []</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> cfg <span class="kw">in</span> configs:</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    nu_arr, kw <span class="op">=</span> winding_factor_spectrum(cfg[<span class="st">"Q"</span>], cfg[<span class="st">"P"</span>], layers<span class="op">=</span>cfg[<span class="st">"layers"</span>], nu_max<span class="op">=</span>nu_max)</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    results.append((cfg, kw))</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, nu_i <span class="kw">in</span> <span class="bu">enumerate</span>(nu_arr):</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  ν = </span><span class="sc">{</span><span class="bu">int</span>(nu_i)<span class="sc">:&gt;3}</span><span class="ss">     "</span>, end<span class="op">=</span><span class="st">""</span>)</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> cfg_j, kw_j <span class="kw">in</span> results:</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>        val <span class="op">=</span> kw_j[i]</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>        marker <span class="op">=</span> <span class="st">" ←working"</span> <span class="cf">if</span> nu_i <span class="op">==</span> cfg_j[<span class="st">"P"</span>] <span class="op">//</span> <span class="dv">2</span> <span class="cf">else</span> <span class="st">""</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span><span class="st">''</span><span class="sc">:&gt;12}</span><span class="ss">kw = </span><span class="sc">{</span>val<span class="sc">:.4f}{</span>marker<span class="sc">}</span><span class="ss">"</span>, end<span class="op">=</span><span class="st">""</span>)</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  Harmonic ν    24s/4p  integer-slot (q=2)          12s/10p FSCW (q=2/5)          9s/8p   FSCW (q=3/8)
+-----------------------------------------------------------------------------------------------
+  ν =   1                   kw = 0.0000              kw = 0.0670              kw = 0.0607
+  ν =   2                   kw = 0.9659 ←working              kw = 0.0000              kw = 0.1398
+  ν =   3                   kw = 0.0000              kw = 0.5000              kw = 0.5774
+  ν =   4                   kw = 0.0000              kw = 0.0000              kw = 0.9452 ←working
+  ν =   5                   kw = 0.0000              kw = 0.9330 ←working              kw = 0.9452
+  ν =   6                   kw = 0.7071              kw = 0.0000              kw = 0.5774
+  ν =   7                   kw = 0.0000              kw = 0.9330              kw = 0.1398
+  ν =   8                   kw = 0.0000              kw = 0.0000              kw = 0.0607
+  ν =   9                   kw = 0.0000              kw = 0.5000              kw = 0.0000
+  ν =  10                   kw = 0.2588              kw = 0.0000              kw = 0.0607
+  ν =  11                   kw = 0.0000              kw = 0.0670              kw = 0.1398
+  ν =  12                   kw = 0.0000              kw = 0.0000              kw = 0.5774
+  ν =  13                   kw = 0.0000              kw = 0.0670              kw = 0.9452
+  ν =  14                   kw = 0.2588              kw = 0.0000              kw = 0.9452
+  ν =  15                   kw = 0.0000              kw = 0.5000              kw = 0.5774</code></pre>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="mmf_harmonics-mmf-harmonic-amplitude-spectrum" class="level2">
+<h2 class="anchored" data-anchor-id="mmf_harmonics-mmf-harmonic-amplitude-spectrum"><code>mmf_harmonics</code>: MMF Harmonic Amplitude Spectrum</h2>
+<section id="theory-3" class="level3">
+<h3 class="anchored" data-anchor-id="theory-3">Theory</h3>
+<p>The Fourier decomposition of the airgap MMF gives amplitude coefficients for each spatial harmonic ν. For a winding with winding factor kw(ν) and p pole pairs, the analytical result is:</p>
+<p><span class="math display">\[
+\hat{F}_\nu = \frac{k_{w\nu} \cdot p}{\nu}
+\]</span></p>
+<p>The factor <span class="math inline">\(p/\nu\)</span> arises because the MMF is the spatial integral of the conductor distribution: integrating <span class="math inline">\(\cos(\nu x)\)</span> yields <span class="math inline">\(\sin(\nu x)/\nu\)</span>, and multiplying by p normalises the working harmonic (ν = p) to kw₁.</p>
+<p><strong>Three-phase cancellation:</strong> In a balanced m-phase winding, certain harmonics cancel completely. For m = 3, harmonics where ν is a non-working multiple of 3 vanish in the balanced sum. However, the simple rule “ν % m == 0 → cancel” fails when p itself is divisible by m (e.g.&nbsp;9s/6p where p = 3). This implementation detects cancellation numerically by computing the complex m-phase phasor sum at each ν and checking whether both the forward- and backward-rotating components vanish.</p>
+<p><strong>Mode options:</strong> - <code>"three_phase"</code> — balanced m-phase MMF; zero-sequence harmonics cancelled (default, matches the website tool). - <code>"single_phase"</code> — single-phase MMF; all harmonics retained. - <code>"winding_factor"</code> — returns |kw(ν)| directly without the 1/ν weighting.</p>
+<p><strong>References:</strong> Pyrhönen et al.&nbsp;(2014), §2.4, eq. (2.98); Müller, Vogt &amp; Ponick (2008), eq. (3.65).</p>
+</section>
+<section id="mmf_harmonics-implementation" class="level3">
+<h3 class="anchored" data-anchor-id="mmf_harmonics-implementation"><code>mmf_harmonics</code>: Implementation</h3>
+<hr>
+</section>
+<section id="mmf_harmonics" class="level3">
+<h3 class="anchored" data-anchor-id="mmf_harmonics">mmf_harmonics</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mmf_harmonics(</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    Q:<span class="bu">int</span>, P:<span class="bu">int</span>, m:<span class="bu">int</span><span class="op">=</span><span class="dv">3</span>, layers:<span class="bu">int</span><span class="op">=</span><span class="dv">1</span>, w:<span class="bu">int</span> <span class="op">|</span> <span class="va">None</span><span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    mode:<span class="bu">str</span><span class="op">=</span><span class="st">'three_phase'</span>, <span class="co"># ``"three_phase"``    — balanced m-phase MMF; zero-sequence harmonics</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">#                        cancelled numerically (default).</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ``"single_phase"``   — single-phase MMF; all harmonics retained.</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ``"winding_factor"`` — returns |kw(ν)| with no 1/ν weighting.</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    nu_max:<span class="bu">int</span><span class="op">=</span><span class="dv">40</span>, normalize:<span class="bu">bool</span><span class="op">=</span><span class="va">True</span>, <span class="co"># ``True``  (default) — divide by the working-harmonic amplitude</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">#                       so the working harmonic = 1.0.</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ``False`` — return raw kw(ν)·p/ν values.</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="bu">tuple</span>[np.ndarray, np.ndarray]: <span class="co"># Mechanical harmonic orders 1 … nu_max.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>MMF harmonic amplitude spectrum.</em></p>
+<p>The amplitude of spatial harmonic ν in the airgap MMF:</p>
+<p>.. math:: _= </p>
+<p>For <code>mode="three_phase"</code> harmonics cancelled by the balanced m-phase current sum are identified numerically and zeroed out.</p>
+</section>
+<section id="mmf_harmonics-example-single-layer-vs.-double-layer" class="level3">
+<h3 class="anchored" data-anchor-id="mmf_harmonics-example-single-layer-vs.-double-layer"><code>mmf_harmonics</code>: Example — Single-layer vs.&nbsp;Double-layer</h3>
+<div id="89d71ff2" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> emachines.winding.mmf <span class="im">import</span> mmf_harmonics</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Three-phase MMF spectrum: 12s/10p FSCW"</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Normalised to working harmonic (ν = 5)"</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="st">'ν'</span><span class="sc">:&gt;4}</span><span class="ss">  </span><span class="sc">{</span><span class="st">'Single-layer'</span><span class="sc">:&gt;14}</span><span class="ss">  </span><span class="sc">{</span><span class="st">'Double-layer'</span><span class="sc">:&gt;14}</span><span class="ss">"</span>)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"-"</span> <span class="op">*</span> <span class="dv">38</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>nu1, amp1 <span class="op">=</span> mmf_harmonics(<span class="dv">12</span>, <span class="dv">10</span>, layers<span class="op">=</span><span class="dv">1</span>, mode<span class="op">=</span><span class="st">"three_phase"</span>, normalize<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>nu2, amp2 <span class="op">=</span> mmf_harmonics(<span class="dv">12</span>, <span class="dv">10</span>, layers<span class="op">=</span><span class="dv">2</span>, mode<span class="op">=</span><span class="st">"three_phase"</span>, normalize<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">min</span>(<span class="dv">20</span>, <span class="bu">len</span>(nu1))):</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> amp1[i] <span class="op">&gt;</span> <span class="fl">1e-4</span> <span class="kw">or</span> amp2[i] <span class="op">&gt;</span> <span class="fl">1e-4</span>:</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>        marker <span class="op">=</span> <span class="st">" ← working"</span> <span class="cf">if</span> nu1[i] <span class="op">==</span> <span class="dv">5</span> <span class="cf">else</span> <span class="st">""</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span><span class="bu">int</span>(nu1[i])<span class="sc">:&gt;2}</span><span class="ss">  </span><span class="sc">{</span>amp1[i]<span class="sc">:&gt;14.4f}</span><span class="ss">  </span><span class="sc">{</span>amp2[i]<span class="sc">:&gt;14.4f}{</span>marker<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Observation: double-layer significantly suppresses sub-harmonics."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Three-phase MMF spectrum: 12s/10p FSCW
+Normalised to working harmonic (ν = 5)
+
+   ν    Single-layer    Double-layer
+--------------------------------------
+   1          1.3397          0.3590
+   3          1.2201          0.8932
+   5          1.0000          1.0000 ← working
+   7          0.7143          0.7143
+   9          0.4067          0.2977
+  11          0.1218          0.0326
+  13          0.1031          0.0276
+  15          0.2440          0.1786
+  17          0.2941          0.2941
+  19          0.2632          0.2632
+
+Observation: double-layer significantly suppresses sub-harmonics.</code></pre>
+</div>
+</div>
+</section>
+<section id="mmf_harmonics-comprehensive-comparison-integer-slot-vs.-fscw" class="level3">
+<h3 class="anchored" data-anchor-id="mmf_harmonics-comprehensive-comparison-integer-slot-vs.-fscw"><code>mmf_harmonics</code>: Comprehensive comparison — Integer-slot vs.&nbsp;FSCW</h3>
+<div id="fc7d3e32" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> emachines.winding.mmf <span class="im">import</span> mmf_harmonics, winding_factor_spectrum</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>configs <span class="op">=</span> [</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">dict</span>(Q<span class="op">=</span><span class="dv">24</span>, P<span class="op">=</span><span class="dv">4</span>,  layers<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">"24s/4p  integer-slot"</span>),</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">dict</span>(Q<span class="op">=</span><span class="dv">12</span>, P<span class="op">=</span><span class="dv">10</span>, layers<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">"12s/10p FSCW         "</span>),</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Three-phase MMF spectrum comparison (normalised, top harmonics only)"</span>)</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> cfg <span class="kw">in</span> configs:</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    nu, amp <span class="op">=</span> mmf_harmonics(cfg[<span class="st">"Q"</span>], cfg[<span class="st">"P"</span>], layers<span class="op">=</span>cfg[<span class="st">"layers"</span>],</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>                             mode<span class="op">=</span><span class="st">"three_phase"</span>, normalize<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> cfg[<span class="st">"P"</span>] <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>cfg[<span class="st">'label'</span>]<span class="sc">}</span><span class="ss">  (working harmonic ν = </span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">)"</span>)</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>    significant <span class="op">=</span> [(<span class="bu">int</span>(nu[i]), amp[i]) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(nu)) <span class="cf">if</span> amp[i] <span class="op">&gt;</span> <span class="fl">0.01</span>]</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    significant.sort(key<span class="op">=</span><span class="kw">lambda</span> x: <span class="op">-</span>x[<span class="dv">1</span>])</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> h, a <span class="kw">in</span> significant[:<span class="dv">8</span>]:</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>        marker <span class="op">=</span> <span class="st">" ← working"</span> <span class="cf">if</span> h <span class="op">==</span> p <span class="cf">else</span> <span class="st">""</span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"    ν = </span><span class="sc">{</span>h<span class="sc">:&gt;3}</span><span class="ss">:  </span><span class="sc">{</span>a<span class="sc">:.4f}{</span>marker<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Three-phase MMF spectrum comparison (normalised, top harmonics only)
+
+  24s/4p  integer-slot  (working harmonic ν = 2)
+    ν =   2:  1.0000 ← working
+    ν =   6:  0.2440
+    ν =  22:  0.0909
+    ν =  18:  0.0813
+    ν =  26:  0.0769
+    ν =  10:  0.0536
+    ν =  30:  0.0488
+    ν =  14:  0.0383
+
+  12s/10p FSCW           (working harmonic ν = 5)
+    ν =   5:  1.0000 ← working
+    ν =   3:  0.8932
+    ν =   7:  0.7143
+    ν =   1:  0.3590
+    ν =   9:  0.2977
+    ν =  17:  0.2941
+    ν =  19:  0.2632
+    ν =  15:  0.1786
+</code></pre>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ol type="1">
+<li>Pyrhönen, J., Jokinen, T., &amp; Hrabovcová, V. (2014). <em>Design of Rotating Electrical Machines</em>, 2nd ed.&nbsp;Wiley. §2.4, eq. (2.73), (2.98).</li>
+<li>Bianchi, N., &amp; Bolognani, S. (2002). Design techniques for reducing cogging torque in surface-mounted PM motors. <em>IEEE Transactions on Industry Applications</em>, 38(5), 1259–1265. DOI: <a href="https://doi.org/10.1109/TIA.2002.802909">10.1109/TIA.2002.802909</a></li>
+<li>Müller, G., Vogt, K., &amp; Ponick, B. (2008). <em>Berechnung elektrischer Maschinen</em>. Wiley-VCH. §3.4–3.6, eq. (3.65).</li>
+<li>SWAT-EM open-source reference implementation: <a href="https://github.com/bayonet222/swat-em">https://github.com/bayonet222/swat-em</a> — accessed 2026-06-22.</li>
+</ol>
+<hr>
+</section>
+<section id="tests" class="level2">
+<h2 class="anchored" data-anchor-id="tests">Tests</h2>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/NaveenDeepak\.github\.io\/emachines");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/NaveenDeepak/emachines/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

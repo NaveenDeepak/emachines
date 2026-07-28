@@ -49,3 +49,5 @@ settings.ini
 
 # Claude AI context file — local only, not for contributors
 CLAUDE.md
+*.deb
+_proc/

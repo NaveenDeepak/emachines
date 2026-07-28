@@ -1,0 +1,1262 @@
+[
+  {
+    "objectID": "mec/material_models.html",
+    "href": "mec/material_models.html",
+    "title": "Permeability Models",
+    "section": "",
+    "text": "Purpose: Provide nonlinear reluctance models for MEC solver\nWhat it does: Implement permeability models for magnetic materials.\n\n\nMEC solver needs reluctance(flux) relationships; these models provide that.\n\n\n\nInputs: Material properties, flux density\nOutputs: Reluctance values for magnetic circuit analysis",
+    "crumbs": [
+      "mec",
+      "Permeability Models"
+    ]
+  },
+  {
+    "objectID": "mec/material_models.html#executive-summary",
+    "href": "mec/material_models.html#executive-summary",
+    "title": "Permeability Models",
+    "section": "",
+    "text": "Purpose: Provide nonlinear reluctance models for MEC solver\nWhat it does: Implement permeability models for magnetic materials.\n\n\nMEC solver needs reluctance(flux) relationships; these models provide that.\n\n\n\nInputs: Material properties, flux density\nOutputs: Reluctance values for magnetic circuit analysis",
+    "crumbs": [
+      "mec",
+      "Permeability Models"
+    ]
+  },
+  {
+    "objectID": "mec/material_models.html#how-it-fits-into-the-motor-design-workflow",
+    "href": "mec/material_models.html#how-it-fits-into-the-motor-design-workflow",
+    "title": "Permeability Models",
+    "section": "How It Fits Into the Motor Design Workflow",
+    "text": "How It Fits Into the Motor Design Workflow\nUpstream (depends on): Used by 04_mec_solver.ipynb to compute magnetic circuit\nDownstream (used by): See notebook connections",
+    "crumbs": [
+      "mec",
+      "Permeability Models"
+    ]
+  },
+  {
+    "objectID": "mec/material_models.html#theory-magnetic-permeability",
+    "href": "mec/material_models.html#theory-magnetic-permeability",
+    "title": "Permeability Models",
+    "section": "Theory: Magnetic Permeability",
+    "text": "Theory: Magnetic Permeability\nMagnetic permeability μ relates flux density B to field strength H:\n\\[B = \\mu \\cdot H = \\mu_0 \\cdot \\mu_r \\cdot H\\]\nwhere: - \\(\\mu_0 = 4\\pi \\times 10^{-7}\\) H/m is permeability of free space - \\(\\mu_r\\) is relative permeability (material property)\nFor nonlinear materials, permeability changes with B. The MEC solver requires both: 1. \\(\\mu(B)\\) — permeability at flux density B 2. \\(\\frac{d\\mu}{dB}\\) — derivative for Newton-Raphson linearization\n\n\nPermeabilityModel\ndef PermeabilityModel(\n    *args, **kwargs\n):\nAbstract interface for permeability models used by the MEC solver.",
+    "crumbs": [
+      "mec",
+      "Permeability Models"
+    ]
+  },
+  {
+    "objectID": "mec/material_models.html#linear-permeability-model",
+    "href": "mec/material_models.html#linear-permeability-model",
+    "title": "Permeability Models",
+    "section": "Linear Permeability Model",
+    "text": "Linear Permeability Model\nFor linear materials (no saturation), permeability is constant:\n\\[\\mu(B) = \\mu_0 \\cdot \\mu_r\\] \\[\\frac{d\\mu}{dB} = 0\\]\nThis applies to air gaps and weakly magnetic materials.\n\n\nLinearPermeabilityModel\ndef LinearPermeabilityModel(\n    mu_r:float=1.0\n)-&gt;None:\nConstant permeability μ = μ₀ · μᵣ.",
+    "crumbs": [
+      "mec",
+      "Permeability Models"
+    ]
+  },
+  {
+    "objectID": "mec/material_models.html#spline-permeability-model",
+    "href": "mec/material_models.html#spline-permeability-model",
+    "title": "Permeability Models",
+    "section": "Spline Permeability Model",
+    "text": "Spline Permeability Model\nFor nonlinear materials with measured B-H curves, fit a cubic spline:\n\\[\\mu(B) = \\mu_0 \\cdot \\frac{H(B)}{B}\\]\nThe spline provides both μ(B) and its derivative dμ/dB for Newton-Raphson.\nAssumption: Data starts at origin (H=0, B=0)\nSymmetry: Negative B uses odd symmetry: μ(-B) = μ(B)\n/usr/local/lib/python3.10/site-packages/fastcore/docscrape.py:259: UserWarning: Unknown section Class Methods\n  else: warn(msg)\n\n\nSplinePermeabilityModel\ndef SplinePermeabilityModel(\n    H_data, # Sequence[float]\n    B_data, # Sequence[float]\n)-&gt;None:\nPermeability model built from tabulated B-H data via a cubic spline.\nThe data are assumed to start at (H=0, B=0). Negative-B evaluation uses odd symmetry: μ(−|B|) = μ(|B|), dμ/dB(−|B|) = −dμ/dB(|B|).",
+    "crumbs": [
+      "mec",
+      "Permeability Models"
+    ]
+  },
+  {
+    "objectID": "mec/material_models.html#shane-sudhoff-analytical-model",
+    "href": "mec/material_models.html#shane-sudhoff-analytical-model",
+    "title": "Permeability Models",
+    "section": "Shane-Sudhoff Analytical Model",
+    "text": "Shane-Sudhoff Analytical Model\nAnalytical model published in: &gt; Shane, S.D. & Sudhoff, S.D. (2010). “Refinements in Anhysteretic Characterization and Permeability Modeling.” IEEE Trans. Magn., 46(11).\nThe model uses an auxiliary function f(B) with piecewise exponential terms:\n\\[f(B) = \\frac{\\mu_r}{\\mu_r - 1} + \\sum_n \\left[ a_n |B| + d_n \\log(e_n + z_n e^{-b_n |B|}) \\right]\\]\nwhere derived constants are: - \\(d_n = a_n / b_n\\) - \\(z_n = (\\gamma_n - 1) / \\gamma_n\\) - \\(e_n = 1 - z_n\\)\nThen: \\[\\mu(B) = \\mu_0 \\cdot \\frac{f}{f - 1}\\]\n\n\nShanesudhoffModel\ndef ShanesudhoffModel(\n    mu_r:float, a, # Sequence[float]\n    b, # Sequence[float]\n    gamma, # Sequence[float]\n    mu0:float | None=None\n)-&gt;None:\nShane-Sudhoff (2010) analytical permeability model.",
+    "crumbs": [
+      "mec",
+      "Permeability Models"
+    ]
+  },
+  {
+    "objectID": "mec/material_models.html#example-compare-permeability-models",
+    "href": "mec/material_models.html#example-compare-permeability-models",
+    "title": "Permeability Models",
+    "section": "Example: Compare Permeability Models",
+    "text": "Example: Compare Permeability Models\n\n# Create models\nlinear = LinearPermeabilityModel(mu_r=1000)\nferrite = ShanesudhoffModel.ferrite_3C90()\n\n# Sample B values\nB_range = np.linspace(0, 2.0, 100)\n\n# Evaluate models\nmu_linear = np.array([linear.mu(B) for B in B_range])\nmu_ferrite = np.array([ferrite.mu(B) for B in B_range])\n\n# Plot\nplt.figure(figsize=(10, 5))\nplt.plot(B_range, mu_linear / 4e-7 / np.pi, label='Linear (μᵣ=1000)')\nplt.plot(B_range, mu_ferrite / 4e-7 / np.pi, label='3C90 Ferrite')\nplt.xlabel('Flux Density B [T]')\nplt.ylabel('Relative Permeability μᵣ')\nplt.legend()\nplt.grid(True, alpha=0.3)\nplt.title('Permeability Models Comparison')\nplt.show()",
+    "crumbs": [
+      "mec",
+      "Permeability Models"
+    ]
+  },
+  {
+    "objectID": "mec/material_models.html#tests",
+    "href": "mec/material_models.html#tests",
+    "title": "Permeability Models",
+    "section": "Tests",
+    "text": "Tests\n\n# Test LinearPermeabilityModel\nmu0 = 4e-7 * np.pi\nmu_r = 1000\nlinear = LinearPermeabilityModel(mu_r=mu_r)\n\nassert linear.mu(0.5) == mu0 * mu_r, \"Linear model should be constant\"\nassert linear.dmu_dB(0.5) == 0.0, \"Linear model derivative should be zero\"\n\n# Test with mu_r=1 (free space)\nair = LinearPermeabilityModel(mu_r=1.0)\nassert air.mu(1.0) == mu0, \"Free space permeability incorrect\"\n\nprint(\"✓ LinearPermeabilityModel tests passed\")\n\n# Test ShanesudhoffModel\nferrite = ShanesudhoffModel.ferrite_3C90()\n\n# At B=0, should return μ₀·μᵣ\nmu_at_0 = ferrite.mu(0.0)\nmu_r_initial = mu_at_0 / mu0\nassert mu_r_initial &gt; 1000, \"Initial permeability should be high\"\n\n# Check that permeability decreases with increasing B (saturation)\nmu_0_1 = ferrite.mu(0.1)\nmu_1_0 = ferrite.mu(1.0)\nassert mu_1_0 &lt; mu_0_1, \"Ferrite should saturate\"\n\n# Verify odd symmetry of derivative\ndf_pos = ferrite.dmu_dB(0.5)\ndf_neg = ferrite.dmu_dB(-0.5)\nassert np.isclose(df_pos, -df_neg), \"Derivative should have odd symmetry\"\n\nprint(\"✓ ShanesudhoffModel tests passed\")\n\n# Test error handling\ntry:\n    bad_linear = LinearPermeabilityModel(mu_r=0)\n    assert False, \"Should reject non-positive mu_r\"\nexcept ValueError:\n    print(\"✓ Error handling tests passed\")\n\n✓ LinearPermeabilityModel tests passed\n✓ ShanesudhoffModel tests passed\n✓ Error handling tests passed",
+    "crumbs": [
+      "mec",
+      "Permeability Models"
+    ]
+  },
+  {
+    "objectID": "mec/api.html",
+    "href": "mec/api.html",
+    "title": "MEC Public API",
+    "section": "",
+    "text": "Re-exports the full public API for emachines.mec.\nImporting from emachines.mec gives access to all public symbols without needing to know which submodule they live in.",
+    "crumbs": [
+      "mec",
+      "MEC Public API"
+    ]
+  },
+  {
+    "objectID": "mec/api.html#overview",
+    "href": "mec/api.html#overview",
+    "title": "MEC Public API",
+    "section": "",
+    "text": "Re-exports the full public API for emachines.mec.\nImporting from emachines.mec gives access to all public symbols without needing to know which submodule they live in.",
+    "crumbs": [
+      "mec",
+      "MEC Public API"
+    ]
+  },
+  {
+    "objectID": "mec/api.html#usage",
+    "href": "mec/api.html#usage",
+    "title": "MEC Public API",
+    "section": "Usage",
+    "text": "Usage\nfrom emachines.mec import *\n# or selectively:\nfrom emachines.mec import PermeabilityModel\nfrom emachines.mec import BranchType\nfrom emachines.mec import MECSolution",
+    "crumbs": [
+      "mec",
+      "MEC Public API"
+    ]
+  },
+  {
+    "objectID": "winding/sos.html",
+    "href": "winding/sos.html",
+    "title": "Star-of-Slots Winding Layout",
+    "section": "",
+    "text": "This notebook implements the star-of-slots (SOS) method — the canonical winding layout engine for AC machines.\n\n\nGiven a slot/pole/phase combination (Q, P, m), the SOS method: 1. Projects each slot’s EMF phasor onto a circle divided into 2m sectors. 2. Assigns each slot conductor to a phase and current direction based on which sector its phasor falls in. 3. Builds the coil matrix used by winding factor and MMF analysis.\n\n\n\n\nWinding layout: understand which slots carry which phase in which direction.\nFeasibility check: verify that a given (Q, P, m) combination supports a valid balanced winding.\nInput to winding factors and MMF: build_coil_matrix is the single output consumed by winding_factors.py and mmf.py.\n\n\nSwappability: this module is deliberately isolated as the layout engine. Future layout techniques (e.g. optimal assignment, genetic algorithm) can replace it without changing winding_factors.py or mmf.py.",
+    "crumbs": [
+      "winding",
+      "Star-of-Slots Winding Layout"
+    ]
+  },
+  {
+    "objectID": "winding/sos.html#executive-summary",
+    "href": "winding/sos.html#executive-summary",
+    "title": "Star-of-Slots Winding Layout",
+    "section": "",
+    "text": "This notebook implements the star-of-slots (SOS) method — the canonical winding layout engine for AC machines.\n\n\nGiven a slot/pole/phase combination (Q, P, m), the SOS method: 1. Projects each slot’s EMF phasor onto a circle divided into 2m sectors. 2. Assigns each slot conductor to a phase and current direction based on which sector its phasor falls in. 3. Builds the coil matrix used by winding factor and MMF analysis.\n\n\n\n\nWinding layout: understand which slots carry which phase in which direction.\nFeasibility check: verify that a given (Q, P, m) combination supports a valid balanced winding.\nInput to winding factors and MMF: build_coil_matrix is the single output consumed by winding_factors.py and mmf.py.\n\n\nSwappability: this module is deliberately isolated as the layout engine. Future layout techniques (e.g. optimal assignment, genetic algorithm) can replace it without changing winding_factors.py or mmf.py.",
+    "crumbs": [
+      "winding",
+      "Star-of-Slots Winding Layout"
+    ]
+  },
+  {
+    "objectID": "winding/sos.html#how-it-fits-into-motor-design",
+    "href": "winding/sos.html#how-it-fits-into-motor-design",
+    "title": "Star-of-Slots Winding Layout",
+    "section": "How It Fits Into Motor Design",
+    "text": "How It Fits Into Motor Design\n01_winding_sos.ipynb   ←── YOU ARE HERE\n(winding layout)\n      │\n      ▼\n01_winding_factors.ipynb   (kp, kd, kw, harmonic spectrum)\n      │\n      ▼\n01_winding_mmf.ipynb       (MMF waveform, harmonic amplitudes)\n      │\n      ▼\n02_pmsm.ipynb              (torque, back-EMF)\nDepends on: nothing (this is the foundation layer).\nFeeds into: 01_winding_factors.ipynb, 01_winding_mmf.ipynb.",
+    "crumbs": [
+      "winding",
+      "Star-of-Slots Winding Layout"
+    ]
+  },
+  {
+    "objectID": "winding/sos.html#what-you-provide-inputs",
+    "href": "winding/sos.html#what-you-provide-inputs",
+    "title": "Star-of-Slots Winding Layout",
+    "section": "What You Provide (Inputs)",
+    "text": "What You Provide (Inputs)\n\n\n\nParameter\nSymbol\nDescription\nTypical Range\n\n\n\n\nStator slots\nQ\nTotal slot count\n6 – 72\n\n\nPoles\nP\nNumber of poles (even)\n2 – 20\n\n\nPhases\nm\nPhase count\n3\n\n\nLayers\nlayers\n1 = single-layer, 2 = double-layer\n1 or 2\n\n\nCoil span\nw\nCoil span in slots\n1 – Q//p",
+    "crumbs": [
+      "winding",
+      "Star-of-Slots Winding Layout"
+    ]
+  },
+  {
+    "objectID": "winding/sos.html#what-you-get-outputs",
+    "href": "winding/sos.html#what-you-get-outputs",
+    "title": "Star-of-Slots Winding Layout",
+    "section": "What You Get (Outputs)",
+    "text": "What You Get (Outputs)\n\n\n\nResult\nMeaning\n\n\n\n\nbuild_star_of_slots\nPhasor angles for each slot\n\n\nassign_phases\nPhase/direction assignment per slot\n\n\nbuild_coil_matrix\nInteger occupancy matrix (layers × Q)\n\n\nwinding_factor_sos\n\n\n\nget_basic_params\nDerived parameters (p, q, t, …)\n\n\ncheck_symmetry\nValidate symmetry/balance\n\n\nget_valid_coil_spans\nAll mechanically valid coil spans\n\n\nis_valid_combination\nBoolean feasibility check",
+    "crumbs": [
+      "winding",
+      "Star-of-Slots Winding Layout"
+    ]
+  },
+  {
+    "objectID": "winding/sos.html#abbreviations-and-notation",
+    "href": "winding/sos.html#abbreviations-and-notation",
+    "title": "Star-of-Slots Winding Layout",
+    "section": "Abbreviations and Notation",
+    "text": "Abbreviations and Notation\n\n\n\nSymbol\nDefinition\nUnits\n\n\n\n\nQ\nNumber of stator slots\n—\n\n\nP\nNumber of poles\n—\n\n\np\nPole pairs, p = P/2\n—\n\n\nm\nNumber of phases\n—\n\n\nt\nWinding periodicity, t = gcd(Q, p)\n—\n\n\nq\nSlots per pole per phase, q = Q/(2mp)\n—\n\n\nτp\nPole pitch in slots, τp = Q/P\nslots\n\n\nw\nCoil span in slots\nslots\n\n\nα_e\nElectrical slot pitch angle, α_e = p·(2π/Q)\nrad\n\n\nν\nMechanical spatial harmonic order\n—",
+    "crumbs": [
+      "winding",
+      "Star-of-Slots Winding Layout"
+    ]
+  },
+  {
+    "objectID": "winding/sos.html#imports-and-setup",
+    "href": "winding/sos.html#imports-and-setup",
+    "title": "Star-of-Slots Winding Layout",
+    "section": "Imports and Setup",
+    "text": "Imports and Setup",
+    "crumbs": [
+      "winding",
+      "Star-of-Slots Winding Layout"
+    ]
+  },
+  {
+    "objectID": "winding/sos.html#private-helpers",
+    "href": "winding/sos.html#private-helpers",
+    "title": "Star-of-Slots Winding Layout",
+    "section": "Private Helpers",
+    "text": "Private Helpers\nThese internal functions support the SOS algorithm and are not part of the public API.",
+    "crumbs": [
+      "winding",
+      "Star-of-Slots Winding Layout"
+    ]
+  },
+  {
+    "objectID": "winding/sos.html#get_basic_params-winding-parameter-summary",
+    "href": "winding/sos.html#get_basic_params-winding-parameter-summary",
+    "title": "Star-of-Slots Winding Layout",
+    "section": "get_basic_params: Winding Parameter Summary",
+    "text": "get_basic_params: Winding Parameter Summary\n\nTheory\nAll downstream calculations start from a handful of derived parameters. The winding periodicity t = gcd(Q, p) is the key symmetry parameter: a valid winding repeats itself t times around the stator.\nThe slots-per-pole-per-phase q = Q/(2mp) classifies the winding: - q ≥ 1 (integer): distributed integer-slot winding — low harmonic content. - q &lt; 1 (fractional): fractional-slot concentrated winding (FSCW) — compact end-turns, higher harmonic content.\nReferences: Pyrhönen et al. (2008), §2.1.\n\n\n\nget_basic_params\ndef get_basic_params(\n    Q:int, P:int, m:int=3\n)-&gt;dict: # p       : int   Pole pairs (P // 2)\nt       : int   Winding periodicity = gcd(Q, p)\nq       : Fraction   Slots per pole per phase = Q / (2mp)\nlcm_QP  : int   lcm(Q, P)\nalpha_e : float Electrical slot pitch (radians) = p · 2π/Q\nQ_phase : int   Slots per phase = Q // m  (integer part)\nCompute basic winding parameters from slot/pole/phase count.\n\nfrom emachines.winding.sos import get_basic_params\n\nparams = get_basic_params(12, 10)\nprint(\"12s/10p (FSCW):\")\nfor k, v in params.items():\n    print(f\"  {k:10s} = {v}\")\n\nprint()\nparams = get_basic_params(24, 4)\nprint(\"24s/4p (integer-slot):\")\nfor k, v in params.items():\n    print(f\"  {k:10s} = {v}\")\n\n12s/10p (FSCW):\n  p          = 5\n  t          = 1\n  q          = 2/5\n  lcm_QP     = 60\n  alpha_e    = 2.6179938779914944\n  Q_phase    = 4\n\n24s/4p (integer-slot):\n  p          = 2\n  t          = 2\n  q          = 2\n  lcm_QP     = 24\n  alpha_e    = 0.5235987755982988\n  Q_phase    = 8",
+    "crumbs": [
+      "winding",
+      "Star-of-Slots Winding Layout"
+    ]
+  },
+  {
+    "objectID": "winding/sos.html#build_star_of_slots-emf-phasor-angles",
+    "href": "winding/sos.html#build_star_of_slots-emf-phasor-angles",
+    "title": "Star-of-Slots Winding Layout",
+    "section": "build_star_of_slots: EMF Phasor Angles",
+    "text": "build_star_of_slots: EMF Phasor Angles\n\nTheory\nThe star of slots (also called the voltage star or EMF star) maps each stator slot to a phasor angle in the electrical domain.\nFor slot i, the electrical phasor angle is:\n\\[\n\\alpha_i = i \\cdot \\alpha_e \\mod 2\\pi, \\qquad \\alpha_e = p \\cdot \\frac{2\\pi}{Q}\n\\]\nwhere p = P/2 is the number of pole pairs and α_e is the electrical slot pitch.\nPlotting all Q phasors reveals the “star” pattern that names the method. Slots whose phasors point in similar directions naturally carry the same phase current.\nReference: Bianchi & Bolognani (2002), IEEE Trans. Ind. Appl., 38(5).\n\n\n\nbuild_star_of_slots\ndef build_star_of_slots(\n    Q:int, P:int\n)-&gt;np.ndarray: # Phasor angles α_i = i · p · 2π/Q mod 2π\nCompute EMF phasor angles for all Q slots (electrical radians, mod 2π).\n\nfrom emachines.winding.sos import build_star_of_slots\nimport numpy as np\n\nangles = build_star_of_slots(12, 10)\nprint(\"12s/10p phasor angles (degrees):\")\nfor i, a in enumerate(angles):\n    print(f\"  Slot {i:2d}: {np.degrees(a):6.1f}°\")\n\n12s/10p phasor angles (degrees):\n  Slot  0:    0.0°\n  Slot  1:  150.0°\n  Slot  2:  300.0°\n  Slot  3:   90.0°\n  Slot  4:  240.0°\n  Slot  5:   30.0°\n  Slot  6:  180.0°\n  Slot  7:  330.0°\n  Slot  8:  120.0°\n  Slot  9:  270.0°\n  Slot 10:   60.0°\n  Slot 11:  210.0°",
+    "crumbs": [
+      "winding",
+      "Star-of-Slots Winding Layout"
+    ]
+  },
+  {
+    "objectID": "winding/sos.html#assign_phases-phase-assignment-via-sector-map",
+    "href": "winding/sos.html#assign_phases-phase-assignment-via-sector-map",
+    "title": "Star-of-Slots Winding Layout",
+    "section": "assign_phases: Phase Assignment via Sector Map",
+    "text": "assign_phases: Phase Assignment via Sector Map\n\nTheory\nThe 2π electrical circle is divided into 2m equal sectors (width = π/m each). Sectors alternate between forward (+) and return (−) conductors, and cycle through all m phases.\nEach slot’s phasor (from build_star_of_slots) is projected onto this sector map: - The slot is assigned to the phase whose sector contains the phasor. - Positive sector → forward conductor (+phase index). - Negative sector → return conductor (−phase index).\nFor FSCW, multiple slots in the same phase produce phasors close together, forming tight “clusters” in the star diagram.\nReference: Pyrhönen et al. (2008), §2.3; Bianchi & Bolognani (2002).\n\n\n\nassign_phases\ndef assign_phases(\n    Q:int, P:int, m:int=3\n)-&gt;np.ndarray: # Signed phase codes: +k = phase k forward, −k = phase k return.\nPhase index k ∈ {1, …, m}.\nAssign each slot to a phase and current direction using the star-of-slots.\n\nfrom emachines.winding.sos import assign_phases\n\ncodes = assign_phases(12, 10)\nprint(\"12s/10p phase assignment:\")\nnames = {1: 'A+', 2: 'B+', 3: 'C+', -1: 'A-', -2: 'B-', -3: 'C-'}\nfor i, c in enumerate(codes):\n    print(f\"  Slot {i:2d}: {names[c]}\")\n\n12s/10p phase assignment:\n  Slot  0: A+\n  Slot  1: C+\n  Slot  2: C-\n  Slot  3: B+\n  Slot  4: B-\n  Slot  5: A+\n  Slot  6: A-\n  Slot  7: C-\n  Slot  8: C+\n  Slot  9: B-\n  Slot 10: B+\n  Slot 11: A-",
+    "crumbs": [
+      "winding",
+      "Star-of-Slots Winding Layout"
+    ]
+  },
+  {
+    "objectID": "winding/sos.html#build_coil_matrix-conductor-occupancy-matrix",
+    "href": "winding/sos.html#build_coil_matrix-conductor-occupancy-matrix",
+    "title": "Star-of-Slots Winding Layout",
+    "section": "build_coil_matrix: Conductor Occupancy Matrix",
+    "text": "build_coil_matrix: Conductor Occupancy Matrix\n\nTheory\nA coil connects a go conductor in one slot to a return conductor w slots away (coil span w). For a single-layer winding, only go conductors are placed; the return side falls in a dedicated slot. For a double-layer winding, every slot has two conductor layers — a go side from one coil and a return from another.\nThe coil matrix shape is (layers, Q): - Value +k : phase k, forward current direction. - Value −k : phase k, return current direction. - Value 0 : empty slot (only possible in single-layer windings).\nThis matrix is the single interface consumed by winding_factors.py and mmf.py.\nReferences: Hanselman (2003), Ch. 4; Pyrhönen et al. (2008), §2.3.\n\n\n\nbuild_coil_matrix\ndef build_coil_matrix(\n    Q:int, P:int, m:int=3, layers:int=1, w:int | None=None\n)-&gt;np.ndarray: # +k = phase k forward, −k = phase k return, 0 = empty.\nBuild the (layers × Q) conductor occupancy matrix.\n\nfrom emachines.winding.sos import build_coil_matrix\nimport numpy as np\n\nprint(\"6s/2p single-layer:\")\nm1 = build_coil_matrix(6, 2, m=3, layers=1)\nprint(m1)\n\nprint()\nprint(\"12s/10p double-layer:\")\nm2 = build_coil_matrix(12, 10, m=3, layers=2)\nprint(\"Top layer:   \", m2[0])\nprint(\"Bottom layer:\", m2[1])\n\nprint()\nprint(\"Interpretation: +1=A forward, -1=A return, +2=B forward, -2=B return, etc.\")\n\n6s/2p single-layer:\n[[ 1  2  3 -1 -2 -3]]\n\n12s/10p double-layer:\nTop layer:    [ 1  3 -3  2 -2  1 -1 -3  3 -2  2 -1]\nBottom layer: [ 1 -1 -3  3 -2  2 -1  1  3 -3  2 -2]\n\nInterpretation: +1=A forward, -1=A return, +2=B forward, -2=B return, etc.",
+    "crumbs": [
+      "winding",
+      "Star-of-Slots Winding Layout"
+    ]
+  },
+  {
+    "objectID": "winding/sos.html#winding_factor_sos-winding-factor-via-phasor-sum",
+    "href": "winding/sos.html#winding_factor_sos-winding-factor-via-phasor-sum",
+    "title": "Star-of-Slots Winding Layout",
+    "section": "winding_factor_sos: Winding Factor via Phasor Sum",
+    "text": "winding_factor_sos: Winding Factor via Phasor Sum\n\nTheory\nThe winding factor for mechanical harmonic ν is the magnitude of the normalised phasor sum of all conductors of one phase:\n\\[\nk_{w\\nu} = \\frac{1}{N_k} \\left| \\sum_{i,\\text{lyr}} s_{i,\\text{lyr}} \\cdot e^{j\\nu \\frac{2\\pi i}{Q}} \\right|\n\\]\nwhere \\(s_{i,\\text{lyr}} \\in \\{+1, -1\\}\\) is the conductor direction, and \\(N_k\\) is the total conductor count per phase. The result is averaged over all m phases.\nThis phasor method works for all winding types — integer-slot, fractional-slot, and FSCW — without needing separate kp and kd formulas.\nReferences: Müller, Vogt & Ponick (2008), eq. (3.65); Bianchi & Bolognani (2002).\n\n\n\nwinding_factor_sos\ndef winding_factor_sos(\n    nu:int, Q:int, P:int, m:int=3, layers:int=1, w:int | None=None\n)-&gt;float:\nWinding factor |kw(ν)| via the star-of-slots phasor method.\nWorks for integer-slot, fractional-slot, and FSCW windings.\n\nfrom emachines.winding.sos import winding_factor_sos\n\nconfigs = [\n    (12, 10, 2, \"12s/10p FSCW  — ν=5 working\"),\n    (12,  8, 2, \"12s/8p  FSCW  — ν=4 working\"),\n    ( 9,  8, 2, \"9s/8p   FSCW  — ν=4 working\"),\n    (24,  4, 2, \"24s/4p  ISW   — ν=2 working\"),\n]\n\nprint(f\"{'Configuration':&lt;35}  kw at working ν\")\nprint(\"-\" * 55)\nfor Q, P, layers, label in configs:\n    p = P // 2\n    kw = winding_factor_sos(p, Q, P, layers=layers)\n    print(f\"  {label:&lt;33}  {kw:.4f}\")\n\nConfiguration                        kw at working ν\n-------------------------------------------------------\n  12s/10p FSCW  — ν=5 working        0.9330\n  12s/8p  FSCW  — ν=4 working        0.8660\n  9s/8p   FSCW  — ν=4 working        0.9452\n  24s/4p  ISW   — ν=2 working        0.9659",
+    "crumbs": [
+      "winding",
+      "Star-of-Slots Winding Layout"
+    ]
+  },
+  {
+    "objectID": "winding/sos.html#check_symmetry-validate-winding-balance",
+    "href": "winding/sos.html#check_symmetry-validate-winding-balance",
+    "title": "Star-of-Slots Winding Layout",
+    "section": "check_symmetry: Validate Winding Balance",
+    "text": "check_symmetry: Validate Winding Balance\n\nTheory\nA valid three-phase winding must be balanced: each phase must carry the same number of conductors, and the total slot count must divide evenly.\nThe check verifies: 1. Q is divisible by m (equal slots per phase). 2. The total period t = gcd(Q, p) &gt; 0. 3. The number of conductors per phase is equal across all m phases.\nReference: Pyrhönen et al. (2008), §2.1.\n\n\n\ncheck_symmetry\ndef check_symmetry(\n    Q:int, P:int, m:int=3, layers:int=1\n)-&gt;dict: # balanced     : bool   True if all phases carry equal conductors\nconductors   : list   Conductor count per phase [n_A, n_B, n_C, …]\nperiodicity  : int    Winding periodicity t = gcd(Q, p)\nq            : Fraction   Slots per pole per phase\nvalid        : bool   True if balanced AND Q % m == 0\nCheck if the winding has the expected symmetry.\n\nfrom emachines.winding.sos import check_symmetry\n\nfor Q, P in [(12, 10), (12, 8), (9, 8), (24, 4), (6, 2)]:\n    r = check_symmetry(Q, P, layers=2)\n    status = \"✓\" if r['valid'] else \"✗\"\n    print(f\"  {status} {Q}s/{P}p  balanced={r['balanced']}  conductors={r['conductors']}  q={r['q']}  t={r['periodicity']}\")\n\n  ✓ 12s/10p  balanced=True  conductors=[8, 8, 8]  q=2/5  t=1\n  ✓ 12s/8p  balanced=True  conductors=[8, 8, 8]  q=1/2  t=4\n  ✓ 9s/8p  balanced=True  conductors=[6, 6, 6]  q=3/8  t=1\n  ✓ 24s/4p  balanced=True  conductors=[16, 16, 16]  q=2  t=2\n  ✓ 6s/2p  balanced=True  conductors=[4, 4, 4]  q=1  t=1",
+    "crumbs": [
+      "winding",
+      "Star-of-Slots Winding Layout"
+    ]
+  },
+  {
+    "objectID": "winding/sos.html#get_valid_coil_spans-valid-coil-span-enumeration",
+    "href": "winding/sos.html#get_valid_coil_spans-valid-coil-span-enumeration",
+    "title": "Star-of-Slots Winding Layout",
+    "section": "get_valid_coil_spans: Valid Coil Span Enumeration",
+    "text": "get_valid_coil_spans: Valid Coil Span Enumeration\n\nTheory\nNot all coil spans produce a valid balanced winding. The valid spans are those that maintain winding symmetry — specifically those where the span does not coincide with a phase boundary, causing phase short-circuiting.\nFor FSCW (q &lt; 1), the only valid span is typically w = 1 (tooth coil). For integer-slot windings, spans from 1 to full_pitch (= Q//p) are candidates; the full-pitch span maximises kw.\nThe function returns all spans that produce a balanced winding (equal conductors per phase).\n\n\n\nget_valid_coil_spans\ndef get_valid_coil_spans(\n    Q:int, P:int, m:int=3\n)-&gt;list[int]:\nReturn all coil spans (in slots) that yield a balanced winding.\nEvaluates spans 1 … Q//(P//2) and keeps those where all m phases carry an equal number of conductors in the double-layer assignment.\n\nfrom emachines.winding.sos import get_valid_coil_spans\n\nfor Q, P in [(12, 10), (12, 8), (9, 8), (24, 4), (36, 6)]:\n    spans = get_valid_coil_spans(Q, P)\n    print(f\"  {Q}s/{P}p  valid spans: {spans}  (full-pitch = {Q // (P//2)})\")\n\n  12s/10p  valid spans: [1, 2]  (full-pitch = 2)\n  12s/8p  valid spans: [1, 2, 3]  (full-pitch = 3)\n  9s/8p  valid spans: [1, 2]  (full-pitch = 2)\n  24s/4p  valid spans: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]  (full-pitch = 12)\n  36s/6p  valid spans: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]  (full-pitch = 12)",
+    "crumbs": [
+      "winding",
+      "Star-of-Slots Winding Layout"
+    ]
+  },
+  {
+    "objectID": "winding/sos.html#is_valid_combination-feasibility-check",
+    "href": "winding/sos.html#is_valid_combination-feasibility-check",
+    "title": "Star-of-Slots Winding Layout",
+    "section": "is_valid_combination: Feasibility Check",
+    "text": "is_valid_combination: Feasibility Check\nReturns True if a (Q, P, m) combination can produce a balanced m-phase winding. This is the entry-point for design sweeps and UI filtering.\n\n\nis_valid_combination\ndef is_valid_combination(\n    Q:int, P:int, m:int=3\n)-&gt;bool:\nReturn True if (Q, P, m) supports a balanced m-phase winding.\nA combination is valid when: - P is even and ≥ 2 - Q and m have a common factor ≥ 1 (at least one slot per phase) - A double-layer coil matrix with the default span is balanced\n\nfrom emachines.winding.sos import is_valid_combination\n\nprint(\"Feasibility sweep (Q=6…18, P=2…12, m=3):\")\nfor Q in range(6, 19, 3):\n    row = []\n    for P in range(2, 13, 2):\n        v = is_valid_combination(Q, P)\n        row.append(f\"P={P}:{'✓' if v else '✗'}\")\n    print(f\"  Q={Q:2d}: {' '.join(row)}\")\n\nFeasibility sweep (Q=6…18, P=2…12, m=3):\n  Q= 6: P=2:✓ P=4:✓ P=6:✗ P=8:✓ P=10:✓ P=12:✗\n  Q= 9: P=2:✓ P=4:✓ P=6:✓ P=8:✓ P=10:✓ P=12:✓\n  Q=12: P=2:✓ P=4:✓ P=6:✗ P=8:✓ P=10:✓ P=12:✗\n  Q=15: P=2:✓ P=4:✓ P=6:✗ P=8:✓ P=10:✓ P=12:✗\n  Q=18: P=2:✓ P=4:✓ P=6:✓ P=8:✓ P=10:✓ P=12:✓",
+    "crumbs": [
+      "winding",
+      "Star-of-Slots Winding Layout"
+    ]
+  },
+  {
+    "objectID": "winding/sos.html#references",
+    "href": "winding/sos.html#references",
+    "title": "Star-of-Slots Winding Layout",
+    "section": "References",
+    "text": "References\n\nPyrhönen, J., Jokinen, T., & Hrabovcová, V. (2008). Design of Rotating Electrical Machines. Wiley. §2.1–2.4.\nHanselman, D.C. (2003). Brushless Permanent Magnet Motor Design, 2nd ed. Writer’s Collective. Ch. 4.\nBianchi, N., & Bolognani, S. (2002). Design techniques for reducing cogging torque in surface-mounted PM motors. IEEE Trans. Ind. Appl., 38(5), 1259–1265.\nMüller, G., Vogt, K., & Ponick, B. (2008). Berechnung elektrischer Maschinen. Wiley-VCH. §3.4.\nSWAT-EM: https://github.com/bayonet222/swat-em",
+    "crumbs": [
+      "winding",
+      "Star-of-Slots Winding Layout"
+    ]
+  },
+  {
+    "objectID": "winding/sos.html#tests",
+    "href": "winding/sos.html#tests",
+    "title": "Star-of-Slots Winding Layout",
+    "section": "Tests",
+    "text": "Tests",
+    "crumbs": [
+      "winding",
+      "Star-of-Slots Winding Layout"
+    ]
+  },
+  {
+    "objectID": "winding/api.html",
+    "href": "winding/api.html",
+    "title": "Winding Public API",
+    "section": "",
+    "text": "Re-exports the full public API for emachines.winding.\nImporting from emachines.winding gives access to all public symbols without needing to know which submodule they live in.",
+    "crumbs": [
+      "winding",
+      "Winding Public API"
+    ]
+  },
+  {
+    "objectID": "winding/api.html#overview",
+    "href": "winding/api.html#overview",
+    "title": "Winding Public API",
+    "section": "",
+    "text": "Re-exports the full public API for emachines.winding.\nImporting from emachines.winding gives access to all public symbols without needing to know which submodule they live in.",
+    "crumbs": [
+      "winding",
+      "Winding Public API"
+    ]
+  },
+  {
+    "objectID": "winding/api.html#usage",
+    "href": "winding/api.html#usage",
+    "title": "Winding Public API",
+    "section": "Usage",
+    "text": "Usage\nfrom emachines.winding import *\n# or selectively:\nfrom emachines.winding import pitch_factor\nfrom emachines.winding import mmf_distribution\nfrom emachines.winding import get_basic_params",
+    "crumbs": [
+      "winding",
+      "Winding Public API"
+    ]
+  },
+  {
+    "objectID": "magnetics/electrical_steel.html",
+    "href": "magnetics/electrical_steel.html",
+    "title": "Electrical Steel Database",
+    "section": "",
+    "text": "Purpose: Provide realistic material properties for motor design\nWhat it does: Store and query electrical steel material data (B-H curves, core losses).\n\n\nMotor design requires core loss calculations; lookup actual steel grade (M-19, M-27) properties.\n\n\n\nInputs: Steel grade name, operating frequency, flux density\nOutputs: B-H curve data, core loss at given conditions",
+    "crumbs": [
+      "magnetics",
+      "Electrical Steel Database"
+    ]
+  },
+  {
+    "objectID": "magnetics/electrical_steel.html#executive-summary",
+    "href": "magnetics/electrical_steel.html#executive-summary",
+    "title": "Electrical Steel Database",
+    "section": "",
+    "text": "Purpose: Provide realistic material properties for motor design\nWhat it does: Store and query electrical steel material data (B-H curves, core losses).\n\n\nMotor design requires core loss calculations; lookup actual steel grade (M-19, M-27) properties.\n\n\n\nInputs: Steel grade name, operating frequency, flux density\nOutputs: B-H curve data, core loss at given conditions",
+    "crumbs": [
+      "magnetics",
+      "Electrical Steel Database"
+    ]
+  },
+  {
+    "objectID": "magnetics/electrical_steel.html#how-it-fits-into-the-motor-design-workflow",
+    "href": "magnetics/electrical_steel.html#how-it-fits-into-the-motor-design-workflow",
+    "title": "Electrical Steel Database",
+    "section": "How It Fits Into the Motor Design Workflow",
+    "text": "How It Fits Into the Motor Design Workflow\nUpstream (depends on): Feeds material properties to 04_material_models.ipynb and loss calculations\nDownstream (used by): See notebook connections",
+    "crumbs": [
+      "magnetics",
+      "Electrical Steel Database"
+    ]
+  },
+  {
+    "objectID": "magnetics/electrical_steel.html#theory-electrical-steel",
+    "href": "magnetics/electrical_steel.html#theory-electrical-steel",
+    "title": "Electrical Steel Database",
+    "section": "Theory: Electrical Steel",
+    "text": "Theory: Electrical Steel\nSilicon-steel optimized for low core loss.\nProperties: - Silicon content (0.5–3.5%) increases resistivity - Reduces eddy current losses - Laminations further reduce losses\nManufacturers: - Voestalpine (Austria) — ISOVAC - ThyssenKrupp (Germany) — PowerCore - SURA (Sweden) — High-permeability\n\n\nSteelGrade\ndef SteelGrade(\n    name:str, manufacturer:str, bh_data:pd.DataFrame=&lt;factory&gt;, loss_data:pd.DataFrame=&lt;factory&gt;, source_file:str=''\n)-&gt;None:\nContainer for electrical steel grade properties.\n\n\n\nSteelDatabase\ndef SteelDatabase(\n    data_dir:str\n)-&gt;None:\nUnified loader for electrical steel manufacturer data.\nSupports Voestalpine (isovac), ThyssenKrupp (PowerCore), and SURA grades. Data is loaded from pickle caches on first access and cached in memory.\nArgs: data_dir: Path to the datasheets root directory.\n\n\n\nload_literature_database\ndef load_literature_database(\n    literature_path:str | Path | None=None, # Path to the literature folder. If None, searches in:\n    # - ../KnowledgeBase/literature (relative to notebook)\n    # - ./KnowledgeBase/literature (relative to current dir)\n    # - Environment variable EMACHINES_LITERATURE\n)-&gt;'SteelDatabase': # Database instance with access to all 51+ steel grades\nCreate a SteelDatabase instance from the literature folder.\nThe literature folder should have this structure:\nliterature/datasheets/\n├── Voelstapine Electrical Steel/     (Excel files)\n├── SURA Electrical Steel/             (Excel files)  \n├── Thyssenkrupp Electrical Steel/     (Excel files)\n└── steel_data_cache/                  (Pickle files - preprocessed)\n    ├── sura_m470-50a.pkl\n    ├── Simulation-data-isovac310-50A-voestalpine-*.pkl\n    └── ...\n\n\n\nget_steel_library\ndef get_steel_library(\n    reload:bool=False, # Force reload all steel data (default: False)\n)-&gt;dict[str, 'SteelGrade']: # Dictionary mapping steel grade names to SteelGrade objects\nGet dictionary of available steel grades from literature.\nLazily loads steel grades from the KnowledgeBase/literature folder on first access.",
+    "crumbs": [
+      "magnetics",
+      "Electrical Steel Database"
+    ]
+  },
+  {
+    "objectID": "magnetics/electrical_steel.html#tests",
+    "href": "magnetics/electrical_steel.html#tests",
+    "title": "Electrical Steel Database",
+    "section": "Tests",
+    "text": "Tests\nElectrical steel database and SteelGrade validation.",
+    "crumbs": [
+      "magnetics",
+      "Electrical Steel Database"
+    ]
+  },
+  {
+    "objectID": "magnetics/iron_loss.html",
+    "href": "magnetics/iron_loss.html",
+    "title": "Iron Loss Models",
+    "section": "",
+    "text": "Purpose: Estimate power dissipation in motor cores\nWhat it does: Calculate core (iron) losses in magnetic materials.\n\n\nThermal analysis needs core loss to calculate motor temperature rise and cooling requirements.\n\n\n\nInputs: Flux density, frequency, material (steel grade or fitted parameters)\nOutputs: Core loss in W/kg, decomposed into hysteresis and eddy current components",
+    "crumbs": [
+      "magnetics",
+      "Iron Loss Models"
+    ]
+  },
+  {
+    "objectID": "magnetics/iron_loss.html#executive-summary",
+    "href": "magnetics/iron_loss.html#executive-summary",
+    "title": "Iron Loss Models",
+    "section": "",
+    "text": "Purpose: Estimate power dissipation in motor cores\nWhat it does: Calculate core (iron) losses in magnetic materials.\n\n\nThermal analysis needs core loss to calculate motor temperature rise and cooling requirements.\n\n\n\nInputs: Flux density, frequency, material (steel grade or fitted parameters)\nOutputs: Core loss in W/kg, decomposed into hysteresis and eddy current components",
+    "crumbs": [
+      "magnetics",
+      "Iron Loss Models"
+    ]
+  },
+  {
+    "objectID": "magnetics/iron_loss.html#how-it-fits-into-the-motor-design-workflow",
+    "href": "magnetics/iron_loss.html#how-it-fits-into-the-motor-design-workflow",
+    "title": "Iron Loss Models",
+    "section": "How It Fits Into the Motor Design Workflow",
+    "text": "How It Fits Into the Motor Design Workflow\nUpstream (depends on): Used by thermal and efficiency analysis modules\nDownstream (used by): See notebook connections",
+    "crumbs": [
+      "magnetics",
+      "Iron Loss Models"
+    ]
+  },
+  {
+    "objectID": "magnetics/iron_loss.html#theory-core-loss-decomposition",
+    "href": "magnetics/iron_loss.html#theory-core-loss-decomposition",
+    "title": "Iron Loss Models",
+    "section": "Theory: Core Loss Decomposition",
+    "text": "Theory: Core Loss Decomposition\nCore loss arises from three mechanisms: 1. Hysteresis loss — Domain wall friction 2. Eddy current loss — Induced currents 3. Excess loss — Domain wall dynamics\n\nSteinmetz Model\n\\[P = k \\cdot f^{\\\u0007lpha} \\cdot \\\\hat{B}^{\\\beta}\\]\nSimple two-exponent fit for sinusoidal excitation.\n\n\nModified Steinmetz (iGSE)\n\\[P = k \\cdot f^{\\\u0007lpha-1} \\cdot (f \\cdot \\\\hat{B})^{\\\beta}\\]\nImproved for PWM drives and non-sinusoidal waveforms.\n\n\nBertotti Three-Term\n\\[P_{total} = k_h f \\\\hat{B}^{\\\beta} + k_e (f\\\\hat{B})^2 + k_a (f\\\\hat{B})^{1.5}\\]\nPhysically-based separation into components.\n\n\n\nsteinmetz\ndef steinmetz(\n    f:float | np.ndarray, B_peak:float | np.ndarray, k:float, alpha:float, beta:float\n)-&gt;float | np.ndarray:\nClassical Steinmetz core loss model. P = k * f^alpha * B^beta Args: f: Frequency (Hz) B_peak: Peak flux density (T) k: Material constant alpha: Frequency exponent (1.0–1.6) beta: Flux density exponent (1.6–2.2) Returns: Core loss (W/kg)\n\n\n\nmodified_steinmetz\ndef modified_steinmetz(\n    f:float | np.ndarray, B_peak:float | np.ndarray, k:float, alpha:float, beta:float\n)-&gt;float | np.ndarray:\nModified Steinmetz (iGSE) for PWM waveforms. P = k * f^(alpha-1) * (f*B)^beta Args: f: Frequency (Hz) B_peak: Peak flux density (T) k: Material constant alpha: Frequency exponent beta: Combined exponent Returns: Core loss (W/kg)\n\n\n\nbertotti\ndef bertotti(\n    f:float | np.ndarray, B_peak:float | np.ndarray, k_h:float, k_e:float, k_a:float, alpha:float=1.0,\n    beta:float=2.0\n)-&gt;dict[str, float | np.ndarray]:\nBertotti three-term iron loss separation. Separates into hysteresis, eddy, and excess components. Args: f: Frequency (Hz) B_peak: Peak flux density (T) k_h: Hysteresis coefficient k_e: Eddy current coefficient k_a: Excess coefficient alpha: Frequency exponent (default 1.0) beta: Flux density exponent (default 2.0) Returns: Dict with ‘hysteresis’, ‘eddy’, ‘excess’, ‘total’ (W/kg)\n\n\n\nfit_steinmetz\ndef fit_steinmetz(\n    f_arr:np.ndarray, B_arr:np.ndarray, loss_arr:np.ndarray\n)-&gt;dict:\nFit Steinmetz parameters (k, α, β) to measured data.\n\n\n\nfit_modified_steinmetz\ndef fit_modified_steinmetz(\n    f_arr:np.ndarray, B_arr:np.ndarray, loss_arr:np.ndarray\n)-&gt;dict:\nFit Modified Steinmetz (iGSE) parameters (k, α, β).\n\n\n\nfit_bertotti\ndef fit_bertotti(\n    f_arr:np.ndarray, B_arr:np.ndarray, loss_arr:np.ndarray\n)-&gt;dict:\nFit Bertotti three-term parameters (kh, ke, ka).\n\n\n\nfit_loss_model\ndef fit_loss_model(\n    f_arr:np.ndarray, B_arr:np.ndarray, loss_arr:np.ndarray, model:str='Bertotti'\n)-&gt;dict:\nFit a named core loss model. model must be one of MODEL_NAMES.",
+    "crumbs": [
+      "magnetics",
+      "Iron Loss Models"
+    ]
+  },
+  {
+    "objectID": "magnetics/iron_loss.html#tests",
+    "href": "magnetics/iron_loss.html#tests",
+    "title": "Iron Loss Models",
+    "section": "Tests",
+    "text": "Tests\nIron loss models and coefficient fitting validated against synthetic data.",
+    "crumbs": [
+      "magnetics",
+      "Iron Loss Models"
+    ]
+  },
+  {
+    "objectID": "magnetics/bh_models.html",
+    "href": "magnetics/bh_models.html",
+    "title": "BH Curve Models",
+    "section": "",
+    "text": "Purpose: Represent ferromagnetic core saturation in circuit analysis\nWhat it does: Model magnetic material B-H curves (linear, Fröhlich saturation).\n\n\nMEC solver needs accurate B-H relationships to compute flux and reluctance in magnetic circuits.\n\n\n\nInputs: Linear permeability μ or fitted Fröhlich parameters (a, b)\nOutputs: B-H curve models for use in magnetic circuit analysis",
+    "crumbs": [
+      "magnetics",
+      "BH Curve Models"
+    ]
+  },
+  {
+    "objectID": "magnetics/bh_models.html#executive-summary",
+    "href": "magnetics/bh_models.html#executive-summary",
+    "title": "BH Curve Models",
+    "section": "",
+    "text": "Purpose: Represent ferromagnetic core saturation in circuit analysis\nWhat it does: Model magnetic material B-H curves (linear, Fröhlich saturation).\n\n\nMEC solver needs accurate B-H relationships to compute flux and reluctance in magnetic circuits.\n\n\n\nInputs: Linear permeability μ or fitted Fröhlich parameters (a, b)\nOutputs: B-H curve models for use in magnetic circuit analysis",
+    "crumbs": [
+      "magnetics",
+      "BH Curve Models"
+    ]
+  },
+  {
+    "objectID": "magnetics/bh_models.html#how-it-fits-into-the-motor-design-workflow",
+    "href": "magnetics/bh_models.html#how-it-fits-into-the-motor-design-workflow",
+    "title": "BH Curve Models",
+    "section": "How It Fits Into the Motor Design Workflow",
+    "text": "How It Fits Into the Motor Design Workflow\nUpstream (depends on): Used by 04_material_models.ipynb and 04_mec_solver.ipynb\nDownstream (used by): See notebook connections",
+    "crumbs": [
+      "magnetics",
+      "BH Curve Models"
+    ]
+  },
+  {
+    "objectID": "magnetics/bh_models.html#theory-magnetic-b-h-relationships",
+    "href": "magnetics/bh_models.html#theory-magnetic-b-h-relationships",
+    "title": "BH Curve Models",
+    "section": "Theory: Magnetic B-H Relationships",
+    "text": "Theory: Magnetic B-H Relationships\nThe B-H curve describes how magnetic flux density (B, in Tesla) relates to magnetic field intensity (H, in A/m).\n\nLinear Approximation\nFor low field strengths, below saturation:\n\\[B = \\mu_0 \\cdot \\mu_r \\cdot H\\]\nwhere: - \\(\\mu_0 = 4\\pi \\times 10^{-7}\\) H/m (permeability of free space) - \\(\\mu_r\\) (relative permeability)\nValid for small H where the material stays in its linear region.\n\n\nFröhlich-Kennelly Model\nA better analytical fit for moderate field strengths:\n\\[B = \\frac{H}{a + b |H|}\\]\nwhere \\(a\\) and \\(b\\) are fitted parameters.\nReferences: - Fröhlich (1881) — Original investigations - Hanselman (2003) §3.2 — Motor design applications\n\n\n\nlinear_region\ndef linear_region(\n    H:np.ndarray, mu_r:float\n)-&gt;np.ndarray:\nLinear BH approximation: B = μ₀ · μr · H\nValid for low flux densities well below saturation.\nArgs: H: Magnetic field intensity (A/m) mu_r: Relative permeability\nReturns: Flux density B (T)\n\n\n\nfrolich\ndef frolich(\n    H:np.ndarray, a:float, b:float\n)-&gt;np.ndarray:\nFröhlich-Kennelly analytical BH approximation.\nB = H / (a + b * |H|)\nArgs: H: Magnetic field intensity (A/m) a: Model parameter (dimensionless) b: Model parameter (m/A)\nReturns: Flux density B (T)\n\n\n\nfit_frolich\ndef fit_frolich(\n    H:np.ndarray, B:np.ndarray\n)-&gt;tuple[float, float]:\nFit Fröhlich model parameters (a, b) to measured BH data.\nArgs: H: Measured field intensity (A/m) B: Measured flux density (T)\nReturns: Tuple (a, b) of fitted parameters",
+    "crumbs": [
+      "magnetics",
+      "BH Curve Models"
+    ]
+  },
+  {
+    "objectID": "magnetics/bh_models.html#example-compare-bh-models",
+    "href": "magnetics/bh_models.html#example-compare-bh-models",
+    "title": "BH Curve Models",
+    "section": "Example: Compare BH Models",
+    "text": "Example: Compare BH Models\nLet’s compute and compare the linear and Fröhlich models.\n\n# Example: Compare linear and Fröhlich models\nH_range = np.linspace(0, 5000, 100)\nmu_r = 1000\n\n# Linear model\nB_linear = linear_region(H_range, mu_r)\n\n# Fröhlich model (example parameters)\na = 0.001\nb = 0.0001\nB_frolich = frolich(H_range, a, b)\n\n# Display results\nprint(\"Sample values from B-H curves:\")\nprint(f\"{'H (A/m)':&lt;15} {'B_linear (T)':&lt;20} {'B_Fröhlich (T)':&lt;20}\")\nprint(\"-\" * 55)\nfor h, bl, bf in zip(H_range[::20], B_linear[::20], B_frolich[::20]):\n    print(f\"{h:&lt;15.1f} {bl:&lt;20.4f} {bf:&lt;20.4f}\")\n\nSample values from B-H curves:\nH (A/m)         B_linear (T)         B_Fröhlich (T)      \n-------------------------------------------------------\n0.0             0.0000               0.0000              \n1010.1          1.2693               9901.9705           \n2020.2          2.5387               9950.7438           \n3030.3          3.8080               9967.1085           \n4040.4          5.0773               9975.3111",
+    "crumbs": [
+      "magnetics",
+      "BH Curve Models"
+    ]
+  },
+  {
+    "objectID": "magnetics/bh_models.html#tests",
+    "href": "magnetics/bh_models.html#tests",
+    "title": "BH Curve Models",
+    "section": "Tests",
+    "text": "Tests\n\n# Test linear model\nH_test = np.array([0, 100, 1000])\nmu_r = 1000\nB_test = linear_region(H_test, mu_r)\nmu0 = 4 * np.pi * 1e-7\nexpected = mu0 * mu_r * H_test\nassert np.allclose(B_test, expected), \"Linear model test failed\"\nprint(\"✓ linear_region() works correctly\")\n\n# Test Fröhlich model\na, b = 0.001, 0.0001\nH_frolich = np.array([0, 500, 1000])\nB_frolich_vals = frolich(H_frolich, a, b)\nassert B_frolich_vals[0] == 0, \"Fröhlich should be 0 at H=0\"\nassert len(B_frolich_vals) == len(H_frolich), \"Output length mismatch\"\nprint(\"✓ frolich() works correctly\")\n\n# Test fitting\nH_fit = np.array([100, 500, 1000, 2000], dtype=float)\nB_fit = np.array([0.6, 1.0, 1.2, 1.3], dtype=float)\na_fit, b_fit = fit_frolich(H_fit, B_fit)\nassert isinstance(a_fit, float) and isinstance(b_fit, float)\nprint(f\"✓ fit_frolich() returned a={a_fit:.6f}, b={b_fit:.8f}\")\nprint(\"\\nAll tests passed!\")\n\n✓ linear_region() works correctly\n✓ frolich() works correctly\n✓ fit_frolich() returned a=102.629911, b=0.73616797\n\nAll tests passed!",
+    "crumbs": [
+      "magnetics",
+      "BH Curve Models"
+    ]
+  },
+  {
+    "objectID": "init.html",
+    "href": "init.html",
+    "title": "emachines root package",
+    "section": "",
+    "text": "emachines\n\nRoot package init — sets __version__. All public symbols live in subpackages (winding, magnetics, motors, mec).",
+    "crumbs": [
+      "emachines root package"
+    ]
+  },
+  {
+    "objectID": "motors/dc_motors.html",
+    "href": "motors/dc_motors.html",
+    "title": "DC Motors",
+    "section": "",
+    "text": "Purpose: Analyze and design DC brushed motors\nWhat it does: Calculate DC motor performance: back-EMF, torque, efficiency.\n\n\nAn engineer needs to estimate torque, speed, and efficiency for a DC motor before prototyping.\n\n\n\nInputs: Motor geometry (pole pitch, slot pitch), magnetic properties (flux linkage), winding configuration (Carter coefficient)\nOutputs: Back-EMF constant, torque output, efficiency curves",
+    "crumbs": [
+      "motors",
+      "DC Motors"
+    ]
+  },
+  {
+    "objectID": "motors/dc_motors.html#executive-summary",
+    "href": "motors/dc_motors.html#executive-summary",
+    "title": "DC Motors",
+    "section": "",
+    "text": "Purpose: Analyze and design DC brushed motors\nWhat it does: Calculate DC motor performance: back-EMF, torque, efficiency.\n\n\nAn engineer needs to estimate torque, speed, and efficiency for a DC motor before prototyping.\n\n\n\nInputs: Motor geometry (pole pitch, slot pitch), magnetic properties (flux linkage), winding configuration (Carter coefficient)\nOutputs: Back-EMF constant, torque output, efficiency curves",
+    "crumbs": [
+      "motors",
+      "DC Motors"
+    ]
+  },
+  {
+    "objectID": "motors/dc_motors.html#how-it-fits-into-the-motor-design-workflow",
+    "href": "motors/dc_motors.html#how-it-fits-into-the-motor-design-workflow",
+    "title": "DC Motors",
+    "section": "How It Fits Into the Motor Design Workflow",
+    "text": "How It Fits Into the Motor Design Workflow\nUpstream (depends on): Uses winding factors from 01_winding.ipynb,\nDownstream (used by): design decisions",
+    "crumbs": [
+      "motors",
+      "DC Motors"
+    ]
+  },
+  {
+    "objectID": "motors/dc_motors.html#dc-motor-permanent-magnet-brushed",
+    "href": "motors/dc_motors.html#dc-motor-permanent-magnet-brushed",
+    "title": "DC Motors",
+    "section": "DC Motor (Permanent Magnet Brushed)",
+    "text": "DC Motor (Permanent Magnet Brushed)\nA lumped-parameter model for brushed PMDC machines covering magnetic circuit analysis, armature resistance, motor constants, rotor inertia, steady-state torque-speed characteristics, and efficiency mapping.\n\n\nLumpedParams\ndef LumpedParams(\n    armature_resistance:float, armature_inductance:float, motor_constant:float, rotor_inertia:float,\n    viscous_damping:float, air_gap_flux_density:float, flux_per_pole:float\n)-&gt;None:\nCalculated lumped-parameter motor model.\n\n\n\nOperatingConditions\ndef OperatingConditions(\n    terminal_voltage:float, brush_contact_drop_v:float=1.0, brush_resistance_total:float=0.05\n)-&gt;None:\nTerminal operating conditions.\n\n\n\nMaterialProperties\ndef MaterialProperties(\n    copper_resistivity:float, steel_permeability:float, magnet_remanent_flux_density:float,\n    magnet_recoil_permeability:float, steel_density:float, copper_density:float, shaft_density:float,\n    hysteresis_coeff:float, steinmetz_exponent:float, eddy_current_coeff:float, lamination_thickness:float\n)-&gt;None:\nMaterial properties for motor components.\n\n\n\nGeometricParams\ndef GeometricParams(\n    stator_outer_diameter:float, stator_inner_diameter:float, rotor_outer_diameter:float, rotor_inner_diameter:float,\n    stack_length:float, air_gap_length:float, num_poles:int, num_armature_slots:int, slot_opening_width:float,\n    magnet_arc_angle_deg:float, magnet_thickness:float, turns_per_coil:int, armature_wire_cross_section_m2:float,\n    is_lap_winding:bool=True\n)-&gt;None:\nGeometric dimensions of the motor (SI units).\n\n\nCarter’s Coefficient\nArmature slotting increases the effective air gap by displacing flux around slot openings.\nTheory: \\[g_{eff} = g \\times k_c\\]\nwhere: \\[\\gamma = \\frac{(w_{so}/g)^2}{5 + w_{so}/g}, \\quad k_c = \\frac{\\tau_s}{\\tau_s - \\gamma \\cdot g}\\]\n\n\n\ncalculate_carter_coefficient\ndef calculate_carter_coefficient(\n    g:float, w_so:float, slot_pitch:float\n)-&gt;float:\nCarter’s coefficient for slot opening effect.\nAccounts for the reduction in effective air gap due to slot openings. Returns a value typically between 0.8 and 1.0.\nArgs: g: Air gap [m] w_so: Slot opening width [m] slot_pitch: Slot pitch (distance between slots) [m]\n\nk_c = calculate_carter_coefficient(0.5e-3, 2.0e-3, 20e-3)\nprint(f\"Carter coefficient: {k_c:.4f}\")\nassert 0.8 &lt;= k_c &lt;= 1.0  # Carter coefficient should be in [0.8, 1.0]\nprint(\"✓ Test passed\")\n\nCarter coefficient: 0.9556\n\n\n\n---------------------------------------------------------------------------\nAssertionError                            Traceback (most recent call last)\nCell In[30], line 3\n      1 k_c = calculate_carter_coefficient(0.5e-3, 2.0e-3, 20e-3)\n      2 print(f\"Carter coefficient: {k_c:.4f}\")\n----&gt; 3 assert k_c &gt;= 1.0\n      4 print(\"✓ Test passed\")\n\nAssertionError: \n\n\n\n\n\n\ncalculate_magnetic_circuit\ndef calculate_magnetic_circuit(\n    geom:GeometricParams, mat:MaterialProperties\n)-&gt;tuple[float, float]:\nMagnetic circuit analysis via reluctance network.\n\n\n\ncalculate_armature_resistance\ndef calculate_armature_resistance(\n    geom:GeometricParams, mat:MaterialProperties\n)-&gt;float:\nArmature winding resistance.\n\n\n\ncalculate_motor_constants\ndef calculate_motor_constants(\n    geom:GeometricParams, flux_per_pole:float\n)-&gt;float:\nMotor constant K = Kt = Ke.\n\n\n\ncalculate_rotor_inertia\ndef calculate_rotor_inertia(\n    geom:GeometricParams, mat:MaterialProperties\n)-&gt;float:\nRotor moment of inertia.\n\n\n\ncalculate_lumped_parameters\ndef calculate_lumped_parameters(\n    geom:GeometricParams, mat:MaterialProperties\n)-&gt;LumpedParams:\nComplete lumped model.\n\n\n\ncalculate_steady_state_performance\ndef calculate_steady_state_performance(\n    params:LumpedParams, op:OperatingConditions\n)-&gt;dict:\nSteady-state speed-torque characteristic.\n\n\n\ncalculate_losses_and_efficiency\ndef calculate_losses_and_efficiency(\n    params:LumpedParams, geom:GeometricParams, mat:MaterialProperties, torque:float, speed_rpm:float\n)-&gt;dict:\nLoss breakdown and efficiency.\n\n\n\nplot_efficiency_map\ndef plot_efficiency_map(\n    params:LumpedParams, geom:GeometricParams, mat:MaterialProperties, op_conditions:OperatingConditions,\n    steady_state_data:dict, target_torque:Optional[float]=None, target_speed_rpm:Optional[float]=None\n):\n2-D efficiency contour map.",
+    "crumbs": [
+      "motors",
+      "DC Motors"
+    ]
+  },
+  {
+    "objectID": "motors/dc_motors.html#tests",
+    "href": "motors/dc_motors.html#tests",
+    "title": "DC Motors",
+    "section": "Tests",
+    "text": "Tests\n\n# Test Carter coefficient\nk_c = calculate_carter_coefficient(1e-3, 0.5e-3, 5e-3)\nassert 0.8 &lt; k_c &lt;= 1, \"Carter coefficient should be between 0.8 and 1\"\nprint(f\"✓ Carter coefficient: {k_c:.4f}\")\n\n✓ Carter coefficient: 0.9909",
+    "crumbs": [
+      "motors",
+      "DC Motors"
+    ]
+  },
+  {
+    "objectID": "motors/dc_motors.html#references",
+    "href": "motors/dc_motors.html#references",
+    "title": "DC Motors",
+    "section": "References",
+    "text": "References\n\nIEEE Standard 1415: Guide for Induction Motors\nChapman, S.J. (2005). Electric Machinery Fundamentals\nFitzgerald, A.E., et al. (2003). Electric Machinery",
+    "crumbs": [
+      "motors",
+      "DC Motors"
+    ]
+  },
+  {
+    "objectID": "motors/01_pmsm.html",
+    "href": "motors/01_pmsm.html",
+    "title": "emachines",
+    "section": "",
+    "text": "The back-EMF is the voltage induced by the rotating permanent magnet flux.\nPeak phase back-EMF:\n\\[E_p = \\omega_e \\cdot \\psi_m\\]\nwhere: - \\(\\omega_e\\) = electrical angular velocity [rad/s] - \\(\\psi_m\\) = permanent magnet flux linkage [Wb]\nRelationship to mechanical speed:\n\\[\\omega_e = p \\cdot \\omega_m = p \\cdot \\frac{2\\pi N}{60}\\]\nwhere \\(p\\) is the number of pole pairs and \\(N\\) is mechanical speed in rpm.\nPhysical significance: Back-EMF represents the voltage that must be overcome to drive current through the motor at a given speed. Higher flux and higher speed → higher back-EMF → reduced available voltage for current production (important at high speeds).",
+    "crumbs": [
+      "motors",
+      "Back-EMF (Electromotive Force)"
+    ]
+  },
+  {
+    "objectID": "motors/01_pmsm.html#executive-summary",
+    "href": "motors/01_pmsm.html#executive-summary",
+    "title": "emachines",
+    "section": "Executive Summary",
+    "text": "Executive Summary\nPurpose: Control and simulate AC permanent magnet motors\nWhat it does: Analyze PMSM (Permanent Magnet Synchronous Motor) in dq-frame.\n\nWhy It Matters\nA control engineer designs field-oriented control (FOC) algorithms and needs steady-state current/torque relationships.\n\n\nQuick Start\nInputs: Motor parameters (inductances, flux linkage, resistance), operating speed, applied voltages\nOutputs: dq-axis currents, torque, back-EMF, motor profile (constant-torque and flux-weakening regions)",
+    "crumbs": [
+      "motors",
+      "Back-EMF (Electromotive Force)"
+    ]
+  },
+  {
+    "objectID": "motors/01_pmsm.html#how-it-fits-into-the-motor-design-workflow",
+    "href": "motors/01_pmsm.html#how-it-fits-into-the-motor-design-workflow",
+    "title": "emachines",
+    "section": "How It Fits Into the Motor Design Workflow",
+    "text": "How It Fits Into the Motor Design Workflow\nUpstream (depends on): Uses winding concepts from 01_winding.ipynb,\nDownstream (used by): control system design",
+    "crumbs": [
+      "motors",
+      "Back-EMF (Electromotive Force)"
+    ]
+  },
+  {
+    "objectID": "motors/01_pmsm.html#pmsm-permanent-magnet-synchronous-machine",
+    "href": "motors/01_pmsm.html#pmsm-permanent-magnet-synchronous-machine",
+    "title": "emachines",
+    "section": "PMSM (Permanent Magnet Synchronous Machine)",
+    "text": "PMSM (Permanent Magnet Synchronous Machine)\nA dq-frame model for AC synchronous machines with permanent magnet excitation.\n\ndq-Frame Theory\nThe dq-frame (synchronously rotating reference frame) is the foundation of AC motor control.\nKey concepts:\n\nd-axis (Direct): Aligned with the permanent magnet flux direction\nq-axis (Quadrature): 90° ahead of the d-axis in the direction of rotation\nBenefits: Transforms AC quantities into DC-like quantities at steady-state, enabling intuitive control\n\nVoltage equations in dq-frame:\n\\[V_d = R_s i_d + \\frac{d\\psi_d}{dt} - \\omega_e \\psi_q\\]\n\\[V_q = R_s i_q + \\frac{d\\psi_q}{dt} + \\omega_e \\psi_d\\]\nFlux linkages:\n\\[\\psi_d = L_d i_d + \\psi_m\\]\n\\[\\psi_q = L_q i_q\\]\nIn steady-state (constant speed), the derivatives vanish, yielding the simplified equations used here.\n\n\nInductance and Saliency\nNon-salient (SPM) vs. Salient (IPM) machines:\n\nSurface-Permanent Magnet (SPM): Magnets mounted on rotor surface → \\(L_d \\approx L_q\\)\n\nTorque produced primarily by interaction between PM flux and q-axis current\nLimited flux-weakening capability\n\nInterior-Permanent Magnet (IPM): Magnets buried in rotor poles → \\(L_d &gt; L_q\\)\n\nTorque has both PM (excitation) and reluctance (saliency) components\nBetter flux-weakening capability due to saliency\n\n\nTorque breakdown:\n\\[T_e = \\underbrace{\\frac{3}{2}p\\psi_m i_q}_{\\text{Excitation torque}} + \\underbrace{\\frac{3}{2}p(L_d - L_q)i_d i_q}_{\\text{Reluctance torque}}\\]\nFor maximum torque at low speed: set \\(i_d = 0\\) (all current goes to \\(i_q\\))\nAt high speed (flux-weakening): apply negative \\(i_d\\) to reduce back-EMF and maintain voltage margin\n\n\nFlux-Weakening Control\nAt high speeds, the back-EMF becomes large, limiting the available voltage for current production.\nVoltage constraint:\n\\[|\\mathbf{V}| = \\sqrt{(R_s i_d - \\omega_e L_q i_q)^2 + (R_s i_q + \\omega_e(L_d i_d + \\psi_m))^2} \\leq V_b\\]\nFlux-weakening strategy:\nApply negative \\(i_d\\) to weaken the total flux (\\(\\psi_d = L_d i_d + \\psi_m\\)), reducing back-EMF and extending the speed range.\nOperating regions:\n\nConstant-Torque Region (low speed, \\(i_d = 0\\)): Voltage allows rated current → constant torque output\nFlux-Weakening Region (high speed, \\(i_d &lt; 0\\)): Reduced voltage → power limited to rated value\n\n\n\n\nPMSMParams\ndef PMSMParams(\n    p:int, Ld:float, Lq:float, psi_m:float, Rs:float=0.0, J:float=0.0\n):\nContainer for PMSM parameters.\n\n\nBack-EMF\nThe back-EMF is proportional to speed and PM flux: \\(E = \\omega_e \\cdot \\psi_m\\)\n\n\n\nback_emf\ndef back_emf(\n    omega_e:float, psi_m:float\n)-&gt;float:\nPeak phase back-EMF.\n\nemf = back_emf(1000, 0.15)\nassert emf == 150.0\nprint(f\"✓ Back-EMF test passed\")\n\n✓ Back-EMF test passed\n\n\n\n\nElectromagnetic Torque\nThe instantaneous torque has two components:\n\\[T_e = \\frac{3}{2} p [\\psi_m i_q + (L_d - L_q) i_d i_q]\\]\nComponent breakdown:\n\nExcitation (PM) torque: \\(T_{exc} = \\frac{3}{2} p \\psi_m i_q\\)\n\nProduced by interaction of PM flux with q-axis current\nPresent in all PMSM topologies\nMaximized at \\(i_d = 0\\) for a given current magnitude\n\nReluctance (Saliency) torque: \\(T_{rel} = \\frac{3}{2} p (L_d - L_q) i_d i_q\\)\n\nProduced by saliency (magnetic asymmetry)\nOnly non-zero in IPM machines where \\(L_d &gt; L_q\\)\nRequires specific \\(i_d\\) and \\(i_q\\) signs to add constructively\n\n\nControl implications: - Low speed (constant-torque region): Use \\(i_d = 0\\), vary \\(i_q\\) for torque control - High speed (flux-weakening region): Use \\(i_d &lt; 0\\) to reduce back-EMF and maintain power output\n\n\n\ntorque\ndef torque(\n    params:PMSMParams, id:float, iq:float\n)-&gt;float:\nElectromagnetic torque.\n\nparams = PMSMParams(p=5, Ld=78e-6, Lq=78e-6, psi_m=0.15)\nT = torque(params, 0, 100)\nassert T &gt; 0\nprint(f\"✓ PMSM torque test passed\")\n\n✓ PMSM torque test passed\n\n\n\n\nSteady-State dq-Frame Currents\nSolve the 2×2 linear system for steady-state dq currents from applied voltages.\nSteady-state voltage equations (neglecting transients):\n\\[V_d = R_s i_d - \\omega_e L_q i_q\\]\n\\[V_q = R_s i_q + \\omega_e (L_d i_d + \\psi_m)\\]\nPhysical interpretation: - d-axis: Resistive voltage drop plus cross-coupling from q-axis current - q-axis: Resistive drop plus back-EMF and cross-coupling from d-axis current\nMatrix form:\n\\[\\begin{bmatrix} V_d \\ V_q - \\omega_e\\psi_m \\end{bmatrix} = \\begin{bmatrix} R_s & -\\omega_e L_q \\ \\omega_e L_d & R_s \\end{bmatrix} \\begin{bmatrix} i_d \\ i_q \\end{bmatrix}\\]\nSolving this system gives the steady-state currents needed to produce a given voltage vector.\n\n\n\ndq_currents\ndef dq_currents(\n    params:PMSMParams, omega_e:float, Vd:float, Vq:float\n)-&gt;tuple[float, float]:\nSteady-state dq currents.\n\nparams = PMSMParams(p=5, Ld=78e-6, Lq=78e-6, psi_m=0.15, Rs=0.1)\nid, iq = dq_currents(params, 500, 2.0, 10.0)\nassert not np.isnan(id) and not np.isnan(iq)\nprint(f\"✓ DQ-frame currents test passed\")\n\n✓ DQ-frame currents test passed\n\n\n\n\nSPM Motor Profile\nSurface-mount PMSM with constant-torque and flux-weakening regions.\n\n\n\nSPM\ndef SPM(\n    phi_m:float, ld:float, pp:int, Vb:float, Ib:float\n):\nSurface-Mount PMSM motor profile.\n\nspm = SPM(phi_m=0.087, ld=78e-6, pp=5, Vb=12, Ib=50)\nspm.validate()\nspm.motor_profile()\nassert len(spm.torque) == len(spm.speed)\nprint(f\"✓ SPM motor profile test passed\")\n\n✓ SPM motor profile test passed",
+    "crumbs": [
+      "motors",
+      "Back-EMF (Electromotive Force)"
+    ]
+  },
+  {
+    "objectID": "motors/01_pmsm.html#tests",
+    "href": "motors/01_pmsm.html#tests",
+    "title": "emachines",
+    "section": "Tests",
+    "text": "Tests\nPMSM dq-model validated against analytical expressions.",
+    "crumbs": [
+      "motors",
+      "Back-EMF (Electromotive Force)"
+    ]
+  },
+  {
+    "objectID": "motors/api.html",
+    "href": "motors/api.html",
+    "title": "Motors Public API",
+    "section": "",
+    "text": "Re-exports the full public API for emachines.motors.\nImporting from emachines.motors gives access to all public symbols without needing to know which submodule they live in.",
+    "crumbs": [
+      "motors",
+      "Motors Public API"
+    ]
+  },
+  {
+    "objectID": "motors/api.html#overview",
+    "href": "motors/api.html#overview",
+    "title": "Motors Public API",
+    "section": "",
+    "text": "Re-exports the full public API for emachines.motors.\nImporting from emachines.motors gives access to all public symbols without needing to know which submodule they live in.",
+    "crumbs": [
+      "motors",
+      "Motors Public API"
+    ]
+  },
+  {
+    "objectID": "motors/api.html#usage",
+    "href": "motors/api.html#usage",
+    "title": "Motors Public API",
+    "section": "Usage",
+    "text": "Usage\nfrom emachines.motors import *\n# or selectively:\nfrom emachines.motors import GeometricParams\nfrom emachines.motors import PMSMParams",
+    "crumbs": [
+      "motors",
+      "Motors Public API"
+    ]
+  },
+  {
+    "objectID": "magnetics/pm_materials.html",
+    "href": "magnetics/pm_materials.html",
+    "title": "Permanent Magnet Materials",
+    "section": "",
+    "text": "Purpose: Provide realistic PM properties for motor design\nWhat it does: Store and query permanent magnet material data.\n\n\nMotor design requires PM flux linkage and temperature derating curves.\n\n\n\nInputs: Magnet grade (NdFeB, SmCo), operating temperature\nOutputs: Remanent flux Br, coercivity Hc, temperature derating, J-H curves",
+    "crumbs": [
+      "magnetics",
+      "Permanent Magnet Materials"
+    ]
+  },
+  {
+    "objectID": "magnetics/pm_materials.html#executive-summary",
+    "href": "magnetics/pm_materials.html#executive-summary",
+    "title": "Permanent Magnet Materials",
+    "section": "",
+    "text": "Purpose: Provide realistic PM properties for motor design\nWhat it does: Store and query permanent magnet material data.\n\n\nMotor design requires PM flux linkage and temperature derating curves.\n\n\n\nInputs: Magnet grade (NdFeB, SmCo), operating temperature\nOutputs: Remanent flux Br, coercivity Hc, temperature derating, J-H curves",
+    "crumbs": [
+      "magnetics",
+      "Permanent Magnet Materials"
+    ]
+  },
+  {
+    "objectID": "magnetics/pm_materials.html#how-it-fits-into-the-motor-design-workflow",
+    "href": "magnetics/pm_materials.html#how-it-fits-into-the-motor-design-workflow",
+    "title": "Permanent Magnet Materials",
+    "section": "How It Fits Into the Motor Design Workflow",
+    "text": "How It Fits Into the Motor Design Workflow\nUpstream (depends on): Feeds flux linkage values to 02_pmsm.ipynb and other analysis\nDownstream (used by): See notebook connections",
+    "crumbs": [
+      "magnetics",
+      "Permanent Magnet Materials"
+    ]
+  },
+  {
+    "objectID": "magnetics/pm_materials.html#theory-ndfeb-magnets",
+    "href": "magnetics/pm_materials.html#theory-ndfeb-magnets",
+    "title": "Permanent Magnet Materials",
+    "section": "Theory: NdFeB Magnets",
+    "text": "Theory: NdFeB Magnets\nStrongest permanent magnets available.\nProperties: - Remanence (Br): ≈1.0–1.5 T at 20°C - Coercivity (Hcb, Hcj): Depends on grade - Temperature effects: Br and Hcj decline\nGrades: - N-series (80°C): Room temperature - M-series (100°C): Moderate temperature - H/SH/UH/EH (120–200°C): High temperature\n\n\nMagnetGrade\ndef MagnetGrade(\n    grade:str, br:float, hcb:float, hcj:float, alpha_br:float, alpha_hcj:float\n)-&gt;None:\nRoom-temperature properties of a permanent magnet grade.\n\n\n\nMagnetData\ndef MagnetData(\n    grade:str, from_standard:str, temperature_C:float, T_max:float, Br:float, Hcj:float, alpha_br:float,\n    alpha_hcj:float, H:np.ndarray=&lt;factory&gt;, J:np.ndarray=&lt;factory&gt;, B:np.ndarray=&lt;factory&gt;,\n    J_20C:np.ndarray=&lt;factory&gt;, B_20C:np.ndarray=&lt;factory&gt;\n)-&gt;None:\nTemperature-corrected demagnetization curves.",
+    "crumbs": [
+      "magnetics",
+      "Permanent Magnet Materials"
+    ]
+  },
+  {
+    "objectID": "magnetics/pm_materials.html#test",
+    "href": "magnetics/pm_materials.html#test",
+    "title": "Permanent Magnet Materials",
+    "section": "Test",
+    "text": "Test\nVerify magnet grades and temperature correction.\n\n# Test MAGNET_LIBRARY\nassert \"N42\" in MAGNET_LIBRARY\nassert len(MAGNET_LIBRARY) == 25\nn42 = MAGNET_LIBRARY[\"N42\"]\nassert n42.br == 1.305\nprint(f\"✓ MAGNET_LIBRARY: {len(MAGNET_LIBRARY)} grades\")\n\n# Test MagnetData\nmagnet = MagnetData(\n    grade=\"N42\",\n    from_standard=\"Arnold Magnetics\",\n    temperature_C=80,\n    T_max=80,\n    Br=n42.br,\n    Hcj=n42.hcj * 1e3,\n    alpha_br=n42.alpha_br,\n    alpha_hcj=n42.alpha_hcj,\n)\nmagnet.calculate_JH()\nassert len(magnet.H) == 100\nassert len(magnet.B) == 100\nprint(f\"✓ MagnetData.calculate_JH(): {len(magnet.H)} points\")\nprint(\"\\nAll tests passed!\")\n\n✓ MAGNET_LIBRARY: 25 grades\n✓ MagnetData.calculate_JH(): 100 points\n\nAll tests passed!",
+    "crumbs": [
+      "magnetics",
+      "Permanent Magnet Materials"
+    ]
+  },
+  {
+    "objectID": "magnetics/api.html",
+    "href": "magnetics/api.html",
+    "title": "Magnetics Public API",
+    "section": "",
+    "text": "Re-exports the full public API for emachines.magnetics.\nImporting from emachines.magnetics gives access to all public symbols without needing to know which submodule they live in.",
+    "crumbs": [
+      "magnetics",
+      "Magnetics Public API"
+    ]
+  },
+  {
+    "objectID": "magnetics/api.html#overview",
+    "href": "magnetics/api.html#overview",
+    "title": "Magnetics Public API",
+    "section": "",
+    "text": "Re-exports the full public API for emachines.magnetics.\nImporting from emachines.magnetics gives access to all public symbols without needing to know which submodule they live in.",
+    "crumbs": [
+      "magnetics",
+      "Magnetics Public API"
+    ]
+  },
+  {
+    "objectID": "magnetics/api.html#usage",
+    "href": "magnetics/api.html#usage",
+    "title": "Magnetics Public API",
+    "section": "Usage",
+    "text": "Usage\nfrom emachines.magnetics import *\n# or selectively:\nfrom emachines.magnetics import MODEL_NAMES\nfrom emachines.magnetics import linear_region\nfrom emachines.magnetics import SAMPLE_BH\nfrom emachines.magnetics import MAGNET_LIBRARY",
+    "crumbs": [
+      "magnetics",
+      "Magnetics Public API"
+    ]
+  },
+  {
+    "objectID": "winding/mmf.html",
+    "href": "winding/mmf.html",
+    "title": "MMF Analysis of AC Windings",
+    "section": "",
+    "text": "This notebook computes the magnetomotive force (MMF) waveform and harmonic spectrum produced by an AC stator winding.\n\n\nThe spatial shape of the airgap MMF directly determines: - Torque production — the working harmonic (ν = p) drives the fundamental torque. - Torque ripple — sub- and super-harmonics create pulsating torque components. - Rotor losses — higher-order harmonics induce eddy currents in the rotor magnets and back-iron, causing heating and efficiency loss. - Acoustic noise — MMF harmonics that coincide with structural resonances generate audible noise.\nDesigners use the MMF spectrum to compare winding configurations, choose slot/pole combinations, and decide between single- and double-layer layouts before running finite-element analysis.",
+    "crumbs": [
+      "winding",
+      "MMF Analysis of AC Windings"
+    ]
+  },
+  {
+    "objectID": "winding/mmf.html#executive-summary",
+    "href": "winding/mmf.html#executive-summary",
+    "title": "MMF Analysis of AC Windings",
+    "section": "",
+    "text": "This notebook computes the magnetomotive force (MMF) waveform and harmonic spectrum produced by an AC stator winding.\n\n\nThe spatial shape of the airgap MMF directly determines: - Torque production — the working harmonic (ν = p) drives the fundamental torque. - Torque ripple — sub- and super-harmonics create pulsating torque components. - Rotor losses — higher-order harmonics induce eddy currents in the rotor magnets and back-iron, causing heating and efficiency loss. - Acoustic noise — MMF harmonics that coincide with structural resonances generate audible noise.\nDesigners use the MMF spectrum to compare winding configurations, choose slot/pole combinations, and decide between single- and double-layer layouts before running finite-element analysis.",
+    "crumbs": [
+      "winding",
+      "MMF Analysis of AC Windings"
+    ]
+  },
+  {
+    "objectID": "winding/mmf.html#how-it-fits-into-motor-design",
+    "href": "winding/mmf.html#how-it-fits-into-motor-design",
+    "title": "MMF Analysis of AC Windings",
+    "section": "How It Fits Into Motor Design",
+    "text": "How It Fits Into Motor Design\nemachines workflow:\n\n  01_winding.ipynb\n  (winding factors, star-of-slots)\n        │\n        ▼\n  01_winding_mmf.ipynb   ←── YOU ARE HERE\n  (MMF waveform & spectrum)\n        │\n        ▼\n  02_pmsm.ipynb          (torque, back-EMF via kw and MMF)\n  04_mec_solver.ipynb    (flux linkage in magnetic circuit)\nDepends on: 01_winding.ipynb — uses build_coil_matrix, get_valid_coil_spans from emachines.winding.sos.\nFeeds into: 02_pmsm.ipynb, 04_mec_solver.ipynb.",
+    "crumbs": [
+      "winding",
+      "MMF Analysis of AC Windings"
+    ]
+  },
+  {
+    "objectID": "winding/mmf.html#what-you-provide-inputs",
+    "href": "winding/mmf.html#what-you-provide-inputs",
+    "title": "MMF Analysis of AC Windings",
+    "section": "What You Provide (Inputs)",
+    "text": "What You Provide (Inputs)\n\n\n\n\n\n\n\n\n\n\nParameter\nSymbol\nDescription\nUnits\nTypical Range\n\n\n\n\nStator slots\nQ\nTotal number of stator slots\n—\n6 – 72\n\n\nPoles\nP\nNumber of poles (even)\n—\n2 – 20\n\n\nPhases\nm\nNumber of phases\n—\n3 (three-phase)\n\n\nLayers\nlayers\nSingle- or double-layer winding\n—\n1 or 2\n\n\nCoil span\nw\nSpan of each coil in slots\nslots\n1 – Q/p\n\n\nTime angle\nθ_e\nElectrical time angle\nrad\n0 – 2π\n\n\nMode\nmode\n\"three_phase\", \"single_phase\", \"winding_factor\"\n—\n—\n\n\nMax harmonic\nnu_max\nHighest spatial harmonic to evaluate\n—\n20 – 50",
+    "crumbs": [
+      "winding",
+      "MMF Analysis of AC Windings"
+    ]
+  },
+  {
+    "objectID": "winding/mmf.html#what-you-get-outputs",
+    "href": "winding/mmf.html#what-you-get-outputs",
+    "title": "MMF Analysis of AC Windings",
+    "section": "What You Get (Outputs)",
+    "text": "What You Get (Outputs)\n\n\n\n\n\n\n\n\nResult\nSymbol\nMeaning\n\n\n\n\nConductor distribution\nn[i]\nSigned A·turns per slot at angle θ_e\n\n\nMMF waveform\nF(θ)\nStaircase MMF along the airgap\n\n\nWinding factor spectrum\nkw(ν)\n\n\n\nMMF harmonic amplitudes\nF̂(ν)\nkw(ν)·p/ν, balanced 3-phase cancellation applied\n\n\n\n\nQuick Example\nfrom emachines.winding.mmf import mmf_waveform, mmf_harmonics\n\n# 12-slot / 10-pole double-layer FSCW at θ_e = 0\nangles, F = mmf_waveform(12, 10, layers=2)\n\n# Three-phase MMF harmonic spectrum, normalised\nnu, amp = mmf_harmonics(12, 10, layers=2)",
+    "crumbs": [
+      "winding",
+      "MMF Analysis of AC Windings"
+    ]
+  },
+  {
+    "objectID": "winding/mmf.html#abbreviations-and-notation",
+    "href": "winding/mmf.html#abbreviations-and-notation",
+    "title": "MMF Analysis of AC Windings",
+    "section": "Abbreviations and Notation",
+    "text": "Abbreviations and Notation\n\n\n\nSymbol\nDefinition\nUnits\n\n\n\n\nQ\nNumber of stator slots\n—\n\n\nP\nNumber of poles\n—\n\n\np\nPole pairs, p = P/2\n—\n\n\nm\nNumber of phases\n—\n\n\nν\nMechanical spatial harmonic order\n—\n\n\nw\nCoil span in slots\nslots\n\n\nθ_e\nElectrical time angle\nrad\n\n\nn_i\nSigned ampere-conductor value at slot i\nA·turns (pu)\n\n\nF(θ)\nMMF waveform along the airgap\nA·turns (pu)\n\n\nkw(ν)\nWinding factor magnitude at harmonic ν\n—\n\n\nF̂(ν)\nMMF harmonic amplitude = kw(ν)·p/ν\nA·turns (pu)\n\n\nt\nWinding periodicity = gcd(Q, p)\n—",
+    "crumbs": [
+      "winding",
+      "MMF Analysis of AC Windings"
+    ]
+  },
+  {
+    "objectID": "winding/mmf.html#imports-and-setup",
+    "href": "winding/mmf.html#imports-and-setup",
+    "title": "MMF Analysis of AC Windings",
+    "section": "Imports and Setup",
+    "text": "Imports and Setup",
+    "crumbs": [
+      "winding",
+      "MMF Analysis of AC Windings"
+    ]
+  },
+  {
+    "objectID": "winding/mmf.html#background-mmf-in-ac-windings",
+    "href": "winding/mmf.html#background-mmf-in-ac-windings",
+    "title": "MMF Analysis of AC Windings",
+    "section": "Background: MMF in AC Windings",
+    "text": "Background: MMF in AC Windings\nWhen alternating current flows through a stator winding, each conductor contributes a localised magnetomotive force proportional to the current it carries and its winding direction. Summing these contributions around the airgap circumference via Ampere’s law yields the MMF waveform F(θ).\nFor a sinusoidal balanced three-phase supply: \\[\ni_k(\\theta_e) = \\hat{I}\\cos\\!\\left(\\theta_e - \\frac{2\\pi k}{m}\\right),\\quad k = 0,1,\\ldots,m-1\n\\]\nThe MMF waveform is computed in three steps:\n\nSlot assignment — build_coil_matrix maps each slot conductor to a phase and current direction.\nAmpere-conductor distribution — multiply signed conductor occupancy by instantaneous phase currents to get n[i] at each slot.\nCumulative sum — integrate n[i] around the circumference (Ampere’s law) and remove the DC offset.\n\nThe resulting staircase is then decomposed by spatial Fourier analysis into its harmonic spectrum.",
+    "crumbs": [
+      "winding",
+      "MMF Analysis of AC Windings"
+    ]
+  },
+  {
+    "objectID": "winding/mmf.html#mmf_distribution-ampere-conductor-distribution",
+    "href": "winding/mmf.html#mmf_distribution-ampere-conductor-distribution",
+    "title": "MMF Analysis of AC Windings",
+    "section": "mmf_distribution: Ampere-Conductor Distribution",
+    "text": "mmf_distribution: Ampere-Conductor Distribution\n\nTheory\nThe ampere-conductor distribution n(θ) is a step function that equals the net signed conductor current at each slot position:\n\\[\nn_i = \\sum_{\\text{layer}} \\operatorname{sign}(\\text{code}_{i,\\text{layer}}) \\cdot i_{\\,|\\text{code}|-1}(\\theta_e)\n\\]\nwhere code is the signed conductor occupancy from build_coil_matrix (+k = phase k forward, −k = phase k return), and \\(i_k(\\theta_e)\\) is the instantaneous current of phase k.\nPhysical meaning: n(θ) is the “source density” of MMF. The MMF itself is its spatial running integral (cumulative sum around the bore).\nDesign insight: The distribution of conductors across slots determines which spatial harmonics are present and how strongly. Distributed windings spread conductors to suppress low-order harmonics; concentrated windings concentrate them for high torque density at the cost of richer harmonic content.\nReferences: Pyrhönen et al. (2014), §2.4; Müller, Vogt & Ponick (2008), §3.4.\n\n\nmmf_distribution: Implementation\n\n\n\nmmf_distribution\ndef mmf_distribution(\n    Q:int, P:int, m:int=3, layers:int=1, w:int | None=None, # Coil span in slots. ``None`` → coil span that\n    # maximises the fundamental winding factor.\n    theta_electrical:float=0.0\n)-&gt;np.ndarray: # Signed ampere-conductor value at each slot. Per-unit (peak = 1 A·turn).\nInstantaneous signed ampere-conductor distribution along the airgap.\nFor each slot position i (mechanical angle θᵢ = 2π·i/Q), n[i] is the sum of signed conductor currents across all winding layers:\n.. math:: n_i = {} ({i,}) i_{,||-1}(_e)\n\n\nmmf_distribution: Example\n\nfrom emachines.winding.mmf import mmf_distribution\nimport numpy as np\n\n# 12s/10p double-layer FSCW at θ_e = 0  (phase A at positive peak)\nn = mmf_distribution(12, 10, layers=2, theta_electrical=0.0)\n\nprint(\"12-slot / 10-pole double-layer FSCW, θ_e = 0°\")\nprint(f\"Slot conductors: {np.round(n, 4)}\")\nprint(f\"Sum (should be ≈ 0): {n.sum():.2e}\")\nprint()\nprint(\"Interpretation: positive = net A·turns in forward direction,\")\nprint(\"                negative = net A·turns in return direction.\")\n\n12-slot / 10-pole double-layer FSCW, θ_e = 0°\nSlot conductors: [ 2.  -1.5  1.  -1.   1.   0.5 -2.   1.5 -1.   1.  -1.  -0.5]\nSum (should be ≈ 0): 0.00e+00\n\nInterpretation: positive = net A·turns in forward direction,\n                negative = net A·turns in return direction.",
+    "crumbs": [
+      "winding",
+      "MMF Analysis of AC Windings"
+    ]
+  },
+  {
+    "objectID": "winding/mmf.html#mmf_waveform-mmf-staircase",
+    "href": "winding/mmf.html#mmf_waveform-mmf-staircase",
+    "title": "MMF Analysis of AC Windings",
+    "section": "mmf_waveform: MMF Staircase",
+    "text": "mmf_waveform: MMF Staircase\n\nTheory\nThe MMF waveform is obtained by applying Ampere’s law around the stator bore. Integrating the ampere-conductor distribution n(θ) in the positive θ direction gives:\n\\[\nF(\\theta_i) = \\sum_{j=0}^{i-1} n_j - \\overline{F}\n\\]\nwhere \\(\\overline{F}\\) is the spatial mean, subtracted to enforce zero net MMF around the closed path (no DC offset).\nThe result is a staircase waveform — constant between slots, stepping at each slot opening. In the limit of many slots (large Q) it approaches a sinusoid; for concentrated windings with few slots per phase it is highly non-sinusoidal.\nDesign insight: The ratio of fundamental amplitude to harmonic content directly determines torque quality. A near-sinusoidal MMF (many slots, distributed winding) gives low ripple; a square-wave MMF (concentrated winding) is rich in harmonics but simpler to manufacture.\nReferences: Pyrhönen et al. (2014), §2.4, eq. (2.73); Müller, Vogt & Ponick (2008), §3.4.\n\n\nmmf_waveform: Implementation\n\n\n\nmmf_waveform\ndef mmf_waveform(\n    Q:int, P:int, m:int=3, layers:int=1, w:int | None=None, theta_electrical:float=0.0\n)-&gt;tuple[np.ndarray, np.ndarray]: # Mechanical angles in degrees, 0° … 360° inclusive.\nInstantaneous MMF staircase waveform along the airgap.\nApplies Ampere’s law around the stator bore: the MMF at mechanical angle θ equals the cumulative sum of ampere-conductors from slot 0 up to the slot preceding θ, with the DC offset removed.\n.. math:: F(i) = {j=0}^{i-1} n_j - \nThe staircase is returned closed (first point repeated at 360°) for direct use in step-line plots.\n\n\nmmf_waveform: Example — Effect of Electrical Time Angle\n\nfrom emachines.winding.mmf import mmf_waveform\nimport numpy as np\n\nprint(\"MMF waveform at three electrical time angles\")\nprint(\"12-slot / 10-pole double-layer FSCW\")\nprint()\n\nfor theta_deg in [0, 30, 90]:\n    angles, F = mmf_waveform(12, 10, layers=2,\n                              theta_electrical=np.radians(theta_deg))\n    print(f\"  θ_e = {theta_deg:3d}°  |  peak MMF = {np.max(np.abs(F[:-1])):.4f} pu\")\n\nprint()\nprint(\"Observation: the peak MMF is the same at all time angles (rotating wave).\")\n\nMMF waveform at three electrical time angles\n12-slot / 10-pole double-layer FSCW\n\n  θ_e =   0°  |  peak MMF = 1.0000 pu\n  θ_e =  30°  |  peak MMF = 0.8660 pu\n  θ_e =  90°  |  peak MMF = 0.8660 pu\n\nObservation: the peak MMF is the same at all time angles (rotating wave).",
+    "crumbs": [
+      "winding",
+      "MMF Analysis of AC Windings"
+    ]
+  },
+  {
+    "objectID": "winding/mmf.html#winding_factor_spectrum-winding-factor-vs.-harmonic-order",
+    "href": "winding/mmf.html#winding_factor_spectrum-winding-factor-vs.-harmonic-order",
+    "title": "MMF Analysis of AC Windings",
+    "section": "winding_factor_spectrum: Winding Factor vs. Harmonic Order",
+    "text": "winding_factor_spectrum: Winding Factor vs. Harmonic Order\n\nTheory\nThe winding factor for mechanical harmonic ν is the ratio of the actual phasor sum of conductor voltages to the arithmetic sum (i.e. the ideal case where all conductors are in one slot):\n\\[\nk_{w\\nu} = \\frac{1}{m} \\sum_{k=0}^{m-1}\n           \\frac{\\left|\\displaystyle\\sum_{i,\\,\\text{lyr}} s_{i,\\text{lyr}}\n           \\cdot e^{j\\,\\nu\\,\\frac{2\\pi i}{Q}}\\right|}{N_k}\n\\]\nwhere the inner sum runs over all conductors (across all layers) of phase k, \\(s_{i,\\text{lyr}} \\in \\{+1,-1\\}\\) is the conductor direction, and \\(N_k\\) is the total conductor count for phase k.\nMechanical vs. electrical harmonics: ν is the mechanical harmonic order — the number of complete cycles of the waveform around the full 360° mechanical circumference. The working harmonic (the one that produces torque with P poles) is at ν = p = P/2.\nDesign insight: Harmonics with high kw(ν) are efficiently produced. For a PMSM, harmonics other than ν = p are parasitic — they store reactive energy and cause rotor losses. A good winding has kw(p) ≈ 0.9–1.0 and kw(ν) ≈ 0 for all other significant ν.\nReferences: Bianchi & Bolognani (2002); Müller, Vogt & Ponick (2008), eq. (3.65).\n\n\nwinding_factor_spectrum: Implementation\n\n# winding_factor_spectrum is defined in emachines.winding.winding_factors\n# and imported into this module via the setup cell above.\n# It is re-exported from emachines.winding for convenience.\nfrom emachines.winding.winding_factors import winding_factor_spectrum  # noqa: F401\n\n\n\nwinding_factor_spectrum: Example — Integer-slot vs. FSCW\n\nfrom emachines.winding.mmf import winding_factor_spectrum\nimport numpy as np\n\nconfigs = [\n    dict(Q=24, P=4,  layers=2, label=\"24s/4p  integer-slot (q=2)\"),\n    dict(Q=12, P=10, layers=2, label=\"12s/10p FSCW (q=2/5)\"),\n    dict(Q=9,  P=8,  layers=2, label=\"9s/8p   FSCW (q=3/8)\"),\n]\n\nprint(f\"{'Harmonic ν':&gt;12}\", end=\"\")\nfor cfg in configs:\n    print(f\"  {cfg['label']:&gt;28}\", end=\"\")\nprint()\nprint(\"-\" * 95)\n\nnu_max = 15\nnu_arr = None\nresults = []\nfor cfg in configs:\n    nu_arr, kw = winding_factor_spectrum(cfg[\"Q\"], cfg[\"P\"], layers=cfg[\"layers\"], nu_max=nu_max)\n    results.append((cfg, kw))\n\nfor i, nu_i in enumerate(nu_arr):\n    print(f\"  ν = {int(nu_i):&gt;3}     \", end=\"\")\n    for cfg_j, kw_j in results:\n        val = kw_j[i]\n        marker = \" ←working\" if nu_i == cfg_j[\"P\"] // 2 else \"\"\n        print(f\"  {'':&gt;12}kw = {val:.4f}{marker}\", end=\"\")\n    print()\n\n  Harmonic ν    24s/4p  integer-slot (q=2)          12s/10p FSCW (q=2/5)          9s/8p   FSCW (q=3/8)\n-----------------------------------------------------------------------------------------------\n  ν =   1                   kw = 0.0000              kw = 0.0670              kw = 0.0607\n  ν =   2                   kw = 0.9659 ←working              kw = 0.0000              kw = 0.1398\n  ν =   3                   kw = 0.0000              kw = 0.5000              kw = 0.5774\n  ν =   4                   kw = 0.0000              kw = 0.0000              kw = 0.9452 ←working\n  ν =   5                   kw = 0.0000              kw = 0.9330 ←working              kw = 0.9452\n  ν =   6                   kw = 0.7071              kw = 0.0000              kw = 0.5774\n  ν =   7                   kw = 0.0000              kw = 0.9330              kw = 0.1398\n  ν =   8                   kw = 0.0000              kw = 0.0000              kw = 0.0607\n  ν =   9                   kw = 0.0000              kw = 0.5000              kw = 0.0000\n  ν =  10                   kw = 0.2588              kw = 0.0000              kw = 0.0607\n  ν =  11                   kw = 0.0000              kw = 0.0670              kw = 0.1398\n  ν =  12                   kw = 0.0000              kw = 0.0000              kw = 0.5774\n  ν =  13                   kw = 0.0000              kw = 0.0670              kw = 0.9452\n  ν =  14                   kw = 0.2588              kw = 0.0000              kw = 0.9452\n  ν =  15                   kw = 0.0000              kw = 0.5000              kw = 0.5774",
+    "crumbs": [
+      "winding",
+      "MMF Analysis of AC Windings"
+    ]
+  },
+  {
+    "objectID": "winding/mmf.html#mmf_harmonics-mmf-harmonic-amplitude-spectrum",
+    "href": "winding/mmf.html#mmf_harmonics-mmf-harmonic-amplitude-spectrum",
+    "title": "MMF Analysis of AC Windings",
+    "section": "mmf_harmonics: MMF Harmonic Amplitude Spectrum",
+    "text": "mmf_harmonics: MMF Harmonic Amplitude Spectrum\n\nTheory\nThe Fourier decomposition of the airgap MMF gives amplitude coefficients for each spatial harmonic ν. For a winding with winding factor kw(ν) and p pole pairs, the analytical result is:\n\\[\n\\hat{F}_\\nu = \\frac{k_{w\\nu} \\cdot p}{\\nu}\n\\]\nThe factor \\(p/\\nu\\) arises because the MMF is the spatial integral of the conductor distribution: integrating \\(\\cos(\\nu x)\\) yields \\(\\sin(\\nu x)/\\nu\\), and multiplying by p normalises the working harmonic (ν = p) to kw₁.\nThree-phase cancellation: In a balanced m-phase winding, certain harmonics cancel completely. For m = 3, harmonics where ν is a non-working multiple of 3 vanish in the balanced sum. However, the simple rule “ν % m == 0 → cancel” fails when p itself is divisible by m (e.g. 9s/6p where p = 3). This implementation detects cancellation numerically by computing the complex m-phase phasor sum at each ν and checking whether both the forward- and backward-rotating components vanish.\nMode options: - \"three_phase\" — balanced m-phase MMF; zero-sequence harmonics cancelled (default, matches the website tool). - \"single_phase\" — single-phase MMF; all harmonics retained. - \"winding_factor\" — returns |kw(ν)| directly without the 1/ν weighting.\nReferences: Pyrhönen et al. (2014), §2.4, eq. (2.98); Müller, Vogt & Ponick (2008), eq. (3.65).\n\n\nmmf_harmonics: Implementation\n\n\n\nmmf_harmonics\ndef mmf_harmonics(\n    Q:int, P:int, m:int=3, layers:int=1, w:int | None=None,\n    mode:str='three_phase', # ``\"three_phase\"``    — balanced m-phase MMF; zero-sequence harmonics\n    #                        cancelled numerically (default).\n    # ``\"single_phase\"``   — single-phase MMF; all harmonics retained.\n    # ``\"winding_factor\"`` — returns |kw(ν)| with no 1/ν weighting.\n    nu_max:int=40, normalize:bool=True, # ``True``  (default) — divide by the working-harmonic amplitude\n    #                       so the working harmonic = 1.0.\n    # ``False`` — return raw kw(ν)·p/ν values.\n)-&gt;tuple[np.ndarray, np.ndarray]: # Mechanical harmonic orders 1 … nu_max.\nMMF harmonic amplitude spectrum.\nThe amplitude of spatial harmonic ν in the airgap MMF:\n.. math:: _= \nFor mode=\"three_phase\" harmonics cancelled by the balanced m-phase current sum are identified numerically and zeroed out.\n\n\nmmf_harmonics: Example — Single-layer vs. Double-layer\n\nfrom emachines.winding.mmf import mmf_harmonics\nimport numpy as np\n\nprint(\"Three-phase MMF spectrum: 12s/10p FSCW\")\nprint(\"Normalised to working harmonic (ν = 5)\")\nprint()\nprint(f\"{'ν':&gt;4}  {'Single-layer':&gt;14}  {'Double-layer':&gt;14}\")\nprint(\"-\" * 38)\n\nnu1, amp1 = mmf_harmonics(12, 10, layers=1, mode=\"three_phase\", normalize=True)\nnu2, amp2 = mmf_harmonics(12, 10, layers=2, mode=\"three_phase\", normalize=True)\n\nfor i in range(min(20, len(nu1))):\n    if amp1[i] &gt; 1e-4 or amp2[i] &gt; 1e-4:\n        marker = \" ← working\" if nu1[i] == 5 else \"\"\n        print(f\"  {int(nu1[i]):&gt;2}  {amp1[i]:&gt;14.4f}  {amp2[i]:&gt;14.4f}{marker}\")\n\nprint()\nprint(\"Observation: double-layer significantly suppresses sub-harmonics.\")\n\nThree-phase MMF spectrum: 12s/10p FSCW\nNormalised to working harmonic (ν = 5)\n\n   ν    Single-layer    Double-layer\n--------------------------------------\n   1          1.3397          0.3590\n   3          1.2201          0.8932\n   5          1.0000          1.0000 ← working\n   7          0.7143          0.7143\n   9          0.4067          0.2977\n  11          0.1218          0.0326\n  13          0.1031          0.0276\n  15          0.2440          0.1786\n  17          0.2941          0.2941\n  19          0.2632          0.2632\n\nObservation: double-layer significantly suppresses sub-harmonics.\n\n\n\n\nmmf_harmonics: Comprehensive comparison — Integer-slot vs. FSCW\n\nfrom emachines.winding.mmf import mmf_harmonics, winding_factor_spectrum\nimport numpy as np\n\nconfigs = [\n    dict(Q=24, P=4,  layers=2, label=\"24s/4p  integer-slot\"),\n    dict(Q=12, P=10, layers=2, label=\"12s/10p FSCW         \"),\n]\n\nprint(\"Three-phase MMF spectrum comparison (normalised, top harmonics only)\")\nprint()\n\nfor cfg in configs:\n    nu, amp = mmf_harmonics(cfg[\"Q\"], cfg[\"P\"], layers=cfg[\"layers\"],\n                             mode=\"three_phase\", normalize=True)\n    p = cfg[\"P\"] // 2\n    print(f\"  {cfg['label']}  (working harmonic ν = {p})\")\n    significant = [(int(nu[i]), amp[i]) for i in range(len(nu)) if amp[i] &gt; 0.01]\n    significant.sort(key=lambda x: -x[1])\n    for h, a in significant[:8]:\n        marker = \" ← working\" if h == p else \"\"\n        print(f\"    ν = {h:&gt;3}:  {a:.4f}{marker}\")\n    print()\n\nThree-phase MMF spectrum comparison (normalised, top harmonics only)\n\n  24s/4p  integer-slot  (working harmonic ν = 2)\n    ν =   2:  1.0000 ← working\n    ν =   6:  0.2440\n    ν =  22:  0.0909\n    ν =  18:  0.0813\n    ν =  26:  0.0769\n    ν =  10:  0.0536\n    ν =  30:  0.0488\n    ν =  14:  0.0383\n\n  12s/10p FSCW           (working harmonic ν = 5)\n    ν =   5:  1.0000 ← working\n    ν =   3:  0.8932\n    ν =   7:  0.7143\n    ν =   1:  0.3590\n    ν =   9:  0.2977\n    ν =  17:  0.2941\n    ν =  19:  0.2632\n    ν =  15:  0.1786",
+    "crumbs": [
+      "winding",
+      "MMF Analysis of AC Windings"
+    ]
+  },
+  {
+    "objectID": "winding/mmf.html#references",
+    "href": "winding/mmf.html#references",
+    "title": "MMF Analysis of AC Windings",
+    "section": "References",
+    "text": "References\n\nPyrhönen, J., Jokinen, T., & Hrabovcová, V. (2014). Design of Rotating Electrical Machines, 2nd ed. Wiley. §2.4, eq. (2.73), (2.98).\nBianchi, N., & Bolognani, S. (2002). Design techniques for reducing cogging torque in surface-mounted PM motors. IEEE Transactions on Industry Applications, 38(5), 1259–1265. DOI: 10.1109/TIA.2002.802909\nMüller, G., Vogt, K., & Ponick, B. (2008). Berechnung elektrischer Maschinen. Wiley-VCH. §3.4–3.6, eq. (3.65).\nSWAT-EM open-source reference implementation: https://github.com/bayonet222/swat-em — accessed 2026-06-22.",
+    "crumbs": [
+      "winding",
+      "MMF Analysis of AC Windings"
+    ]
+  },
+  {
+    "objectID": "winding/mmf.html#tests",
+    "href": "winding/mmf.html#tests",
+    "title": "MMF Analysis of AC Windings",
+    "section": "Tests",
+    "text": "Tests",
+    "crumbs": [
+      "winding",
+      "MMF Analysis of AC Windings"
+    ]
+  },
+  {
+    "objectID": "winding/factors.html",
+    "href": "winding/factors.html",
+    "title": "Winding Factors and Harmonic Spectrum",
+    "section": "",
+    "text": "This notebook computes winding factors — the efficiency with which a winding produces each spatial harmonic of the airgap field.\n\n\n\nFunction\nWhat it computes\n\n\n\n\npitch_factor\nkp(ν) — chording factor\n\n\ndistribution_factor\nkd(ν) — belt factor (integer-slot only)\n\n\nwinding_factor\nkw(ν) = kp·kd or phasor sum\n\n\nwinding_factor_spectrum",
+    "crumbs": [
+      "winding",
+      "Winding Factors and Harmonic Spectrum"
+    ]
+  },
+  {
+    "objectID": "winding/factors.html#executive-summary",
+    "href": "winding/factors.html#executive-summary",
+    "title": "Winding Factors and Harmonic Spectrum",
+    "section": "",
+    "text": "This notebook computes winding factors — the efficiency with which a winding produces each spatial harmonic of the airgap field.\n\n\n\nFunction\nWhat it computes\n\n\n\n\npitch_factor\nkp(ν) — chording factor\n\n\ndistribution_factor\nkd(ν) — belt factor (integer-slot only)\n\n\nwinding_factor\nkw(ν) = kp·kd or phasor sum\n\n\nwinding_factor_spectrum",
+    "crumbs": [
+      "winding",
+      "Winding Factors and Harmonic Spectrum"
+    ]
+  },
+  {
+    "objectID": "winding/factors.html#how-it-fits-into-motor-design",
+    "href": "winding/factors.html#how-it-fits-into-motor-design",
+    "title": "Winding Factors and Harmonic Spectrum",
+    "section": "How It Fits Into Motor Design",
+    "text": "How It Fits Into Motor Design\n01_winding_sos.ipynb  (layout engine)\n      │\n      ▼\n01_winding_factors.ipynb   ←── YOU ARE HERE\n      │\n      ▼\n01_winding_mmf.ipynb       (MMF waveform & spectrum)\nDepends on: sos.py — uses build_coil_matrix, get_valid_coil_spans, winding_factor_sos.\nFeeds into: 01_winding_mmf.ipynb (via winding_factor_spectrum and _optimal_coil_span).",
+    "crumbs": [
+      "winding",
+      "Winding Factors and Harmonic Spectrum"
+    ]
+  },
+  {
+    "objectID": "winding/factors.html#notation",
+    "href": "winding/factors.html#notation",
+    "title": "Winding Factors and Harmonic Spectrum",
+    "section": "Notation",
+    "text": "Notation\n\n\n\nSymbol\nDefinition\n\n\n\n\nQ\nStator slots\n\n\nP\nPoles\n\n\np\nPole pairs = P/2\n\n\nτp\nPole pitch = Q/P (one magnetic pole)\n\n\nw\nCoil span in slots\n\n\nν\nMechanical harmonic order\n\n\nkp\nPitch (chording) factor\n\n\nkd\nDistribution (belt) factor\n\n\nkw\nCombined winding factor = kp·kd (ISW)\n\n\nq\nSlots per pole per phase = Q/(2mp)",
+    "crumbs": [
+      "winding",
+      "Winding Factors and Harmonic Spectrum"
+    ]
+  },
+  {
+    "objectID": "winding/factors.html#imports-and-setup",
+    "href": "winding/factors.html#imports-and-setup",
+    "title": "Winding Factors and Harmonic Spectrum",
+    "section": "Imports and Setup",
+    "text": "Imports and Setup",
+    "crumbs": [
+      "winding",
+      "Winding Factors and Harmonic Spectrum"
+    ]
+  },
+  {
+    "objectID": "winding/factors.html#pitch_factor-chording-factor-kp",
+    "href": "winding/factors.html#pitch_factor-chording-factor-kp",
+    "title": "Winding Factors and Harmonic Spectrum",
+    "section": "pitch_factor: Chording Factor kp",
+    "text": "pitch_factor: Chording Factor kp\n\nTheory\nShortening a coil below the full pole pitch (chording) reduces harmonic content:\n\\[k_{p\\nu} = \\left|\\sin\\!\\left(\\nu \\cdot \\frac{\\pi}{2} \\cdot \\frac{w}{\\tau_p}\\right)\\right|\\]\nNote on pole pitch: τp = Q/P is one magnetic pole (half the electrical period). For 12s/4p: τp = 3 slots, full-pitch coil span = 3.\nReferences: Hanselman (2003), eq. 4.5; Pyrhönen et al. (2008), §2.4.\n\n\n\npitch_factor\ndef pitch_factor(\n    nu:int, coil_span:int, pole_pitch:float\n)-&gt;float:\nPitch (chording) factor kp for the nu-th mechanical harmonic.\nkp(nu) = |sin(nu * pi/2 * w / tau_p)|\n\nfrom emachines.winding.winding_factors import pitch_factor\n\n# 12s/4p: pole_pitch = Q/P = 3\npole_pitch = 3.0\nprint(\"Pitch factor for 12s/4p (tau_p = 3 slots):\")\nprint(f\"{'w':&gt;4}  {'kp(1)':&gt;8}  {'kp(3)':&gt;8}  {'kp(5)':&gt;8}\")\nprint(\"-\" * 35)\nfor w in range(1, 7):\n    kp1 = pitch_factor(1, w, pole_pitch)\n    kp3 = pitch_factor(3, w, pole_pitch)\n    kp5 = pitch_factor(5, w, pole_pitch)\n    marker = \" &lt;- full-pitch\" if w == int(pole_pitch) else \"\"\n    print(f\"  {w:&gt;2}  {kp1:&gt;8.4f}  {kp3:&gt;8.4f}  {kp5:&gt;8.4f}{marker}\")\n\nPitch factor for 12s/4p (tau_p = 3 slots):\n   w     kp(1)     kp(3)     kp(5)\n-----------------------------------\n   1    0.5000    1.0000    0.5000\n   2    0.8660    0.0000    0.8660\n   3    1.0000    1.0000    1.0000 &lt;- full-pitch\n   4    0.8660    0.0000    0.8660\n   5    0.5000    1.0000    0.5000\n   6    0.0000    0.0000    0.0000",
+    "crumbs": [
+      "winding",
+      "Winding Factors and Harmonic Spectrum"
+    ]
+  },
+  {
+    "objectID": "winding/factors.html#distribution_factor-belt-factor-kd",
+    "href": "winding/factors.html#distribution_factor-belt-factor-kd",
+    "title": "Winding Factors and Harmonic Spectrum",
+    "section": "distribution_factor: Belt Factor kd",
+    "text": "distribution_factor: Belt Factor kd\n\nTheory\nSpreading conductors across q slots per pole per phase:\n\\[k_{d\\nu} = \\frac{\\sin(\\nu \\pi / (2m))}{q \\cdot \\sin(\\nu \\pi / (2mq))}\\]\nwhere q = Q/(2mp). Valid for integer-slot windings (q ≥ 1) only.\nReferences: Pyrhönen et al. (2008), eq. 2.15.\n\n\n\ndistribution_factor\ndef distribution_factor(\n    nu:int, Q:int, p:int, m:int=3\n)-&gt;float:\nDistribution (belt) factor kd for the nu-th harmonic.\nValid for integer-slot windings (q &gt;= 1).\nkd(nu) = sin(nupi/(2m)) / (q  sin(nu*pi/(2mq)))\n\nfrom emachines.winding.winding_factors import distribution_factor\nimport fractions\n\nprint(\"Distribution factor kd(nu=1) vs q:\")\nprint(f\"{'Config':&gt;20}  {'q':&gt;6}  {'kd(1)':&gt;8}\")\nprint(\"-\" * 40)\nfor Q, p, label in [(12,2,\"12s/4p q=1\"), (24,2,\"24s/4p q=2\"), (36,2,\"36s/4p q=3\")]:\n    q = fractions.Fraction(Q, 2*3*p)\n    kd = distribution_factor(1, Q, p)\n    print(f\"  {label:&gt;18}  {str(q):&gt;6}  {kd:&gt;8.4f}\")\n\nDistribution factor kd(nu=1) vs q:\n              Config       q     kd(1)\n----------------------------------------\n          12s/4p q=1       1    1.0000\n          24s/4p q=2       2    0.9659\n          36s/4p q=3       3    0.9598",
+    "crumbs": [
+      "winding",
+      "Winding Factors and Harmonic Spectrum"
+    ]
+  },
+  {
+    "objectID": "winding/factors.html#winding_factor-combined-kw",
+    "href": "winding/factors.html#winding_factor-combined-kw",
+    "title": "Winding Factors and Harmonic Spectrum",
+    "section": "winding_factor: Combined kw",
+    "text": "winding_factor: Combined kw\n\nTheory\nkw(ν) = kp(ν) · kd(ν) for integer-slot (q ≥ 1), or star-of-slots phasor sum for FSCW (q &lt; 1).\nCoil span note: coil_span here is the pole pitch τp = Q/P (one magnetic pole). For 12s/4p: τp = 3, so coil_span=3 for full-pitch. Compare: build_coil_matrix uses the full electrical period Q//p = 6 as its ‘full_pitch’ — a different quantity.\n\n\n\nwinding_factor\ndef winding_factor(\n    nu:int, Q:int, p:int, coil_span:int, # Full-pitch for ISW = Q/P (one magnetic pole).\n    # Tooth-coil for FSCW = 1.\n    m:int=3\n)-&gt;float:\nCombined winding factor kw for harmonic nu.\nDispatches automatically: - Integer-slot (q &gt;= 1): kw = kp * kd - FSCW (q &lt; 1): kw via star-of-slots phasor sum\n\nfrom emachines.winding.winding_factors import winding_factor\n\nconfigs = [\n    dict(Q=12, p=2, coil_span=3, label=\"12s/4p  ISW full-pitch\"),\n    dict(Q=24, p=2, coil_span=6, label=\"24s/4p  ISW full-pitch\"),\n    dict(Q=12, p=5, coil_span=1, label=\"12s/10p FSCW tooth-coil\"),\n    dict(Q=12, p=4, coil_span=1, label=\"12s/8p  FSCW tooth-coil\"),\n]\nprint(f\"{'Configuration':&lt;30}  {'kw(nu=1)':&gt;9}  {'kw(nu=p)':&gt;9}\")\nprint(\"-\" * 55)\nfor c in configs:\n    kw1 = winding_factor(1, c['Q'], c['p'], c['coil_span'])\n    kwp = winding_factor(c['p'], c['Q'], c['p'], c['coil_span'])\n    print(f\"  {c['label']:&lt;28}  {kw1:&gt;9.4f}  {kwp:&gt;9.4f}\")\n\nConfiguration                    kw(nu=1)   kw(nu=p)\n-------------------------------------------------------\n  12s/4p  ISW full-pitch           1.0000     0.0000\n  24s/4p  ISW full-pitch           0.9659     0.0000\n  12s/10p FSCW tooth-coil          0.0670     0.9330\n  12s/8p  FSCW tooth-coil          0.0000     0.8660",
+    "crumbs": [
+      "winding",
+      "Winding Factors and Harmonic Spectrum"
+    ]
+  },
+  {
+    "objectID": "winding/factors.html#optimal_coil_span-private",
+    "href": "winding/factors.html#optimal_coil_span-private",
+    "title": "Winding Factors and Harmonic Spectrum",
+    "section": "_optimal_coil_span (private)",
+    "text": "_optimal_coil_span (private)\nFinds the coil span that maximises |kw| at the working harmonic ν = p. Used internally when w=None in winding_factor_spectrum and mmf.py.\n\nfrom emachines.winding.winding_factors import _optimal_coil_span\n\nfor Q, P in [(12, 10), (12, 8), (9, 8), (24, 4), (36, 4)]:\n    w = _optimal_coil_span(Q, P)\n    print(f\"  {Q}s/{P}p  optimal w = {w}  (full_pitch = {Q//(P//2)})\")\n\n  12s/10p  optimal w = 1  (full_pitch = 2)\n  12s/8p  optimal w = 1  (full_pitch = 3)\n  9s/8p  optimal w = 1  (full_pitch = 2)\n  24s/4p  optimal w = 6  (full_pitch = 12)\n  36s/4p  optimal w = 9  (full_pitch = 18)",
+    "crumbs": [
+      "winding",
+      "Winding Factors and Harmonic Spectrum"
+    ]
+  },
+  {
+    "objectID": "winding/factors.html#winding_factor_spectrum-full-harmonic-spectrum",
+    "href": "winding/factors.html#winding_factor_spectrum-full-harmonic-spectrum",
+    "title": "Winding Factors and Harmonic Spectrum",
+    "section": "winding_factor_spectrum: Full Harmonic Spectrum",
+    "text": "winding_factor_spectrum: Full Harmonic Spectrum\n\nTheory\nThe phasor sum method computes |kw(ν)| for all mechanical harmonics:\n\\[k_{w\\nu} = \\frac{1}{m} \\sum_{k=0}^{m-1} \\frac{\\left|\\sum_{i,\\text{lyr}} s_{i,\\text{lyr}} e^{j\\nu 2\\pi i/Q}\\right|}{N_k}\\]\nWorks for all winding types. Working harmonic: ν = p = P/2.\nReferences: Müller, Vogt & Ponick (2008), eq. 3.65.\n\n\n\nwinding_factor_spectrum\ndef winding_factor_spectrum(\n    Q:int, P:int, m:int=3, layers:int=1, w:int | None=None, # Coil span in slots. None -&gt; span that maximises kw.\n    nu_max:int=40\n)-&gt;tuple[np.ndarray, np.ndarray]:\nWinding factor magnitude spectrum for mechanical harmonics 1…nu_max.\n\nfrom emachines.winding.winding_factors import winding_factor_spectrum\nimport numpy as np\n\nconfigs = [\n    dict(Q=12, P=10, layers=2, label=\"12s/10p FSCW DL\"),\n    dict(Q=12, P=8,  layers=2, label=\"12s/8p  FSCW DL\"),\n    dict(Q=24, P=4,  layers=2, label=\"24s/4p  ISW  DL\"),\n]\n\nfor cfg in configs:\n    nu, kw = winding_factor_spectrum(cfg['Q'], cfg['P'], layers=cfg['layers'], nu_max=15)\n    p = cfg['P'] // 2\n    print(f\"\\n{cfg['label']}  (working nu = {p})\")\n    for i in range(len(nu)):\n        if kw[i] &gt; 0.01:\n            marker = \" &lt;- working\" if nu[i] == p else \"\"\n            print(f\"  nu={int(nu[i]):&gt;3}  kw={float(kw[i]):&gt;6.4f}{marker}\")\n\n\n12s/10p FSCW DL  (working nu = 5)\n  nu=  1  kw=0.0670\n  nu=  3  kw=0.5000\n  nu=  5  kw=0.9330 &lt;- working\n  nu=  7  kw=0.9330\n  nu=  9  kw=0.5000\n  nu= 11  kw=0.0670\n  nu= 13  kw=0.0670\n  nu= 15  kw=0.5000\n\n12s/8p  FSCW DL  (working nu = 4)\n  nu=  4  kw=0.8660 &lt;- working\n  nu=  8  kw=0.8660\n\n24s/4p  ISW  DL  (working nu = 2)\n  nu=  2  kw=0.9659 &lt;- working\n  nu=  6  kw=0.7071\n  nu= 10  kw=0.2588\n  nu= 14  kw=0.2588",
+    "crumbs": [
+      "winding",
+      "Winding Factors and Harmonic Spectrum"
+    ]
+  },
+  {
+    "objectID": "winding/factors.html#references",
+    "href": "winding/factors.html#references",
+    "title": "Winding Factors and Harmonic Spectrum",
+    "section": "References",
+    "text": "References\n\nHanselman, D.C. (2003). Brushless Permanent Magnet Motor Design, 2nd ed. eq. 4.5.\nPyrhönen, J., Jokinen, T., & Hrabovcová, V. (2008). Design of Rotating Electrical Machines. Wiley. eq. 2.15.\nMüller, G., Vogt, K., & Ponick, B. (2008). Berechnung elektrischer Maschinen. Wiley-VCH. eq. 3.65.\nBianchi, N., & Bolognani, S. (2002). IEEE Trans. Ind. Appl., 38(5). DOI: 10.1109/TIA.2002.802909.",
+    "crumbs": [
+      "winding",
+      "Winding Factors and Harmonic Spectrum"
+    ]
+  },
+  {
+    "objectID": "winding/factors.html#tests",
+    "href": "winding/factors.html#tests",
+    "title": "Winding Factors and Harmonic Spectrum",
+    "section": "Tests",
+    "text": "Tests",
+    "crumbs": [
+      "winding",
+      "Winding Factors and Harmonic Spectrum"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "emachines",
+    "section": "",
+    "text": "emachines is an open-source Python library of well-documented, tested, and citable implementations of the analytical models used in electric motor design. It is the physics engine behind emdesignlabs.com.\nEvery function documents the equation it implements and its bibliographic source.",
+    "crumbs": [
+      "emachines"
+    ]
+  },
+  {
+    "objectID": "index.html#installation",
+    "href": "index.html#installation",
+    "title": "emachines",
+    "section": "Installation",
+    "text": "Installation\npip install emachines\nRequires Python &gt;= 3.10.",
+    "crumbs": [
+      "emachines"
+    ]
+  },
+  {
+    "objectID": "index.html#modules",
+    "href": "index.html#modules",
+    "title": "emachines",
+    "section": "Modules",
+    "text": "Modules\n\n\n\nModule\nCapability\n\n\n\n\nWinding\nWinding factors (kp, kd, kw), MMF distribution, star-of-slots phasor method\n\n\nMotors\nPMSM dq-frame model, DC motor analytical model\n\n\nMagnetics\nBH curve models, iron loss (Steinmetz, Bertotti), electrical steel & PM databases\n\n\nMEC\nMagnetic equivalent circuit Newton-Raphson solver with nonlinear materials",
+    "crumbs": [
+      "emachines"
+    ]
+  },
+  {
+    "objectID": "index.html#design-philosophy",
+    "href": "index.html#design-philosophy",
+    "title": "emachines",
+    "section": "Design Philosophy",
+    "text": "Design Philosophy\n\nEquations first – every function leads with the formula it implements\nCited – every formula references a specific textbook, paper, or standard\nNotebook-driven – source lives in Jupyter notebooks; Python modules are auto-generated via nbdev\nTested – validated against published datasets and reference tools\nDependency-light – only numpy, scipy, pandas, and matplotlib required",
+    "crumbs": [
+      "emachines"
+    ]
+  },
+  {
+    "objectID": "mec/solver.html",
+    "href": "mec/solver.html",
+    "title": "Magnetic Equivalent Circuit (MEC) Solver",
+    "section": "",
+    "text": "Purpose: Calculate flux distribution in motor magnetic circuits\nWhat it does: Solve magnetic equivalent circuits (MEC) using Newton-Raphson iteration.\n\n\nQuick estimation of motor flux linkage and torque without FEA (replaces lengthy FEA simulations).\n\n\n\nInputs: Circuit topology (branches, nodes), material models, MMF sources, winding definitions\nOutputs: Flux in each circuit branch, flux linkage per winding, field energy",
+    "crumbs": [
+      "mec",
+      "Magnetic Equivalent Circuit (MEC) Solver"
+    ]
+  },
+  {
+    "objectID": "mec/solver.html#executive-summary",
+    "href": "mec/solver.html#executive-summary",
+    "title": "Magnetic Equivalent Circuit (MEC) Solver",
+    "section": "",
+    "text": "Purpose: Calculate flux distribution in motor magnetic circuits\nWhat it does: Solve magnetic equivalent circuits (MEC) using Newton-Raphson iteration.\n\n\nQuick estimation of motor flux linkage and torque without FEA (replaces lengthy FEA simulations).\n\n\n\nInputs: Circuit topology (branches, nodes), material models, MMF sources, winding definitions\nOutputs: Flux in each circuit branch, flux linkage per winding, field energy",
+    "crumbs": [
+      "mec",
+      "Magnetic Equivalent Circuit (MEC) Solver"
+    ]
+  },
+  {
+    "objectID": "mec/solver.html#how-it-fits-into-the-motor-design-workflow",
+    "href": "mec/solver.html#how-it-fits-into-the-motor-design-workflow",
+    "title": "Magnetic Equivalent Circuit (MEC) Solver",
+    "section": "How It Fits Into the Motor Design Workflow",
+    "text": "How It Fits Into the Motor Design Workflow\nUpstream (depends on): Central solver that uses results from 03_* and 04_material_models.ipynb\nDownstream (used by): See notebook connections",
+    "crumbs": [
+      "mec",
+      "Magnetic Equivalent Circuit (MEC) Solver"
+    ]
+  },
+  {
+    "objectID": "mec/solver.html#theory-magnetic-equivalent-circuits",
+    "href": "mec/solver.html#theory-magnetic-equivalent-circuits",
+    "title": "Magnetic Equivalent Circuit (MEC) Solver",
+    "section": "Theory: Magnetic Equivalent Circuits",
+    "text": "Theory: Magnetic Equivalent Circuits\nA Magnetic Equivalent Circuit (MEC) uses Ohm’s law analogy:\n\nReluctance R [A-turns/Wb] replaces resistance\nFlux Φ [Wb] replaces current\nMagnetomotive force (MMF) F [A-turns] replaces voltage\n\nBranch equation (linear or nonlinear): \\[F = R(\\Phi) \\cdot \\Phi + F_s\\]\nwhere F_s is an optional permanent-magnet (Norton) flux source.\n\nReluctance for Nonlinear Materials\nFor a magnetic core with length ℓ, cross-section A, and permeability μ(B):\n\\[R = \\frac{\\ell}{\\mu(B) \\cdot A}, \\quad B = \\frac{\\Phi}{A}\\]\nAs flux increases, B increases and μ(B) may decrease (saturation), causing R to increase.\n\n\nNewton-Raphson Linearization\nFor each nonlinear branch, the MEC solver builds an effective (incremental) reluctance and source:\n\\[R_{\\text{eff}} = R_0 \\cdot (1 - S_0)\\] \\[F_{\\text{eff}} = F_s - R_0 \\cdot (S_0 \\cdot \\Phi_0 - \\Phi_{\\text{source}})\\]\nwhere - \\(R_0 = \\ell / (\\mu(B_0) \\cdot A)\\) — operating-point reluctance - \\(S_0 = \\frac{d\\mu/dB \\cdot B_0}{\\mu}\\) — saturation factor - \\(B_0 = \\Phi_0 / A\\) — operating-point flux density\n\n\n\nBranchType\ndef BranchType(\n    *args, **kwargs\n):\nBranch type identifiers for the MEC.",
+    "crumbs": [
+      "mec",
+      "Magnetic Equivalent Circuit (MEC) Solver"
+    ]
+  },
+  {
+    "objectID": "mec/solver.html#mec-solver-implementation",
+    "href": "mec/solver.html#mec-solver-implementation",
+    "title": "Magnetic Equivalent Circuit (MEC) Solver",
+    "section": "MEC Solver Implementation",
+    "text": "MEC Solver Implementation\n\n\nMEC\ndef MEC(\n    phi_base:Optional[float]=None, F_base:Optional[float]=None, rtol:float=0.001, atol:float=1e-06, max_iter:int=20\n)-&gt;None:\nMagnetic Equivalent Circuit builder and Newton-Raphson solver.\n\n\n\nMEC\ndef MEC(\n    phi_base:Optional[float]=None, F_base:Optional[float]=None, rtol:float=0.001, atol:float=1e-06, max_iter:int=20\n)-&gt;None:\nMagnetic Equivalent Circuit builder and Newton-Raphson solver.\n\n\n\nMEC\ndef MEC(\n    phi_base:Optional[float]=None, F_base:Optional[float]=None, rtol:float=0.001, atol:float=1e-06, max_iter:int=20\n)-&gt;None:\nMagnetic Equivalent Circuit builder and Newton-Raphson solver.\n\n\n\nMEC\ndef MEC(\n    phi_base:Optional[float]=None, F_base:Optional[float]=None, rtol:float=0.001, atol:float=1e-06, max_iter:int=20\n)-&gt;None:\nMagnetic Equivalent Circuit builder and Newton-Raphson solver.",
+    "crumbs": [
+      "mec",
+      "Magnetic Equivalent Circuit (MEC) Solver"
+    ]
+  },
+  {
+    "objectID": "mec/solver.html#example-simple-series-reluctance-circuit",
+    "href": "mec/solver.html#example-simple-series-reluctance-circuit",
+    "title": "Magnetic Equivalent Circuit (MEC) Solver",
+    "section": "Example: Simple Series Reluctance Circuit",
+    "text": "Example: Simple Series Reluctance Circuit\n\n# Import the material model\n# LinearPermeabilityModel is imported in the setup cell above.\n# (from emachines.mec import LinearPermeabilityModel)\n\n# Create a simple MEC with a single mesh and reluctance\nmec = MEC()\n\n# Add a mesh with 100 A-turns source\nmesh1 = mec.add_mesh_branch(mmf=100.0)\n\n# Add an air-gap reluctance (constant permeability)\nair_model = LinearPermeabilityModel(mu_r=1.0)  # Free space\nreluctance1 = mec.add_reluctance_branch(\n    length=0.001,  # 1 mm gap\n    area=0.01,     # 100 mm² area\n    model=air_model,\n    meshes=[mesh1],\n    orientations=[1],\n)\n\n# Solve\nsolution = mec.solve()\nprint(f\"Air-gap flux: {solution.flux(reluctance1):.6e} Wb\")\nprint(f\"Converged: {solution.converged}\")\nprint(f\"Iterations: {solution.n_iterations}\")\n\nAir-gap flux: 1.256637e-03 Wb\nConverged: True\nIterations: 2",
+    "crumbs": [
+      "mec",
+      "Magnetic Equivalent Circuit (MEC) Solver"
+    ]
+  },
+  {
+    "objectID": "mec/solver.html#tests",
+    "href": "mec/solver.html#tests",
+    "title": "Magnetic Equivalent Circuit (MEC) Solver",
+    "section": "Tests",
+    "text": "Tests\nMEC solver validated against analytic solutions (series, parallel, EI-core) and material model numerics.\n\n# TODO: rewrite for current MEC API (add_reluctance_branch, auto-increment branch IDs)\nimport math, numpy as np\nfrom emachines.mec import MEC, ShanesudhoffModel, SplinePermeabilityModel\nMU0 = 4e-7 * 3.141592653589793\n\n# ═══ 1. Linear series circuit ══════════════════════════════════════════════════\nF, R1, R2 = 1000.0, 1e6, 2e6\nP1, P2 = 1/R1, 1/R2\nPhi_ex = F / (R1 + R2)\n\nmec = MEC()\nmec.add_mesh_branch(mmf=F)\nmec.add_linear_branch(branch=2, permeance=P1, meshes=[1], orientations=[1])\nmec.add_linear_branch(branch=3, permeance=P2, meshes=[1], orientations=[1])\nsol = mec.solve()\nassert sol.converged\nassert math.isclose(sol.flux(2), Phi_ex, rel_tol=1e-8), f\"branch2 flux mismatch\"\nassert math.isclose(sol.phi_mesh[1], Phi_ex, rel_tol=1e-8)\ndrop1 = sol.flux(2) / P1\ndrop2 = sol.flux(3) / P2\nassert math.isclose(drop1 + drop2, F, rel_tol=1e-6), \"KVL violated\"\nWf_ex = 0.5 * (Phi_ex**2/P1 + Phi_ex**2/P2)\nassert math.isclose(sol.field_energy, Wf_ex, rel_tol=1e-6)\nprint(\"✓ Linear series circuit\")\n\n# ═══ 2. Linear parallel circuit (two meshes) ══════════════════════════════════\nF1, F2 = 1000.0, 500.0\nRl, Rr, Rc = 1e6, 1e6, 0.5e6\nA_mat = np.array([[Rl+Rc, -Rc], [-Rc, Rr+Rc]])\nb_mat = np.array([F1, F2])\nphi1_ex, phi2_ex = np.linalg.solve(A_mat, b_mat)\n\nmec2 = MEC()\nmec2.add_mesh_branch(mmf=F1)\nmec2.add_mesh_branch(mmf=F2)\nmec2.add_linear_branch(branch=3, permeance=1/Rl, meshes=[1], orientations=[1])\nmec2.add_linear_branch(branch=4, permeance=1/Rr, meshes=[2], orientations=[1])\nmec2.add_linear_branch(branch=5, permeance=1/Rc, meshes=[1,2], orientations=[1,-1])\nsol2 = mec2.solve()\nassert math.isclose(sol2.phi_mesh[1], phi1_ex, rel_tol=1e-7)\nassert math.isclose(sol2.phi_mesh[2], phi2_ex, rel_tol=1e-7)\nassert math.isclose(sol2.flux(5), phi1_ex - phi2_ex, rel_tol=1e-7)\nprint(\"✓ Linear parallel circuit\")\n\n\n# TODO: rewrite for current MEC API (add_reluctance_branch, auto-increment branch IDs)\nimport math, numpy as np\nfrom emachines.mec import MEC, ShanesudhoffModel, SplinePermeabilityModel\nMU0 = 4e-7 * 3.141592653589793\n\n# ═══ 5. Nonlinear series circuit ════════════════════════════════════════════════\nF_nl, l_nl, A_nl = 500.0, 0.05, 1e-4\nmodel = ShanesudhoffModel.ferrite_3C90()\n\nmec_nl = MEC()\nmec_nl.add_mesh_branch(mmf=F_nl)\nmec_nl.add_nonlinear_branch(branch=2, length=l_nl, area=A_nl,\n                             model=model, meshes=[1], orientations=[1])\nsol_nl = mec_nl.solve()\nassert sol_nl.converged, \"nonlinear did not converge\"\nassert sol_nl.n_iterations &lt; 50\n\nPhi_nl = sol_nl.flux(2)\nB_nl = Phi_nl / A_nl\nH_nl = F_nl / l_nl\nmu_nl = model.mu(B_nl)\nassert math.isclose(B_nl, mu_nl * H_nl, rel_tol=1e-4), \"B-H self-consistency failed\"\nprint(\"✓ Nonlinear series circuit\")\n\n# ═══ 6. EI-core (parametric, linear) ══════════════════════════════════════════\nN_ei, g_ei, l_c, A_ei, mu_r_eff = 100, 1e-3, 0.12, (16e-3)**2, 1000.0\nfor I in [0.01, 0.1, 0.5]:\n    F_ei = N_ei * I\n    P_core = mu_r_eff * MU0 * A_ei / l_c\n    P_gap  = MU0 * A_ei / g_ei\n    mec_ei = MEC()\n    mec_ei.add_mesh_branch(mmf=F_ei)\n    mec_ei.add_linear_branch(branch=2, permeance=P_core, meshes=[1], orientations=[1])\n    mec_ei.add_linear_branch(branch=3, permeance=P_gap,  meshes=[1], orientations=[1])\n    sol_ei = mec_ei.solve()\n    Rc = l_c / (mu_r_eff * MU0 * A_ei)\n    Rg = g_ei / (MU0 * A_ei)\n    Phi_ei = F_ei / (Rc + Rg)\n    assert sol_ei.converged\n    assert math.isclose(sol_ei.flux(2), Phi_ei, rel_tol=1e-7), f\"I={I}: flux mismatch\"\n\nP_c = mu_r_eff*MU0*A_ei/l_c\nP_g = MU0*A_ei/g_ei\n\ndef _ei(current):\n    m = MEC(); m.add_mesh_branch(1,mesh=1,mmf=N_ei*current)\n    m.add_linear_branch(2,permeance=P_c,meshes=[1],orientations=[1])\n    m.add_linear_branch(3,permeance=P_g,meshes=[1],orientations=[1])\n    return m.solve()\n\ns1, s2 = _ei(0.1), _ei(0.2)\nassert math.isclose(s2.flux(2), 2*s1.flux(2), rel_tol=1e-7), \"linearity check failed\"\nassert s1.field_energy &gt; 0\nprint(\"✓ EI-core (parametric)\")\n\n\n# TODO: rewrite for current MEC API (add_reluctance_branch, auto-increment branch IDs)\nimport math, numpy as np\nfrom emachines.mec import MEC, ShanesudhoffModel, SplinePermeabilityModel\nMU0 = 4e-7 * 3.141592653589793\n\n# ═══ 7. MECSolution API ═════════════════════════════════════════════════════════\nmec_api = MEC()\nmec_api.add_mesh_branch(branch=10, mesh=1, mmf=1000.0)\nmec_api.add_linear_branch(branch=20, permeance=1e-6, meshes=[1], orientations=[1])\nsol_api = mec_api.solve()\n\nassert math.isclose(sol_api.flux(20),  sol_api.phi_branches[20],  rel_tol=1e-12)\nassert math.isclose(sol_api.mmf(20),   sol_api.mmf_branches[20],  rel_tol=1e-12)\nassert \"converged\" in repr(sol_api)\nassert \"heuristic\" in repr(sol_api)\ntry: sol_api.flux(999); assert False\nexcept KeyError: pass\n\nmec_pua = MEC(phi_base=1e-4, F_base=1e3)\nmec_pua.add_mesh_branch(branch=10, mesh=1, mmf=1000.0)\nmec_pua.add_linear_branch(branch=20, permeance=1e-6, meshes=[1], orientations=[1])\nassert \"pu\" in repr(mec_pua.solve())\nprint(\"✓ MECSolution API\")\n\n# ═══ 8. Per-unit scaling ════════════════════════════════════════════════════════\nF_pu, P_pu = 1000.0, 1e-6\nPhi_pu = F_pu * P_pu\nphi_b, F_b = Phi_pu * 1.1, F_pu * 1.5\n\ndef _simple(phi_base=None, F_base=None):\n    kw = dict(phi_base=phi_base, F_base=F_base) if phi_base else {}\n    m = MEC(**kw)\n    m.add_mesh_branch(1, mesh=1, mmf=F_pu)\n    m.add_linear_branch(2, permeance=P_pu, meshes=[1], orientations=[1])\n    return m.solve()\n\nassert math.isclose(_simple(phi_b, F_b).flux(2), _simple().flux(2), rel_tol=1e-8)\nassert math.isclose(_simple(phi_b, F_b).phi_base, phi_b)\nassert _simple().phi_base is None\n\ntry: MEC(phi_base=1e-4, F_base=None); assert False\nexcept ValueError: pass\ntry: MEC(phi_base=None, F_base=1e3); assert False\nexcept ValueError: pass\n\nl_pnl, A_pnl = 0.05, 1e-4\nB_est = 0.2\nphi_bb = B_est * A_pnl\nF_bb   = phi_bb / (MU0 * A_pnl / l_pnl)\nmec_pnl = MEC(phi_base=phi_bb, F_base=F_bb)\nmec_pnl.add_mesh_branch(1, mesh=1, mmf=500.0)\nmec_pnl.add_nonlinear_branch(2, length=l_pnl, area=A_pnl,\n    model=ShanesudhoffModel.ferrite_3C90(), meshes=[1], orientations=[1])\nsol_pnl = mec_pnl.solve()\nassert sol_pnl.converged and sol_pnl.n_iterations &lt; 50\nprint(\"✓ Per-unit scaling\")\n\n# ═══ 9. Flux linkage (windings) ════════════════════════════════════════════════\nF_w, R1_w, R2_w = 1000.0, 1e6, 2e6\nPhi_w = F_w / (R1_w + R2_w)\nN_w = 100\n\ndef _mec_w(branch_turns=None):\n    m = MEC()\n    m.add_mesh_branch(1, mesh=1, mmf=F_w)\n    m.add_linear_branch(2, permeance=1/R1_w, meshes=[1], orientations=[1])\n    m.add_linear_branch(3, permeance=1/R2_w, meshes=[1], orientations=[1])\n    if branch_turns: m.add_winding(\"coil\", branch_turns)\n    return m.solve()\n\ns = _mec_w({2: N_w})\nassert \"coil\" in s.flux_linkages\nassert math.isclose(s.flux_linkage(\"coil\"), N_w*Phi_w, rel_tol=1e-7)\nassert math.isclose(_mec_w({2: N_w, 3: N_w}).flux_linkage(\"coil\"), 2*N_w*Phi_w, rel_tol=1e-7)\n\nmec_opp = MEC()\nmec_opp.add_mesh_branch(1, mesh=1, mmf=1000.0)\nmec_opp.add_linear_branch(2, permeance=1e-6, meshes=[1], orientations=[1])\nmec_opp.add_linear_branch(3, permeance=1e-6, meshes=[1], orientations=[1])\nmec_opp.add_winding(\"coil\", {2: +100, 3: -100})\nassert math.isclose(mec_opp.solve().flux_linkage(\"coil\"), 0.0, abs_tol=1e-15)\n\nmec_mw = MEC()\nmec_mw.add_mesh_branch(1, mesh=1, mmf=F_w)\nmec_mw.add_linear_branch(2, permeance=1/R1_w, meshes=[1], orientations=[1])\nmec_mw.add_linear_branch(3, permeance=1/R2_w, meshes=[1], orientations=[1])\nmec_mw.add_winding(\"primary\", {2: 100})\nmec_mw.add_winding(\"secondary\", {3: 50})\ns_mw = mec_mw.solve()\nassert math.isclose(s_mw.flux_linkage(\"primary\"),  100*Phi_w, rel_tol=1e-7)\nassert math.isclose(s_mw.flux_linkage(\"secondary\"), 50*Phi_w, rel_tol=1e-7)\n\nassert _mec_w().flux_linkages == {}\ntry: _mec_w({2: N_w}).flux_linkage(\"nonexistent\"); assert False\nexcept KeyError: pass\ns_chk = _mec_w({2: N_w})\nassert s_chk.flux_linkage(\"coil\") == s_chk.flux_linkages[\"coil\"]\nprint(\"✓ Flux linkage / windings\")\n\n# ═══ 10. Scaling consistency ════════════════════════════════════════════════════\nP_sc = MU0 * 4e-4 / 1e-3\nmec_sc1 = MEC()\nmec_sc1.add_mesh_branch(1, mesh=1, mmf=800.0)\nmec_sc1.add_linear_branch(2, permeance=P_sc, meshes=[1], orientations=[1])\nassert mec_sc1.solve().converged\n\nphi_bsc = 1.6 * 4e-4\nF_bsc   = phi_bsc / P_sc\nmec_sc2 = MEC(phi_base=phi_bsc, F_base=F_bsc)\nmec_sc2.add_mesh_branch(1, mesh=1, mmf=800.0)\nmec_sc2.add_linear_branch(2, permeance=P_sc, meshes=[1], orientations=[1])\nassert math.isclose(mec_sc2.solve().flux(2), mec_sc1.solve().flux(2), rel_tol=1e-6)\nprint(\"✓ Scaling consistency\")\n\nprint(\"\\n✓ All MEC solver tests passed\")",
+    "crumbs": [
+      "mec",
+      "Magnetic Equivalent Circuit (MEC) Solver"
+    ]
+  },
+  {
+    "objectID": "mec/results.html",
+    "href": "mec/results.html",
+    "title": "MEC Solution and Results",
+    "section": "",
+    "text": "Purpose: Store and query magnetic circuit analysis results\nWhat it does: Structure and post-process MEC solution results.\n\n\nAfter solving MEC, access flux, torque, efficiency in organized data structure.\n\n\n\nInputs: Solution from 04_mec_solver.ipynb\nOutputs: Formatted results: branch flux, winding flux linkage, field energy, convergence info",
+    "crumbs": [
+      "mec",
+      "MEC Solution and Results"
+    ]
+  },
+  {
+    "objectID": "mec/results.html#executive-summary",
+    "href": "mec/results.html#executive-summary",
+    "title": "MEC Solution and Results",
+    "section": "",
+    "text": "Purpose: Store and query magnetic circuit analysis results\nWhat it does: Structure and post-process MEC solution results.\n\n\nAfter solving MEC, access flux, torque, efficiency in organized data structure.\n\n\n\nInputs: Solution from 04_mec_solver.ipynb\nOutputs: Formatted results: branch flux, winding flux linkage, field energy, convergence info",
+    "crumbs": [
+      "mec",
+      "MEC Solution and Results"
+    ]
+  },
+  {
+    "objectID": "mec/results.html#how-it-fits-into-the-motor-design-workflow",
+    "href": "mec/results.html#how-it-fits-into-the-motor-design-workflow",
+    "title": "MEC Solution and Results",
+    "section": "How It Fits Into the Motor Design Workflow",
+    "text": "How It Fits Into the Motor Design Workflow\nUpstream (depends on): Output stage of MEC solver pipeline\nDownstream (used by): See notebook connections",
+    "crumbs": [
+      "mec",
+      "MEC Solution and Results"
+    ]
+  },
+  {
+    "objectID": "mec/results.html#mec-solution-interpretation",
+    "href": "mec/results.html#mec-solution-interpretation",
+    "title": "MEC Solution and Results",
+    "section": "MEC Solution Interpretation",
+    "text": "MEC Solution Interpretation\nThe MEC solver returns a MECSolution object containing all circuit variables:\n\nFlux Variables\n\nφ_mesh — Mesh loop fluxes [Wb] (one per independent loop)\nφ_nodal — Nodal potentials [Wb] (used by permeance branches)\nφ_branches — Net flux through every branch [Wb]\n\n\n\nMagnetomotive Force (MMF)\n\nmmf_branches — MMF drop across every branch [A-turns]\n\nBranch equation: F = R(Φ) · Φ + F_s (at convergence)\n\n\nWinding Flux Linkage\nFor a winding with N turns linked with multiple branches: \\[\\lambda = \\sum_k N_k \\cdot \\Phi_k\\]\nwhere N_k is signed (positive = aligned with flux direction).\n\n\nConvergence and Energy\n\nconverged — Whether Newton-Raphson converged\nresidual — Final convergence error ‖ΔΦ‖ [Wb]\nfield_energy — Stored magnetic field energy [J]\n\n\\[W_f = \\frac{1}{2} \\sum_k R_{\\text{eff},k} \\cdot \\Phi_k^2\\]\n\n\n\nMECSolution\ndef MECSolution(\n    phi_mesh:Dict[int, float]=&lt;factory&gt;, phi_nodal:Dict[int, float]=&lt;factory&gt;,\n    phi_branches:Dict[int, float]=&lt;factory&gt;, mmf_branches:Dict[int, float]=&lt;factory&gt;,\n    flux_linkages:Dict[Any, float]=&lt;factory&gt;, converged:bool=False, n_iterations:int=0, residual:float=inf,\n    field_energy:float=0.0, phi_base:Optional[float]=None, F_base:Optional[float]=None\n)-&gt;None:\nSolution of a Magnetic Equivalent Circuit.\nAll branch quantities are stored in dictionaries keyed by branch number (the integer assigned when the branch was added to the MEC).\n\n\n\nMECSolution\ndef MECSolution(\n    phi_mesh:Dict[int, float]=&lt;factory&gt;, phi_nodal:Dict[int, float]=&lt;factory&gt;,\n    phi_branches:Dict[int, float]=&lt;factory&gt;, mmf_branches:Dict[int, float]=&lt;factory&gt;,\n    flux_linkages:Dict[Any, float]=&lt;factory&gt;, converged:bool=False, n_iterations:int=0, residual:float=inf,\n    field_energy:float=0.0, phi_base:Optional[float]=None, F_base:Optional[float]=None\n)-&gt;None:\nSolution of a Magnetic Equivalent Circuit.\nAll branch quantities are stored in dictionaries keyed by branch number (the integer assigned when the branch was added to the MEC).",
+    "crumbs": [
+      "mec",
+      "MEC Solution and Results"
+    ]
+  },
+  {
+    "objectID": "mec/results.html#example-post-processing-mec-results",
+    "href": "mec/results.html#example-post-processing-mec-results",
+    "title": "MEC Solution and Results",
+    "section": "Example: Post-Processing MEC Results",
+    "text": "Example: Post-Processing MEC Results\n\n# Create a mock solution for demonstration\nsol = MECSolution(\n    phi_branches={0: 0.001, 1: 0.0015},\n    mmf_branches={0: 50.0, 1: 75.0},\n    flux_linkages={'coil_a': 0.01, 'coil_b': 0.015},\n    converged=True,\n    n_iterations=5,\n    residual=1.2e-5,\n    field_energy=0.025,\n)\n\n# Access branch flux\nflux_0 = sol.flux(0)\nprint(f\"Branch 0 flux: {flux_0:.6e} Wb\")\n\n# Access MMF drop\nmmf_0 = sol.mmf(0)\nprint(f\"Branch 0 MMF: {mmf_0:.2f} A-turns\")\n\n# Access winding flux linkage\nflux_linkage_a = sol.flux_linkage('coil_a')\nprint(f\"Coil A flux linkage: {flux_linkage_a:.6e} Wb-turns\")\n\n# Check convergence\nprint(f\"\\nConvergence status: {sol.converged}\")\nprint(f\"Iterations: {sol.n_iterations}\")\nprint(f\"Residual: {sol.residual:.3e} Wb\")\nprint(f\"Field energy: {sol.field_energy:.6g} J\")\n\n# String representation\nprint(f\"\\nSolution: {sol}\")\n\nBranch 0 flux: 1.000000e-03 Wb\nBranch 0 MMF: 50.00 A-turns\nCoil A flux linkage: 1.000000e-02 Wb-turns\n\nConvergence status: True\nIterations: 5\nResidual: 1.200e-05 Wb\nField energy: 0.025 J\n\nSolution: MECSolution(converged, iter=5, residual=1.200e-05, Wf=0.025 J, heuristic-scaled)",
+    "crumbs": [
+      "mec",
+      "MEC Solution and Results"
+    ]
+  },
+  {
+    "objectID": "mec/results.html#tests",
+    "href": "mec/results.html#tests",
+    "title": "MEC Solution and Results",
+    "section": "Tests",
+    "text": "Tests\n\n# Test default initialization\nsol = MECSolution()\nassert sol.converged == False, \"Default convergence should be False\"\nassert sol.n_iterations == 0, \"Default iterations should be 0\"\nassert sol.residual == float('inf'), \"Default residual should be inf\"\nassert sol.field_energy == 0.0, \"Default field energy should be 0\"\nprint(\"✓ Default initialization tests passed\")\n\n# Test flux and mmf access\nsol = MECSolution(\n    phi_branches={1: 0.001, 2: 0.002},\n    mmf_branches={1: 50.0, 2: 100.0},\n)\nassert sol.flux(1) == 0.001, \"Flux access failed\"\nassert sol.mmf(2) == 100.0, \"MMF access failed\"\nassert sol.flux(99) == 0.0, \"Non-existent branch should return 0\"\nprint(\"✓ Branch access tests passed\")\n\n# Test flux linkage access\nsol = MECSolution(\n    flux_linkages={'winding_a': 0.01, 'winding_b': 0.02},\n)\nassert sol.flux_linkage('winding_a') == 0.01, \"Flux linkage access failed\"\nassert sol.flux_linkage('winding_b') == 0.02, \"Flux linkage access failed\"\nprint(\"✓ Winding flux linkage tests passed\")\n\n# Test error handling\ntry:\n    sol.flux_linkage('nonexistent')\n    assert False, \"Should raise KeyError for non-existent winding\"\nexcept KeyError:\n    print(\"✓ Error handling tests passed\")\n\n# Test string representation\nsol = MECSolution(converged=True, n_iterations=10, residual=1e-4, field_energy=0.05)\nrepr_str = repr(sol)\nassert 'converged' in repr_str.lower(), \"Representation should include convergence status\"\nassert '10' in repr_str, \"Representation should include iteration count\"\nprint(\"✓ String representation tests passed\")\n\n✓ Default initialization tests passed\n✓ Branch access tests passed\n✓ Winding flux linkage tests passed\n✓ Error handling tests passed\n✓ String representation tests passed",
+    "crumbs": [
+      "mec",
+      "MEC Solution and Results"
+    ]
+  }
+]

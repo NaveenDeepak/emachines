@@ -1,0 +1,29 @@
+website:
+  sidebar:
+    contents:
+      - index.ipynb
+      - 00_init.ipynb
+      - section: magnetics
+        contents:
+          - magnetics/01_bh_models.ipynb
+          - magnetics/02_electrical_steel.ipynb
+          - magnetics/03_iron_loss.ipynb
+          - magnetics/04_pm_materials.ipynb
+          - magnetics/05_api.ipynb
+      - section: mec
+        contents:
+          - mec/01_material_models.ipynb
+          - mec/02_solver.ipynb
+          - mec/03_api.ipynb
+          - mec/04_results.ipynb
+      - section: motors
+        contents:
+          - motors/01_pmsm.ipynb
+          - motors/02_dc_motors.ipynb
+          - motors/03_api.ipynb
+      - section: winding
+        contents:
+          - winding/01_factors.ipynb
+          - winding/02_mmf.ipynb
+          - winding/03_sos.ipynb
+          - winding/04_api.ipynb
