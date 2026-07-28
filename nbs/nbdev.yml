@@ -8,6 +8,13 @@ website:
   repo-branch: main
   repo-url: "https://github.com/NaveenDeepak/emachines"
 
+format:
+  html:
+    html-math-method: mathjax
+    toc: true
+    toc-depth: 3
+    code-copy: true
+
 format-links:
   - html
   - format: commonmark
