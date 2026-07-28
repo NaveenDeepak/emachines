@@ -1,0 +1,14 @@
+project:
+  output-dir: docs
+
+website:
+  title: "emachines"
+  site-url: "https://NaveenDeepak.github.io/emachines"
+  description: "Analytical electromechanical machine design library"
+  repo-branch: main
+  repo-url: "https://github.com/NaveenDeepak/emachines"
+
+format-links:
+  - html
+  - format: commonmark
+    text: Markdown
