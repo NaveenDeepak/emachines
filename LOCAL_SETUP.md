@@ -86,7 +86,7 @@ pre-commit install
 
 # 6. Verify the setup
 nbdev-export          # should complete with no errors
-nbdev-test --do_print # all tests should pass
+nbdev-test --do-print # all tests should pass
 ```
 
 Open JupyterLab at [http://localhost:8888](http://localhost:8888).
@@ -129,7 +129,7 @@ pip install pre-commit
 pre-commit install
 
 nbdev-export
-nbdev-test --do_print
+nbdev-test --do-print
 ```
 
 ---
@@ -149,7 +149,7 @@ jupyter lab
 nbdev-export
 
 # 4. Run tests
-nbdev-test --do_print
+nbdev-test --do-print
 
 # 5. Check for drift before committing
 git diff --exit-code emachines/

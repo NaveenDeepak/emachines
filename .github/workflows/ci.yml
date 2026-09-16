@@ -93,7 +93,7 @@ jobs:
           pip install "nbdev==3.3.2" "jupyterlab>=4.0.0"
 
       - name: Run notebook tests
-        run: nbdev-test --do_print --timing
+        run: nbdev-test --do-print --timing
 
   # ----------------------------------------------------------
   # Job 3 — Type checking

@@ -73,7 +73,7 @@ pre-commit install
 
 # Verify
 nbdev-export
-nbdev-test --do_print
+nbdev-test --do-print
 ```
 
 ---
@@ -119,7 +119,7 @@ python -c "from emachines.your_module import your_function; print('✓ import OK
 ### Step 5 — Run the tests
 
 ```bash
-nbdev-test --do_print --timing
+nbdev-test --do-print --timing
 ```
 
 All test cells (`#| hide` cells containing `assert`) must pass before pushing.
@@ -191,7 +191,7 @@ Every notebook must follow the template in `nbs/00_template.ipynb`. The required
 nbdev-export
 
 # Run all notebook tests
-nbdev-test --do_print --timing
+nbdev-test --do-print --timing
 
 # Check for drift (same check CI runs)
 git diff --exit-code emachines/
@@ -252,7 +252,7 @@ git checkout -b feat/your-feature
 # Daily development loop
 jupyter lab                          # edit notebooks
 nbdev-export                         # generate Python
-nbdev-test --do_print                # run tests
+nbdev-test --do-print                # run tests
 
 # Before pushing
 git diff --exit-code emachines/      # check no drift
