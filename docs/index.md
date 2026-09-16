@@ -62,6 +62,27 @@ materials</td>
 </tbody>
 </table>
 
+## Quick Start
+
+``` python
+from emachines.winding import winding_factor
+from emachines.magnetics.iron_loss import bertotti
+from emachines.motors.pmsm import PMSMParams, torque
+
+# Winding factor -- 12s/10p FSCW tooth-coil
+kw = winding_factor(nu=1, Q=12, p=5, coil_span=1)
+print(f'kw1 = {kw:.4f}')  # 0.9330
+
+# Iron loss -- Bertotti forward model
+loss = bertotti(f=400, B_peak=1.5, k_h=0.02, k_e=1e-4, k_a=1e-3)
+print(f'Total loss = {loss["total"]:.2f} W/kg')
+
+# PMSM torque
+motor = PMSMParams(p=3, Ld=5e-3, Lq=8e-3, psi_m=0.15, Rs=0.1)
+Te = torque(motor, id=-3.0, iq=10.0)
+print(f'Torque = {Te:.2f} Nm')
+```
+
 ## Design Philosophy
 
 - **Equations first** – every function leads with the formula it

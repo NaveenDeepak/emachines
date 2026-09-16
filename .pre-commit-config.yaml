@@ -18,9 +18,9 @@ repos:
   # nbdev: strip notebook outputs and transient metadata before committing.
   # This keeps notebook diffs readable (no noisy output or execution counts).
   - repo: https://github.com/fastai/nbdev
-    rev: 2.3.12
+    rev: 3.3.2
     hooks:
-      - id: nbdev_clean
+      - id: nbdev-clean
 
   # General file hygiene
   - repo: https://github.com/pre-commit/pre-commit-hooks
