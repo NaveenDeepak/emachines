@@ -23,13 +23,17 @@ repos:
       - id: nbdev-clean
 
   # General file hygiene
+  #
+  # trailing-whitespace and end-of-file-fixer are deliberately NOT included
+  # here: they're generic formatters (from pre-commit-hooks, unrelated to
+  # nbdev) that silently rewrite files, including nbdev/quarto-generated
+  # ones (emachines/, docs/, README.md). That's the same conflict-loop
+  # problem black/isort/flake8 have, just with whitespace instead of style —
+  # see the note above. The remaining hooks below only ever fail loudly on
+  # a real problem; none of them rewrite files, so they can't fight nbdev.
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
-      - id: trailing-whitespace
-        exclude: "nbs/.*\\.ipynb"   # nbdev manages notebook whitespace
-      - id: end-of-file-fixer
-        exclude: "nbs/.*\\.ipynb"
       - id: check-yaml
       - id: check-json
         exclude: "nbs/.*\\.ipynb"   # notebooks are JSON but nbdev owns their format

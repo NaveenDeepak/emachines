@@ -13,3 +13,4 @@ __all__ = []
 """emachines — Analytical electromechanical machine design library."""
 
 __version__ = "0.6.0"
+
