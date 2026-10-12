@@ -230,12 +230,11 @@ def load_literature_database(literature_path: str | Path | None = None) -> 'Stee
     return SteelDatabase(str(literature_path))  # type: ignore[arg-type]
 
 # %% ../../nbs/magnetics/02_electrical_steel.ipynb #408bea4c
-# Load all real steel grades from literature
-# This will be created on first import
-_LITERATURE_STEELS: dict = {}  # Lazy-loaded on first access
+# Steel database from the literature folder, created on first access
+_LITERATURE_STEELS: 'SteelDatabase | None' = None
 
-def get_steel_library(reload: bool = False) -> dict[str, 'SteelGrade']:
-    """Get dictionary of available steel grades from literature.
+def get_steel_library(reload: bool = False) -> 'SteelDatabase | None':
+    """Get the steel database built from the literature folder.
     
     Lazily loads steel grades from the KnowledgeBase/literature folder
     on first access.
@@ -247,16 +246,17 @@ def get_steel_library(reload: bool = False) -> dict[str, 'SteelGrade']:
     
     Returns
     -------
-    dict
-        Dictionary mapping steel grade names to SteelGrade objects
+    SteelDatabase or None
+        The database (use ``.grades`` to list grades and ``.load(grade)`` to
+        get a SteelGrade), or None if the literature folder is not found.
     """
     global _LITERATURE_STEELS
-    if reload or not _LITERATURE_STEELS:
+    if reload or _LITERATURE_STEELS is None:
         try:
             _LITERATURE_STEELS = load_literature_database()
         except FileNotFoundError:
             print("Warning: Literature folder not found. Using sample data only.")
-            _LITERATURE_STEELS = {}
+            _LITERATURE_STEELS = None
     return _LITERATURE_STEELS
 
 # %% ../../nbs/magnetics/02_electrical_steel.ipynb #5e628f9a

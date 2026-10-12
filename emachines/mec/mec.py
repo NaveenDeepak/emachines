@@ -20,6 +20,30 @@ class BranchType:
     RELUCTANCE = "reluctance"
     NODAL      = "nodal"
 
+# %% ../../nbs/mec/02_solver.ipynb #bfd9b4d3
+@dataclass
+class _Branch:
+    """Internal representation of a single MEC branch."""
+    branch_id:    int
+    btype:        str
+    mesh_id:      Optional[int] = None
+    mmf:          float = 0.0
+    length:       float = 0.0
+    area:         float = 0.0
+    model:        Optional[Any] = None
+    phi_source:   float = 0.0
+    meshes:       List[int] = field(default_factory=list)
+    orientations: List[int] = field(default_factory=list)
+    permeance:    Optional[float] = None
+    node_from:    Optional[int] = None
+    node_to:      Optional[int] = None
+
+@dataclass
+class _Winding:
+    """Internal descriptor of a multi-turn winding."""
+    winding_id:   Any
+    branch_turns: Dict[int, float] = field(default_factory=dict)
+
 # %% ../../nbs/mec/02_solver.ipynb #c5d34ddf
 MU0 = 4e-7 * math.pi
 
@@ -250,6 +274,7 @@ class MEC(MEC):  # Continue the class
 
                     phi_b = self._branch_flux(r, Phi, mesh_idx)
                     B     = phi_b / r.area if r.area > 0 else 0.0
+                    assert r.model is not None  # reluctance branches always carry a model
                     mu    = r.model.mu(B)
                     dmu_dB = r.model.dmu_dB(B)
 

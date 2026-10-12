@@ -51,3 +51,9 @@ settings.ini
 CLAUDE.md
 *.deb
 _proc/
+
+# Built docs (nbdev-docs builds them in CI)
+/docs/
+
+# Coverage data files
+.coverage*

@@ -5,7 +5,7 @@
 # Jobs:
 #   1. export    — nbdev-export; fail if notebooks and .py files diverge
 #   2. nbtest    — nbdev-test; run all test cells inside notebooks
-#                  Matrix: Python 3.9, 3.10, 3.11
+#                  Matrix: Python 3.10, 3.11
 #   3. typecheck — mypy on the generated emachines/ package
 #
 # There is no separate pytest job: tests live in the notebooks
