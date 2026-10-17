@@ -6,6 +6,7 @@ __all__ = []
 # %% ../../nbs/winding/04_api.ipynb #api-30ba6daf9000dd69
 from .winding_factors import pitch_factor, distribution_factor, winding_factor, winding_factor_spectrum
 from .mmf import mmf_distribution, mmf_waveform, mmf_harmonics
-from .sos import get_basic_params, build_star_of_slots, assign_phases
+from .sos import get_basic_params, build_star_of_slots, assign_phases, check_winding
+from .design import WindingCandidate, design_windings
 
-__all__ = ['pitch_factor', 'distribution_factor', 'winding_factor', 'winding_factor_spectrum', 'mmf_distribution', 'mmf_waveform', 'mmf_harmonics', 'get_basic_params', 'build_star_of_slots', 'assign_phases']
+__all__ = ['pitch_factor', 'distribution_factor', 'winding_factor', 'winding_factor_spectrum', 'mmf_distribution', 'mmf_waveform', 'mmf_harmonics', 'get_basic_params', 'build_star_of_slots', 'assign_phases', 'check_winding', 'WindingCandidate', 'design_windings']
