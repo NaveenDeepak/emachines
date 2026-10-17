@@ -97,21 +97,33 @@ def _assign_slot_to_phase(angle: float, m: int) -> int:
     """
     Return the signed phase code for a slot at electrical angle `angle`.
 
-    Uses floor-division sector assignment: the electrical circle [0, 2π) is
-    divided into 2m sectors of width π/m each. Sector k contains angles
-    [k·π/m, (k+1)·π/m). Phase codes: k < m → +(k+1), k >= m → -(k-m+1).
+    The electrical circle [0, 2π) is divided into 2m sectors of width π/m.
+    Sector k contains angles [k·π/m, (k+1)·π/m). Phase j (0-based) has its
+    go belt at j·2π/m and its return belt π further on, so the sectors
+    interleave go and return belts of different phases:
+
+    - k even → go conductor of phase k/2:            +(k/2 + 1)
+    - k odd  → return conductor of phase (k-m)/2 mod m: -(((k-m)/2) mod m + 1)
+
+    For m = 3 the six 60° sectors read A, -C, B, -A, C, -B.
 
     Returns
     -------
     int in {+1…+m, -1…-m}
+
+    Raises
+    ------
+    ValueError
+        If m is even. The interleaved belt rule above needs an odd phase count.
     """
+    if m < 1 or m % 2 == 0:
+        raise ValueError(f"m must be an odd number of phases, got m={m}")
     sector_width = math.pi / m
     # Small epsilon pushes exact-boundary angles into the right sector
     k = int((angle % (2 * math.pi) + 1e-9) / sector_width) % (2 * m)
-    if k < m:
-        return k + 1
-    else:
-        return -(k - m + 1)
+    if k % 2 == 0:
+        return k // 2 + 1
+    return -(((k - m) // 2) % m + 1)
 
 
 # %% ../../nbs/winding/03_sos.ipynb #11ccc4b9
@@ -131,10 +143,15 @@ def assign_phases(Q: int, P: int, m: int = 3) -> np.ndarray:
         Signed phase codes: +k = phase k forward, −k = phase k return.
         Phase index k ∈ {1, …, m}.
 
+    Raises
+    ------
+    ValueError
+        If m is even.
+
     Examples
     --------
     >>> assign_phases(6, 2, m=3)
-    array([ 1,  2,  3, -1, -2, -3])
+    array([ 1, -3,  2, -1,  3, -2])
     """
     angles = build_star_of_slots(Q, P)
     return np.array([_assign_slot_to_phase(a, m) for a in angles], dtype=int)
@@ -156,7 +173,7 @@ def build_coil_matrix(
     P      : int         Number of poles
     m      : int         Number of phases (default 3)
     layers : int         1 (single-layer) or 2 (double-layer)
-    w      : int | None  Coil span in slots. None → Q // (P // 2).
+    w      : int | None  Coil span in slots. None → Q // P (pole pitch, floored).
 
     Returns
     -------
@@ -166,7 +183,7 @@ def build_coil_matrix(
     Examples
     --------
     >>> build_coil_matrix(6, 2, m=3, layers=1).tolist()
-    [[1, 2, 3, -1, -2, -3]]
+    [[1, -3, 2, -1, 3, -2]]
     >>> build_coil_matrix(6, 2, m=3, layers=2, w=3).shape
     (2, 6)
     """
