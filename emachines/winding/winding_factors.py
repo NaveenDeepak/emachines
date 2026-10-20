@@ -3,6 +3,8 @@
 # %% ../../nbs/winding/01_factors.ipynb #b777e8e5
 from __future__ import annotations
 
+from fractions import Fraction
+
 import numpy as np
 
 from .sos import _resolve_layout, build_coil_matrix, winding_factor_sos
@@ -18,17 +20,17 @@ __all__ = [
 __all__ = ['pitch_factor', 'distribution_factor', 'winding_factor', 'winding_factor_spectrum']
 
 # %% ../../nbs/winding/01_factors.ipynb #32c8de66
-def pitch_factor(nu: int, coil_span: int, pole_pitch: float) -> float:
+def pitch_factor(nu: int, *, Q: int, w: int) -> float:
     """
-    Pitch (chording) factor kp for the nu-th mechanical harmonic.
+    Pitch (chording) factor kp of one coil for mechanical harmonic nu.
 
-    kp(nu) = |sin(nu * pi/2 * w / tau_p)|
+    kp(nu) = |sin(nu * pi * w / Q)|
 
     Parameters
     ----------
-    nu         : int    Harmonic order (1 = fundamental)
-    coil_span  : int    Coil span in slots (w)
-    pole_pitch : float  Pole pitch in slots (tau_p = Q/P, one magnetic pole)
+    nu : int   Mechanical harmonic order (working harmonic nu = p)
+    Q  : int   Number of stator slots (keyword-only)
+    w  : int   Coil span in slots (keyword-only)
 
     Returns
     -------
@@ -36,27 +38,29 @@ def pitch_factor(nu: int, coil_span: int, pole_pitch: float) -> float:
 
     Examples
     --------
-    >>> pitch_factor(1, 6, 6.0)   # full-pitch
+    >>> pitch_factor(2, Q=24, w=6)   # 24s/4p, full pitch, working harmonic
     1.0
-    >>> round(pitch_factor(1, 5, 6.0), 4)   # 5/6 chording
+    >>> round(pitch_factor(2, Q=24, w=5), 4)   # 5/6 chording
     0.9659
     """
-    return float(np.abs(np.sin(nu * np.pi / 2 * coil_span / pole_pitch)))
+    return float(np.abs(np.sin(nu * np.pi * w / Q)))
+
 
 # %% ../../nbs/winding/01_factors.ipynb #c8084474
-def distribution_factor(nu: int, Q: int, p: int, m: int = 3) -> float:
+def distribution_factor(nu: int, *, Q: int, P: int, m: int = 3) -> float:
     """
-    Distribution (belt) factor kd for the nu-th harmonic.
+    Distribution (belt) factor kd for mechanical harmonic nu.
 
-    Valid for integer-slot windings (q >= 1).
+    kd(nu) = |sin(nu*q*pi/Q) / (q * sin(nu*pi/Q))|,   q = Q / (2*m*p)
 
-    kd(nu) = sin(nu*pi/(2m)) / (q * sin(nu*pi/(2mq)))
+    Valid only for whole-number q and nu an odd multiple of p, where
+    kp*kd equals the winding factor. Use ``winding_factor`` otherwise.
 
     Parameters
     ----------
-    nu : int   Harmonic order
-    Q  : int   Total number of slots
-    p  : int   Number of pole pairs
+    nu : int   Mechanical harmonic order (working harmonic nu = p)
+    Q  : int   Number of stator slots (keyword-only)
+    P  : int   Number of poles (keyword-only)
     m  : int   Number of phases (default 3)
 
     Returns
@@ -66,76 +70,73 @@ def distribution_factor(nu: int, Q: int, p: int, m: int = 3) -> float:
     Raises
     ------
     ValueError
-        If q < 1. Use winding_factor() for FSCW.
+        If q is not a whole number, or nu is not an odd multiple of p.
 
     Examples
     --------
-    >>> round(distribution_factor(1, 12, 2), 4)   # q=1
+    >>> round(distribution_factor(2, Q=12, P=4), 4)   # 12s/4p, q=1
     1.0
-    >>> round(distribution_factor(1, 24, 2), 4)   # q=2
+    >>> round(distribution_factor(2, Q=24, P=4), 4)   # 24s/4p, q=2
     0.9659
     """
-    q = Q / (2 * m * p)
-    if q < 1.0 - 1e-9:
+    p = P // 2
+    q = Fraction(Q, 2 * m * p)
+    if q.denominator != 1:
         raise ValueError(
-            f"distribution_factor() requires q >= 1 (integer-slot winding). "
-            f"Got q = {q:.4f} (Q={Q}, p={p}, m={m}). "
-            f"Use winding_factor() for FSCW."
-        )
-    num = np.sin(nu * np.pi / (2 * m))
-    den = q * np.sin(nu * np.pi / (2 * m * q))
+            f"distribution_factor() needs a whole-number q (slots per pole per phase); "
+            f"got q = {q} for Q={Q}, P={P}, m={m}. Use winding_factor() instead.")
+    if nu % p or (nu // p) % 2 == 0:
+        raise ValueError(
+            f"distribution_factor() is valid only for nu an odd multiple of p={p}; "
+            f"got nu={nu}. That harmonic cancels in the full winding. "
+            f"Use winding_factor() instead.")
+    qi = int(q)
+    den = qi * np.sin(nu * np.pi / Q)
     if np.abs(den) < 1e-12:
         return 1.0
-    return float(np.abs(num / den))
+    return float(np.abs(np.sin(nu * qi * np.pi / Q) / den))
+
 
 # %% ../../nbs/winding/01_factors.ipynb #029f0f98
 def winding_factor(
     nu: int,
+    *,
     Q: int,
-    p: int,
-    coil_span: int,
+    P: int,
+    w: int | None = None,
+    layers: int | None = None,
     m: int = 3,
 ) -> float:
     """
-    Combined winding factor kw for harmonic nu.
-
-    Dispatches automatically:
-    - Integer-slot (q >= 1): kw = kp * kd
-    - FSCW (q < 1): kw via star-of-slots phasor sum
+    Winding factor |kw| of mechanical harmonic nu, by the star of slots.
 
     Parameters
     ----------
-    nu        : int   Harmonic order (1 = fundamental)
-    Q         : int   Total number of slots
-    p         : int   Number of pole pairs
-    coil_span : int   Coil span in slots.
-                      Full-pitch for ISW = Q/P (one magnetic pole).
-                      Tooth-coil for FSCW = 1.
-    m         : int   Number of phases (default 3)
+    nu     : int          Mechanical harmonic order (working harmonic nu = p)
+    Q      : int          Number of stator slots (keyword-only)
+    P      : int          Number of poles (keyword-only)
+    w      : int | None   Double-layer coil span in slots. None -> the best span.
+    layers : int | None   1 or 2. None -> the best buildable, balanced candidate
+                          (see ``design_windings``); a given w implies 2.
+    m      : int          Number of phases (default 3)
 
     Returns
     -------
-    float   kw in [0, 1]
+    float   |kw| in [0, 1]
 
     Examples
     --------
-    >>> winding_factor(1, 12, 2, coil_span=3)   # 12s/4p full-pitch (tau_p=3)
-    1.0
-    >>> round(winding_factor(5, 12, 5, coil_span=1), 4)   # 12s/10p FSCW working harmonic (nu=p=5)
+    >>> round(winding_factor(5, Q=12, P=10, w=1), 4)   # 12s/10p tooth coil, working harmonic
     0.933
-    >>> round(winding_factor(4, 12, 4, coil_span=1), 4)   # 12s/8p FSCW working harmonic (nu=p=4)
-    0.866
+    >>> round(winding_factor(2, Q=24, P=4, w=5), 4)    # 24s/4p, 5/6 chording
+    0.933
+    >>> round(winding_factor(4, Q=36, P=8, w=4), 4)    # 36s/8p, q = 3/2
+    0.9452
     """
-    P = 2 * p
-    pole_pitch = Q / P
-    q = Q / (2 * m * p)
+    if w is not None and layers is None:
+        layers = 2
+    return winding_factor_sos(nu, Q, P, m, layers=layers, w=w)
 
-    if q >= 1.0 - 1e-9:
-        kp = pitch_factor(nu, coil_span, pole_pitch)
-        kd = distribution_factor(nu, Q, p, m)
-        return kp * kd
-    else:
-        return winding_factor_sos(nu, Q, P, m, layers=2, w=coil_span)
 
 # %% ../../nbs/winding/01_factors.ipynb #be73af1d
 def winding_factor_spectrum(
