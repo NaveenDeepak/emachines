@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .sos import build_coil_matrix, get_valid_coil_spans, winding_factor_sos
+from .sos import _resolve_layout, build_coil_matrix, winding_factor_sos
 
 __all__ = [
     "pitch_factor",
@@ -137,52 +137,12 @@ def winding_factor(
     else:
         return winding_factor_sos(nu, Q, P, m, layers=2, w=coil_span)
 
-# %% ../../nbs/winding/01_factors.ipynb #65cdb654
-def _optimal_coil_span(Q: int, P: int, m: int = 3, layers: int = 1) -> int:
-    """
-    Coil span (slots) that maximises kw at the working harmonic.
-
-    Parameters
-    ----------
-    Q, P, m : int
-    layers  : int
-
-    Returns
-    -------
-    int
-
-    Examples
-    --------
-    >>> _optimal_coil_span(12, 10)
-    1
-    >>> _optimal_coil_span(24, 4)
-    6
-    """
-    p = P // 2
-    q = Q / (2 * m * p)
-    # For integer-slot windings, full pitch (Q//P) always maximises kp=1.
-    # The SOS spectrum cannot distinguish spans in SL-ISW (only DL layers differ),
-    # so we short-circuit here.
-    if q >= 1.0 - 1e-9:
-        return max(1, Q // P)
-    spans = get_valid_coil_spans(Q, P)
-    best_w, best_kw = spans[0], -1.0
-    for span in spans:
-        try:
-            _, kw = winding_factor_spectrum(Q, P, m=m, layers=layers, w=span, nu_max=p)
-            kw1 = float(kw[p - 1]) if p <= len(kw) else 0.0
-            if kw1 > best_kw:
-                best_kw, best_w = kw1, span
-        except Exception:
-            pass
-    return best_w
-
 # %% ../../nbs/winding/01_factors.ipynb #be73af1d
 def winding_factor_spectrum(
     Q: int,
     P: int,
     m: int = 3,
-    layers: int = 1,
+    layers: int | None = None,
     w: int | None = None,
     nu_max: int = 40,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -194,9 +154,11 @@ def winding_factor_spectrum(
     Q      : int   Number of stator slots
     P      : int   Number of poles (even, >= 2)
     m      : int   Number of phases (default 3)
-    layers : int   1 (single-layer) or 2 (double-layer)
+    layers : int | None
+             1 (single-layer) or 2 (double-layer).
+             None -> the best buildable, balanced candidate (see design_windings).
     w      : int | None
-             Coil span in slots. None -> span that maximises kw.
+             Double-layer coil span in slots. None -> the best span.
     nu_max : int   Highest mechanical harmonic (default 40)
 
     Returns
@@ -214,8 +176,7 @@ def winding_factor_spectrum(
     >>> round(float(kw[1]), 4)   # nu=2, 12s/4p q=1 full-pitch
     1.0
     """
-    if w is None:
-        w = _optimal_coil_span(Q, P, m, layers)
+    layers, w = _resolve_layout(Q, P, m, layers, w)
 
     matrix = build_coil_matrix(Q, P, m, layers, w)
     slots = np.arange(Q, dtype=np.float64)

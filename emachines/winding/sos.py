@@ -11,7 +11,7 @@ from math import gcd
 import numpy as np
 
 # %% auto #0
-__all__ = ['get_basic_params', 'build_star_of_slots', 'assign_phases', 'build_coil_matrix', 'winding_factor_sos',
+__all__ = ['get_basic_params', 'build_star_of_slots', 'assign_phases', 'check_winding', 'build_coil_matrix', 'winding_factor_sos',
            'check_symmetry', 'get_valid_coil_spans', 'is_valid_combination']
 
 # %% ../../nbs/winding/03_sos.ipynb #68a71fc6
@@ -156,12 +156,147 @@ def assign_phases(Q: int, P: int, m: int = 3) -> np.ndarray:
     angles = build_star_of_slots(Q, P)
     return np.array([_assign_slot_to_phase(a, m) for a in angles], dtype=int)
 
+# %% ../../nbs/winding/03_sos.ipynb #chk-code-7b20e4
+_PHASE_NAMES = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+
+def check_winding(matrix: np.ndarray, P: int, m: int = 3) -> dict:
+    """
+    Check that a coil matrix can be wound into coils and is balanced.
+
+    Parameters
+    ----------
+    matrix : np.ndarray, shape (layers, Q)
+             Signed phase codes, as returned by ``build_coil_matrix``.
+    P      : int   Number of poles
+    m      : int   Number of phases (default 3)
+
+    Returns
+    -------
+    dict with keys:
+        buildable    : bool   Each phase has as many go as return conductors
+        balanced     : bool   Phase EMFs at ν = p equal in magnitude, 360°/m apart
+        kw1          : float  Fundamental winding factor |E_A| / N_A
+        go, ret      : list   Go and return conductor counts per phase
+        phase_angles : list | None
+                              Electrical angle of each phase EMF relative to
+                              phase A, in degrees (None if the EMF is zero)
+        reason       : str    Why the winding fails, or '' if it passes
+
+    Examples
+    --------
+    >>> check_winding(build_coil_matrix(12, 10, layers=2, w=1), 10)['balanced']
+    True
+    >>> check_winding(build_coil_matrix(9, 8, layers=1), 8)['reason']
+    "phase A has 2 go and 1 return conductors, so it can't be wound into coils"
+    """
+    matrix = np.atleast_2d(np.asarray(matrix))
+    Q = matrix.shape[1]
+    p = P // 2
+    go = [int((matrix == k).sum()) for k in range(1, m + 1)]
+    ret = [int((matrix == -k).sum()) for k in range(1, m + 1)]
+    n = [g + r for g, r in zip(go, ret)]
+
+    e = np.exp(1j * p * 2.0 * np.pi * np.arange(Q) / Q)
+    sign = np.sign(matrix)
+    E = np.array([np.sum(sign * (np.abs(matrix) == k + 1) * e) for k in range(m)])
+    mag = np.abs(E)
+
+    reason = ''
+    buildable = go == ret
+    if not buildable:
+        k = next(i for i in range(m) if go[i] != ret[i])
+        reason = (f"phase {_PHASE_NAMES[k]} has {go[k]} go and {ret[k]} return conductors, "
+                  f"so it can't be wound into coils")
+
+    if mag.min() < 1e-9:
+        balanced, phase_angles = False, None
+        reason = reason or "phase EMF at the working harmonic is zero"
+    else:
+        steps = np.angle(E[1:] / E[:-1]) if m > 1 else np.array([])
+        balanced = (len(set(n)) == 1
+                    and bool(np.allclose(mag, mag[0], rtol=1e-9, atol=1e-9))
+                    and bool(np.allclose(steps, 2.0 * np.pi / m, atol=1e-9)))
+        phase_angles = [float(a) % 360.0 for a in np.round(np.degrees(np.angle(E / E[0])), 6)]
+        if not balanced:
+            reason = reason or "phases are not equal in magnitude and 360°/m apart"
+
+    kw1 = float(mag[0] / n[0]) if n[0] else 0.0
+    return dict(buildable=buildable, balanced=balanced, kw1=kw1, go=go, ret=ret,
+                phase_angles=phase_angles, reason=reason)
+
+
+# %% ../../nbs/winding/03_sos.ipynb #opt-code-4e6b07
+def _describe_option(layers: int, w: int | None) -> str:
+    return "single layer" if layers == 1 else f"double layer, w={w}"
+
+
+def _winding_options(Q: int, P: int, m: int = 3, layers: int | None = None,
+                     w: int | None = None) -> tuple[list, list]:
+    """
+    Build every star-of-slots winding allowed by the filters and check it.
+
+    Returns
+    -------
+    accepted : list of (layers, w, kw1, matrix), best kw1 first
+    rejected : list of (layers, w, reason)
+    """
+    if P < 2 or P % 2:
+        raise ValueError(f"P must be an even number of poles >= 2, got P={P}")
+    if layers not in (None, 1, 2):
+        raise ValueError(f"layers must be 1 or 2, got layers={layers}")
+    if layers == 1 and w is not None:
+        raise ValueError("w applies to double-layer windings only; "
+                         "a single-layer winding has no free coil span")
+    if w is not None and not 1 <= w < Q:
+        raise ValueError(f"w must be between 1 and Q-1={Q - 1}, got w={w}")
+
+    options: list[tuple[int, int | None]] = []
+    if layers in (None, 1) and w is None:
+        options.append((1, None))
+    if layers in (None, 2):
+        spans = [w] if w is not None else range(1, math.ceil(Q / P) + 1)
+        options += [(2, s) for s in spans]
+
+    accepted, rejected = [], []
+    for lyr, span in options:
+        matrix = build_coil_matrix(Q, P, m, layers=lyr, w=span)
+        r = check_winding(matrix, P, m)
+        if r['buildable'] and r['balanced']:
+            accepted.append((lyr, span, r['kw1'], matrix))
+        else:
+            rejected.append((lyr, span, r['reason']))
+    accepted.sort(key=lambda a: (-round(a[2], 12), -a[0], a[1] or 0))
+    return accepted, rejected
+
+
+def _no_winding_error(Q: int, P: int, m: int, layers, w, rejected) -> ValueError:
+    why = "; ".join(f"{_describe_option(l, s)}: {r}" for l, s, r in rejected)
+    filt = "".join(f", {k}={v}" for k, v in (("layers", layers), ("w", w)) if v is not None)
+    return ValueError(f"No buildable, balanced winding for {Q}s/{P}p (m={m}{filt}). {why}")
+
+
+def _resolve_layout(Q: int, P: int, m: int = 3, layers: int | None = None,
+                    w: int | None = None) -> tuple[int, int | None]:
+    """
+    Fill in a missing ``layers`` or double-layer ``w`` with the best candidate.
+
+    ``layers=1``, or ``layers=2`` with ``w`` given, is returned unchanged.
+    """
+    if layers == 1 or (layers == 2 and w is not None):
+        return layers, w
+    accepted, rejected = _winding_options(Q, P, m, layers, w)
+    if not accepted:
+        raise _no_winding_error(Q, P, m, layers, w, rejected)
+    return accepted[0][0], accepted[0][1]
+
+
 # %% ../../nbs/winding/03_sos.ipynb #35768883
 def build_coil_matrix(
     Q: int,
     P: int,
     m: int = 3,
-    layers: int = 1,
+    layers: int | None = None,
     w: int | None = None,
 ) -> np.ndarray:
     """
@@ -172,8 +307,10 @@ def build_coil_matrix(
     Q      : int         Number of stator slots
     P      : int         Number of poles
     m      : int         Number of phases (default 3)
-    layers : int         1 (single-layer) or 2 (double-layer)
-    w      : int | None  Coil span in slots. None → Q // P (pole pitch, floored).
+    layers : int | None  1 (single-layer) or 2 (double-layer). None → the best
+                         buildable, balanced candidate (see ``design_windings``).
+    w      : int | None  Double-layer coil span in slots. None → the best span.
+                         Ignored for ``layers=1``.
 
     Returns
     -------
@@ -187,9 +324,7 @@ def build_coil_matrix(
     >>> build_coil_matrix(6, 2, m=3, layers=2, w=3).shape
     (2, 6)
     """
-    p = P // 2
-    if w is None:
-        w = max(1, Q // P)  # pole pitch in slots (τp = Q/P, floored)
+    layers, w = _resolve_layout(Q, P, m, layers, w)
 
     phase_codes = assign_phases(Q, P, m)   # go-conductor assignment
 
@@ -203,6 +338,7 @@ def build_coil_matrix(
     else:
         # Double-layer: top layer = go conductors, bottom layer = return conductors
         # shifted by coil span w.
+        assert w is not None  # filled in by _resolve_layout for layers=2
         for i in range(Q):
             go_code  = phase_codes[i]
             ret_slot = (i + w) % Q
@@ -217,7 +353,7 @@ def winding_factor_sos(
     Q: int,
     P: int,
     m: int = 3,
-    layers: int = 1,
+    layers: int | None = None,
     w: int | None = None,
 ) -> float:
     """
@@ -245,6 +381,7 @@ def winding_factor_sos(
     >>> round(winding_factor_sos(4, 12, 8, layers=2), 4)
     0.866
     """
+    layers, w = _resolve_layout(Q, P, m, layers, w)
     matrix = build_coil_matrix(Q, P, m, layers, w)
     slots = np.arange(Q, dtype=np.float64)
     phasors = np.exp(1j * nu * 2.0 * np.pi * slots / Q)
@@ -265,61 +402,69 @@ def winding_factor_sos(
     return float(np.mean(kw_vals)) if kw_vals else 0.0
 
 # %% ../../nbs/winding/03_sos.ipynb #72d86813
-def check_symmetry(Q: int, P: int, m: int = 3, layers: int = 1) -> dict:
+def check_symmetry(Q: int, P: int, m: int = 3, layers: int | None = None,
+                   w: int | None = None) -> dict:
     """
-    Check if the winding has the expected symmetry.
+    Check whether the star-of-slots winding for (Q, P, m) is usable.
 
     Parameters
     ----------
-    Q      : int   Number of stator slots
-    P      : int   Number of poles
-    m      : int   Number of phases (default 3)
-    layers : int   1 or 2 (default 1)
+    Q      : int         Number of stator slots
+    P      : int         Number of poles
+    m      : int         Number of phases (default 3)
+    layers : int | None  1 or 2. None → the best candidate, or single layer
+                         if no candidate exists.
+    w      : int | None  Double-layer coil span. None → the best span.
 
     Returns
     -------
     dict with keys:
-        balanced     : bool   True if all phases carry equal conductors
+        balanced     : bool   Phase EMFs equal in magnitude and 360°/m apart
+        buildable    : bool   Each phase has as many go as return conductors
         conductors   : list   Conductor count per phase [n_A, n_B, n_C, …]
         periodicity  : int    Winding periodicity t = gcd(Q, p)
         q            : Fraction   Slots per pole per phase
-        valid        : bool   True if balanced AND Q % m == 0
+        valid        : bool   balanced and buildable and Q % m == 0
+        layers, w    : int, int | None   The layout that was checked
+        kw1          : float  Fundamental winding factor
+        reason       : str    Why it fails, or ''
 
     Examples
     --------
     >>> r = check_symmetry(12, 10, layers=2)
     >>> r['balanced'], r['valid']
     (True, True)
-    >>> r = check_symmetry(12, 4, layers=1)
-    >>> r['balanced']
-    True
+    >>> r = check_symmetry(9, 8, layers=1)
+    >>> r['buildable'], r['valid']
+    (False, False)
     """
     p = P // 2
     t = gcd(Q, p)
     q = Fraction(Q, 2 * m * p)
 
-    matrix = build_coil_matrix(Q, P, m, layers)
-    conductors = []
-    for k in range(m):
-        ph = k + 1
-        cnt = sum(
-            int((matrix[lyr] == +ph).sum()) + int((matrix[lyr] == -ph).sum())
-            for lyr in range(layers)
-        )
-        conductors.append(cnt)
+    if layers is None or (layers == 2 and w is None):
+        try:
+            layers, w = _resolve_layout(Q, P, m, layers, w)
+        except ValueError:
+            layers, w = (1, None) if layers is None else (2, max(1, Q // P))
 
-    balanced = len(set(conductors)) == 1
-    valid = balanced and (Q % m == 0)
+    matrix = build_coil_matrix(Q, P, m, layers, w)
+    r = check_winding(matrix, P, m)
+    conductors = [g + rr for g, rr in zip(r['go'], r['ret'])]
+    valid = r['balanced'] and r['buildable'] and (Q % m == 0)
 
-    return dict(balanced=balanced, conductors=conductors, periodicity=t, q=q, valid=valid)
+    return dict(balanced=r['balanced'], buildable=r['buildable'], conductors=conductors,
+                periodicity=t, q=q, valid=valid, layers=layers, w=w, kw1=r['kw1'],
+                reason=r['reason'])
+
 
 # %% ../../nbs/winding/03_sos.ipynb #cb9c9e82
 def get_valid_coil_spans(Q: int, P: int, m: int = 3) -> list[int]:
     """
     Return all coil spans (in slots) that yield a balanced winding.
 
-    Evaluates spans 1 … Q//(P//2) and keeps those where all m phases
-    carry an equal number of conductors in the double-layer assignment.
+    Evaluates double-layer spans 1 … max(Q//P, Q//p) and keeps those that
+    pass ``check_winding`` (phase EMFs equal and 360°/m apart).
 
     Parameters
     ----------
@@ -329,42 +474,34 @@ def get_valid_coil_spans(Q: int, P: int, m: int = 3) -> list[int]:
 
     Returns
     -------
-    list[int]   Valid coil spans in ascending order (always non-empty).
+    list[int]   Valid coil spans in ascending order (empty if none).
 
     Examples
     --------
     >>> get_valid_coil_spans(12, 10)
     [1, 2]
     >>> get_valid_coil_spans(24, 4)
-    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     """
-    valid = []
-    max_span = Q // P or 1  # pole pitch floor; for FSCW this is 1
-    # Also check spans up to electrical period for ISW
     p = P // 2
-    elec_period = Q // p
-    for w in range(1, max(max_span, elec_period) + 1):
-        matrix = build_coil_matrix(Q, P, m, layers=2, w=w)
-        counts = []
-        for k in range(m):
-            ph = k + 1
-            cnt = (int((matrix[0] == +ph).sum()) + int((matrix[0] == -ph).sum()) +
-                   int((matrix[1] == +ph).sum()) + int((matrix[1] == -ph).sum()))
-            counts.append(cnt)
-        if len(set(counts)) == 1:
+    valid = []
+    for w in range(1, max(Q // P, Q // p, 1) + 1):
+        if w >= Q:
+            break
+        r = check_winding(build_coil_matrix(Q, P, m, layers=2, w=w), P, m)
+        if r['buildable'] and r['balanced']:
             valid.append(w)
+    return valid
 
-    return valid if valid else [1]
 
 # %% ../../nbs/winding/03_sos.ipynb #d67000ff
 def is_valid_combination(Q: int, P: int, m: int = 3) -> bool:
     """
     Return True if (Q, P, m) supports a balanced m-phase winding.
 
-    A combination is valid when:
-    - P is even and ≥ 2
-    - Q and m have a common factor ≥ 1 (at least one slot per phase)
-    - A double-layer coil matrix with the default span is balanced
+    A combination is valid when at least one star-of-slots winding (single
+    layer, or double layer with some coil span) can be wound into coils and
+    is balanced. P must be even and ≥ 2, and m odd.
 
     Parameters
     ----------
@@ -390,7 +527,7 @@ def is_valid_combination(Q: int, P: int, m: int = 3) -> bool:
     if Q < m:
         return False
     try:
-        result = check_symmetry(Q, P, m, layers=1)
-        return bool(result['valid'])
-    except Exception:
+        accepted, _ = _winding_options(Q, P, m)
+    except ValueError:
         return False
+    return bool(accepted) and Q % m == 0

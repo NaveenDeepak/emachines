@@ -26,4 +26,5 @@ website:
           - winding/01_factors.ipynb
           - winding/02_mmf.ipynb
           - winding/03_sos.ipynb
+          - winding/05_design.ipynb
           - winding/04_api.ipynb

@@ -5,8 +5,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from .sos import build_coil_matrix
-from .winding_factors import _optimal_coil_span, winding_factor_spectrum
+from .sos import _resolve_layout, build_coil_matrix
+from .winding_factors import winding_factor_spectrum
 
 # %% auto #0
 __all__ = ['mmf_distribution', 'mmf_waveform', 'mmf_harmonics']
@@ -36,7 +36,7 @@ def mmf_distribution(
     Q: int,
     P: int,
     m: int = 3,
-    layers: int = 1,
+    layers: int | None = None,
     w: int | None = None,
     theta_electrical: float = 0.0,
 ) -> np.ndarray:
@@ -55,7 +55,8 @@ def mmf_distribution(
     Q                : int    Number of stator slots
     P                : int    Number of poles (even, ≥ 2)
     m                : int    Number of phases (default 3)
-    layers           : int    1 (single-layer) or 2 (double-layer)
+    layers           : int | None  1 (single-layer) or 2 (double-layer).
+                              None → the best buildable, balanced candidate.
     w                : int | None
                               Coil span in slots. ``None`` → coil span that
                               maximises the fundamental winding factor.
@@ -74,8 +75,7 @@ def mmf_distribution(
     >>> abs(n.sum()) < 1e-10
     True
     """
-    if w is None:
-        w = _optimal_coil_span(Q, P, m, layers)
+    layers, w = _resolve_layout(Q, P, m, layers, w)
 
     matrix = build_coil_matrix(Q, P, m, layers, w)   # shape (layers, Q)
     i_ph = _phase_currents(m, theta_electrical)        # shape (m,)
@@ -97,7 +97,7 @@ def mmf_waveform(
     Q: int,
     P: int,
     m: int = 3,
-    layers: int = 1,
+    layers: int | None = None,
     w: int | None = None,
     theta_electrical: float = 0.0,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -119,7 +119,7 @@ def mmf_waveform(
     Q                : int
     P                : int
     m                : int    (default 3)
-    layers           : int    1 or 2 (default 1)
+    layers           : int | None  1 or 2. None → the best candidate.
     w                : int | None
     theta_electrical : float  Electrical time angle (radians, default 0)
 
@@ -138,8 +138,7 @@ def mmf_waveform(
     >>> abs(F.mean()) < 1e-10
     True
     """
-    if w is None:
-        w = _optimal_coil_span(Q, P, m, layers)
+    layers, w = _resolve_layout(Q, P, m, layers, w)
 
     n = mmf_distribution(Q, P, m, layers, w, theta_electrical)
 
@@ -157,7 +156,7 @@ def mmf_harmonics(
     Q: int,
     P: int,
     m: int = 3,
-    layers: int = 1,
+    layers: int | None = None,
     w: int | None = None,
     mode: str = "three_phase",
     nu_max: int = 40,
@@ -179,7 +178,7 @@ def mmf_harmonics(
     Q      : int
     P      : int
     m      : int    Number of phases (default 3)
-    layers : int    (default 1)
+    layers : int | None  1 or 2. None → the best candidate.
     w      : int | None
     mode   : str
         ``"three_phase"``    — balanced m-phase MMF; zero-sequence harmonics
@@ -215,8 +214,7 @@ def mmf_harmonics(
     Müller, Vogt & Ponick (2008), eq. (3.65).
     """
     p = P // 2
-    if w is None:
-        w = _optimal_coil_span(Q, P, m, layers)
+    layers, w = _resolve_layout(Q, P, m, layers, w)
 
     nu_arr, kw_arr = winding_factor_spectrum(Q, P, m, layers, w, nu_max=nu_max)
     kw_abs = np.abs(kw_arr)
