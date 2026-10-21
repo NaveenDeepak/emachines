@@ -37,7 +37,7 @@ from emachines.magnetics.iron_loss import bertotti
 from emachines.motors.pmsm import PMSMParams, torque
 
 # Winding factor -- 12s/10p FSCW tooth-coil
-kw = winding_factor(nu=1, Q=12, p=5, coil_span=1)
+kw = winding_factor(5, Q=12, P=10, w=1)   # mechanical order: working harmonic ν = p = 5
 print(f'kw1 = {kw:.4f}')  # 0.9330
 
 # Iron loss -- Bertotti forward model
