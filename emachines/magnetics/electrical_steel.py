@@ -186,23 +186,20 @@ def load_literature_database(literature_path: str | Path | None = None) -> 'Stee
     Parameters
     ----------
     literature_path : str or Path
-        Path to the literature folder. If None, searches in:
-        - ../KnowledgeBase/literature (relative to notebook)
-        - ./KnowledgeBase/literature (relative to current dir)
+        Path to the datasheets folder. If None, uses the first that exists of:
         - Environment variable EMACHINES_LITERATURE
+        - ./KnowledgeBase/literature/datasheets (relative to current dir)
+        - ../KnowledgeBase/literature/datasheets
     
     Returns
     -------
     SteelDatabase
         Database instance with access to all 51+ steel grades
-    
-    Examples
-    --------
-    >>> db = load_literature_database()
-    >>> db.grades  # List all available grades
-    >>> db.manufacturers  # Group by manufacturer
-    >>> steel = db.load('SURA M470-50A')
-    >>> steel.loss_at(freq=400, B=1.5)  # Get core loss
+
+    Raises
+    ------
+    FileNotFoundError
+        If no datasheets folder is found.
     """
     import os
     
