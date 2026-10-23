@@ -35,13 +35,6 @@ def pitch_factor(nu: int, *, Q: int, w: int) -> float:
     Returns
     -------
     float   kp in [0, 1]
-
-    Examples
-    --------
-    >>> pitch_factor(2, Q=24, w=6)   # 24s/4p, full pitch, working harmonic
-    1.0
-    >>> round(pitch_factor(2, Q=24, w=5), 4)   # 5/6 chording
-    0.9659
     """
     return float(np.abs(np.sin(nu * np.pi * w / Q)))
 
@@ -71,13 +64,6 @@ def distribution_factor(nu: int, *, Q: int, P: int, m: int = 3) -> float:
     ------
     ValueError
         If q is not a whole number, or nu is not an odd multiple of p.
-
-    Examples
-    --------
-    >>> round(distribution_factor(2, Q=12, P=4), 4)   # 12s/4p, q=1
-    1.0
-    >>> round(distribution_factor(2, Q=24, P=4), 4)   # 24s/4p, q=2
-    0.9659
     """
     p = P // 2
     q = Fraction(Q, 2 * m * p)
@@ -123,15 +109,6 @@ def winding_factor(
     Returns
     -------
     float   |kw| in [0, 1]
-
-    Examples
-    --------
-    >>> round(winding_factor(5, Q=12, P=10, w=1), 4)   # 12s/10p tooth coil, working harmonic
-    0.933
-    >>> round(winding_factor(2, Q=24, P=4, w=5), 4)    # 24s/4p, 5/6 chording
-    0.933
-    >>> round(winding_factor(4, Q=36, P=8, w=4), 4)    # 36s/8p, q = 3/2
-    0.9452
     """
     if w is not None and layers is None:
         layers = 2
@@ -167,15 +144,6 @@ def winding_factor_spectrum(
     nu_arr : np.ndarray, shape (nu_max,), dtype int
     kw_arr : np.ndarray, shape (nu_max,), dtype float64
         |kw(nu)| in [0, 1]
-
-    Examples
-    --------
-    >>> nu, kw = winding_factor_spectrum(12, 10, layers=2)
-    >>> round(float(kw[4]), 4)   # nu=5 working harmonic for 12s/10p
-    0.933
-    >>> nu, kw = winding_factor_spectrum(12, 4, layers=1, w=6, nu_max=10)
-    >>> round(float(kw[1]), 4)   # nu=2, 12s/4p q=1 full-pitch
-    1.0
     """
     layers, w = _resolve_layout(Q, P, m, layers, w)
 

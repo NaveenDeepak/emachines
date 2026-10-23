@@ -66,14 +66,6 @@ def mmf_distribution(
     -------
     np.ndarray, shape (Q,), dtype float64
         Signed ampere-conductor value at each slot. Per-unit (peak = 1 A·turn).
-
-    Examples
-    --------
-    >>> n = mmf_distribution(12, 10, layers=2)
-    >>> n.shape
-    (12,)
-    >>> abs(n.sum()) < 1e-10
-    True
     """
     layers, w = _resolve_layout(Q, P, m, layers, w)
 
@@ -129,14 +121,6 @@ def mmf_waveform(
         Mechanical angles in degrees, 0° … 360° inclusive.
     F      : np.ndarray, shape (Q + 1,)
         Per-unit MMF at each slot boundary (closed staircase).
-
-    Examples
-    --------
-    >>> angles, F = mmf_waveform(12, 10, layers=2)
-    >>> angles.shape, F.shape
-    ((13,), (13,))
-    >>> abs(F.mean()) < 1e-10
-    True
     """
     layers, w = _resolve_layout(Q, P, m, layers, w)
 
@@ -197,16 +181,6 @@ def mmf_harmonics(
         Mechanical harmonic orders 1 … nu_max.
     amp    : np.ndarray, shape (nu_max,), dtype float64
         Harmonic amplitudes.
-
-    Examples
-    --------
-    >>> nu, amp = mmf_harmonics(12, 10, layers=2, normalize=True)
-    >>> float(round(amp[4], 4))   # working harmonic (ν=5) should be 1.0
-    1.0
-    >>> nu, amp = mmf_harmonics(12, 10, layers=2, mode="single_phase",
-    ...                         normalize=False)
-    >>> amp[4] > 0
-    True
 
     References
     ----------
