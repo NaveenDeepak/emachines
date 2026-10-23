@@ -102,14 +102,6 @@ def design_windings(
     ValueError
         If no candidate is left, with the reason each option was rejected;
         if ``layers=1`` is combined with ``w``; or for invalid P, m, layers, w.
-
-    Examples
-    --------
-    >>> [round(c.kw1, 4) for c in design_windings(12, 10)]
-    [0.9659, 0.933, 0.483]
-    >>> c = design_windings(24, 4, w=5)[0]
-    >>> (c.layers, c.w, round(c.kw1, 4))
-    (2, 5, 0.933)
     """
     accepted, rejected = _winding_options(Q, P, m, layers, w)
     if not accepted:

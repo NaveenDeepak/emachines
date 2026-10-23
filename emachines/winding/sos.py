@@ -47,15 +47,6 @@ def get_basic_params(Q: int, P: int, m: int = 3) -> dict:
         lcm_QP  : int   lcm(Q, P)
         alpha_e : float Electrical slot pitch (radians) = p · 2π/Q
         Q_phase : int   Slots per phase = Q // m  (integer part)
-
-    Examples
-    --------
-    >>> p = get_basic_params(12, 10)
-    >>> p['p'], p['t']
-    (5, 1)
-    >>> p = get_basic_params(24, 4)
-    >>> p['q']
-    Fraction(2, 1)
     """
     p = P // 2
     t = gcd(Q, p)
@@ -79,13 +70,6 @@ def build_star_of_slots(Q: int, P: int) -> np.ndarray:
     -------
     np.ndarray, shape (Q,), dtype float64
         Phasor angles α_i = i · p · 2π/Q mod 2π
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> angles = build_star_of_slots(6, 2)
-    >>> np.round(angles, 4)
-    array([0.    , 1.0472, 2.0944, 3.1416, 4.1888, 5.236 ])
     """
     p = P // 2
     alpha_e = p * 2 * math.pi / Q
@@ -147,11 +131,6 @@ def assign_phases(Q: int, P: int, m: int = 3) -> np.ndarray:
     ------
     ValueError
         If m is even.
-
-    Examples
-    --------
-    >>> assign_phases(6, 2, m=3)
-    array([ 1, -3,  2, -1,  3, -2])
     """
     angles = build_star_of_slots(Q, P)
     return np.array([_assign_slot_to_phase(a, m) for a in angles], dtype=int)
@@ -182,13 +161,6 @@ def check_winding(matrix: np.ndarray, P: int, m: int = 3) -> dict:
                               Electrical angle of each phase EMF relative to
                               phase A, in degrees (None if the EMF is zero)
         reason       : str    Why the winding fails, or '' if it passes
-
-    Examples
-    --------
-    >>> check_winding(build_coil_matrix(12, 10, layers=2, w=1), 10)['balanced']
-    True
-    >>> check_winding(build_coil_matrix(9, 8, layers=1), 8)['reason']
-    "phase A has 2 go and 1 return conductors, so it can't be wound into coils"
     """
     matrix = np.atleast_2d(np.asarray(matrix))
     Q = matrix.shape[1]
@@ -316,13 +288,6 @@ def build_coil_matrix(
     -------
     np.ndarray, shape (layers, Q), dtype int
         +k = phase k forward, −k = phase k return, 0 = empty.
-
-    Examples
-    --------
-    >>> build_coil_matrix(6, 2, m=3, layers=1).tolist()
-    [[1, -3, 2, -1, 3, -2]]
-    >>> build_coil_matrix(6, 2, m=3, layers=2, w=3).shape
-    (2, 6)
     """
     layers, w = _resolve_layout(Q, P, m, layers, w)
 
@@ -373,13 +338,6 @@ def winding_factor_sos(
     Returns
     -------
     float   |kw(ν)| ∈ [0, 1]
-
-    Examples
-    --------
-    >>> round(winding_factor_sos(5, 12, 10, layers=2), 4)
-    0.933
-    >>> round(winding_factor_sos(4, 12, 8, layers=2), 4)
-    0.866
     """
     layers, w = _resolve_layout(Q, P, m, layers, w)
     matrix = build_coil_matrix(Q, P, m, layers, w)
@@ -428,15 +386,6 @@ def check_symmetry(Q: int, P: int, m: int = 3, layers: int | None = None,
         layers, w    : int, int | None   The layout that was checked
         kw1          : float  Fundamental winding factor
         reason       : str    Why it fails, or ''
-
-    Examples
-    --------
-    >>> r = check_symmetry(12, 10, layers=2)
-    >>> r['balanced'], r['valid']
-    (True, True)
-    >>> r = check_symmetry(9, 8, layers=1)
-    >>> r['buildable'], r['valid']
-    (False, False)
     """
     p = P // 2
     t = gcd(Q, p)
@@ -475,13 +424,6 @@ def get_valid_coil_spans(Q: int, P: int, m: int = 3) -> list[int]:
     Returns
     -------
     list[int]   Valid coil spans in ascending order (empty if none).
-
-    Examples
-    --------
-    >>> get_valid_coil_spans(12, 10)
-    [1, 2]
-    >>> get_valid_coil_spans(24, 4)
-    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     """
     p = P // 2
     valid = []
@@ -512,15 +454,6 @@ def is_valid_combination(Q: int, P: int, m: int = 3) -> bool:
     Returns
     -------
     bool
-
-    Examples
-    --------
-    >>> is_valid_combination(12, 10)
-    True
-    >>> is_valid_combination(12, 10, m=5)
-    False
-    >>> is_valid_combination(7, 4)
-    False
     """
     if P < 2 or P % 2 != 0:
         return False
