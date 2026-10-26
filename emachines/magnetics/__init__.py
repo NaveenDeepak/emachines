@@ -4,10 +4,10 @@
 __all__ = []
 
 # %% ../../nbs/magnetics/05_api.ipynb #api-53c6e35138b3f33
-from .iron_loss import MODEL_NAMES, steinmetz, modified_steinmetz, bertotti, fit_steinmetz, fit_modified_steinmetz, fit_bertotti, fit_loss_model
+from .iron_loss import MODEL_NAMES, steinmetz, bertotti, fit_steinmetz, fit_bertotti, fit_loss_model
 from .bh_models import linear_region, frolich, fit_frolich
 from .electrical_steel import SAMPLE_BH, SAMPLE_LOSS, SteelGrade, SteelDatabase, load_literature_database, get_steel_library
 from .pm_materials import MAGNET_LIBRARY, MagnetGrade, MagnetData
 from .permeability import MU0, PermeabilityModel, LinearPermeabilityModel, SplinePermeabilityModel, ShanesudhoffModel
 
-__all__ = ['MODEL_NAMES', 'steinmetz', 'modified_steinmetz', 'bertotti', 'fit_steinmetz', 'fit_modified_steinmetz', 'fit_bertotti', 'fit_loss_model', 'linear_region', 'frolich', 'fit_frolich', 'SAMPLE_BH', 'SAMPLE_LOSS', 'SteelGrade', 'SteelDatabase', 'load_literature_database', 'get_steel_library', 'MAGNET_LIBRARY', 'MagnetGrade', 'MagnetData', 'MU0', 'PermeabilityModel', 'LinearPermeabilityModel', 'SplinePermeabilityModel', 'ShanesudhoffModel']
+__all__ = ['MODEL_NAMES', 'steinmetz', 'bertotti', 'fit_steinmetz', 'fit_bertotti', 'fit_loss_model', 'linear_region', 'frolich', 'fit_frolich', 'SAMPLE_BH', 'SAMPLE_LOSS', 'SteelGrade', 'SteelDatabase', 'load_literature_database', 'get_steel_library', 'MAGNET_LIBRARY', 'MagnetGrade', 'MagnetData', 'MU0', 'PermeabilityModel', 'LinearPermeabilityModel', 'SplinePermeabilityModel', 'ShanesudhoffModel']

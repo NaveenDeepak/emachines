@@ -7,8 +7,7 @@ import numpy as np
 from scipy.optimize import curve_fit
 
 # %% auto #0
-__all__ = ['MODEL_NAMES', 'steinmetz', 'modified_steinmetz', 'bertotti', 'fit_steinmetz', 'fit_modified_steinmetz',
-           'fit_bertotti', 'fit_loss_model']
+__all__ = ['MODEL_NAMES', 'steinmetz', 'bertotti', 'fit_steinmetz', 'fit_bertotti', 'fit_loss_model']
 
 # %% ../../nbs/magnetics/03_iron_loss.ipynb #d0843672
 def steinmetz(
@@ -30,29 +29,6 @@ def steinmetz(
         Core loss (W/kg)
     """
     return k * (np.asarray(f) ** alpha) * (np.asarray(B_peak) ** beta)
-
-# %% ../../nbs/magnetics/03_iron_loss.ipynb #b9bfbdbd
-def modified_steinmetz(
-    f: float | np.ndarray,
-    B_peak: float | np.ndarray,
-    k: float,
-    alpha: float,
-    beta: float,
-) -> float | np.ndarray:
-    r"""Modified Steinmetz (iGSE) for PWM waveforms.
-    P = k * f^(alpha-1) * (f*B)^beta
-    Args:
-        f: Frequency (Hz)
-        B_peak: Peak flux density (T)
-        k: Material constant
-        alpha: Frequency exponent
-        beta: Combined exponent
-    Returns:
-        Core loss (W/kg)
-    """
-    f = np.asarray(f)
-    B = np.asarray(B_peak)
-    return k * (f ** (alpha - 1)) * ((f * B) ** beta)
 
 # %% ../../nbs/magnetics/03_iron_loss.ipynb #2f904fdf
 def bertotti(
@@ -108,7 +84,7 @@ def fit_steinmetz(
             "r2": float(r2), "rmse": rmse, "model": "Steinmetz"}
 
 # %% ../../nbs/magnetics/03_iron_loss.ipynb #nbdev-4f3887
-MODEL_NAMES = ("Bertotti", "Steinmetz", "Modified Steinmetz")
+MODEL_NAMES = ("Bertotti", "Steinmetz")
 
 # %% ../../nbs/magnetics/03_iron_loss.ipynb #nbdev-58b1da
 def _r2_rmse(y_true, y_pred):
@@ -118,31 +94,31 @@ def _r2_rmse(y_true, y_pred):
     rmse = float(np.sqrt(np.mean((y_true - y_pred) ** 2)))
     return float(r2), rmse
 
-# %% ../../nbs/magnetics/03_iron_loss.ipynb #nbdev-928365
-def fit_modified_steinmetz(
-    f_arr: np.ndarray,
-    B_arr: np.ndarray,
-    loss_arr: np.ndarray,
-) -> dict:
-    """Fit Modified Steinmetz (iGSE) parameters (k, α, β)."""
-    def _func(X, k, alpha, beta):
-        return modified_steinmetz(X[0], X[1], k, alpha, beta)
-    popt, _ = curve_fit(_func, (f_arr, B_arr), loss_arr, p0=[0.01, 1.5, 2.0], maxfev=10000)
-    fitted = _func((f_arr, B_arr), *popt)
-    r2, rmse = _r2_rmse(loss_arr, fitted)
-    return {"k": popt[0], "alpha": popt[1], "beta": popt[2],
-            "r2": r2, "rmse": rmse, "model": "Modified Steinmetz"}
-
 # %% ../../nbs/magnetics/03_iron_loss.ipynb #nbdev-3f4a60
 def fit_bertotti(
     f_arr: np.ndarray,
     B_arr: np.ndarray,
     loss_arr: np.ndarray,
 ) -> dict:
-    """Fit Bertotti three-term parameters (kh, ke, ka)."""
+    """
+    Fit Bertotti three-term parameters (kh, ke, ka), all constrained to be >= 0.
+
+    Raises
+    ------
+    ValueError
+        If the data contain fewer than two distinct frequencies: the three
+        loss terms cannot be separated from a single frequency.
+    """
+    f_arr = np.asarray(f_arr, dtype=float)
+    n_freq = len(np.unique(f_arr))
+    if n_freq < 2:
+        raise ValueError(
+            f"fit_bertotti() needs data at two or more frequencies to separate hysteresis, "
+            f"eddy and excess loss; got {n_freq}.")
     def _func(X, kh, ke, ka):
         return bertotti(X[0], X[1], kh, ke, ka)["total"]
-    popt, _ = curve_fit(_func, (f_arr, B_arr), loss_arr, p0=[0.01, 0.0001, 0.001], maxfev=10000)
+    popt, _ = curve_fit(_func, (f_arr, B_arr), loss_arr, p0=[0.01, 0.0001, 0.001],
+                        bounds=(0.0, np.inf), maxfev=10000)
     fitted = _func((f_arr, B_arr), *popt)
     r2, rmse = _r2_rmse(loss_arr, fitted)
     return {"k_h": popt[0], "k_e": popt[1], "k_a": popt[2],
@@ -161,5 +137,4 @@ def fit_loss_model(
     loss_arr = __import__("numpy").asarray(loss_arr, dtype=float)
     if model == "Bertotti":           return fit_bertotti(f_arr, B_arr, loss_arr)
     elif model == "Steinmetz":        return fit_steinmetz(f_arr, B_arr, loss_arr)
-    elif model == "Modified Steinmetz": return fit_modified_steinmetz(f_arr, B_arr, loss_arr)
     else: raise ValueError(f"Unknown model '{model}'. Choose from: {MODEL_NAMES}")

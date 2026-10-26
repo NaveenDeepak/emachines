@@ -3,6 +3,7 @@
 # %% ../../nbs/magnetics/04_pm_materials.ipynb #nbdev-c9166b
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -14,7 +15,15 @@ __all__ = ['MAGNET_LIBRARY', 'MagnetGrade', 'MagnetData']
 # %% ../../nbs/magnetics/04_pm_materials.ipynb #59a64f2d
 @dataclass
 class MagnetGrade:
-    """Room-temperature properties of a permanent magnet grade."""
+    """
+    Room-temperature (20 °C) properties of a permanent magnet grade.
+
+    Units (as stored in MAGNET_LIBRARY):
+        br        : T
+        hcb, hcj  : kA/m   (MagnetData expects A/m; use MagnetData.from_grade)
+        alpha_br  : %/K    temperature coefficient of Br
+        alpha_hcj : %/K    temperature coefficient of Hcj
+    """
     grade:     str
     br:        float
     hcb:       float
@@ -57,7 +66,12 @@ MAGNET_LIBRARY: dict[str, MagnetGrade] = {
 # %% ../../nbs/magnetics/04_pm_materials.ipynb #cd25b48f
 @dataclass
 class MagnetData:
-    """Temperature-corrected demagnetization curves."""
+    """
+    Temperature-corrected demagnetization curves.
+
+    Units: Br in T, Hcj in **A/m**, alpha_br and alpha_hcj in %/K, temperatures in °C.
+    To build one from a MAGNET_LIBRARY grade (stored in kA/m), use ``from_grade``.
+    """
     grade:         str
     from_standard: str
     temperature_C: float
@@ -73,8 +87,30 @@ class MagnetData:
     J_20C: np.ndarray = field(default_factory=lambda: np.array([]))
     B_20C: np.ndarray = field(default_factory=lambda: np.array([]))
     
+    @classmethod
+    def from_grade(cls, grade: MagnetGrade, temperature_C: float, T_max: float,
+                   from_standard: str = "MAGNET_LIBRARY") -> "MagnetData":
+        """Create MagnetData from a MagnetGrade, converting Hcj from kA/m to A/m."""
+        return cls(grade=grade.grade, from_standard=from_standard, temperature_C=temperature_C,
+                   T_max=T_max, Br=grade.br, Hcj=grade.hcj * 1e3,
+                   alpha_br=grade.alpha_br, alpha_hcj=grade.alpha_hcj)
+
     def calculate_JH(self) -> None:
-        """Compute temperature-corrected J-H and B-H curves."""
+        """
+        Compute temperature-corrected J-H and B-H curves.
+
+        Raises ValueError if Hcj looks like kA/m instead of A/m, and warns if
+        temperature_C is above T_max.
+        """
+        if self.Hcj < 1e4:
+            raise ValueError(
+                f"Hcj = {self.Hcj} looks like kA/m; MagnetData expects A/m "
+                f"(e.g. {self.Hcj * 1e3:.0f}). Use MagnetData.from_grade() for MAGNET_LIBRARY grades.")
+        if self.temperature_C > self.T_max:
+            warnings.warn(
+                f"{self.grade}: temperature {self.temperature_C} °C is above the maximum operating "
+                f"temperature {self.T_max} °C; the curve is extrapolated beyond the grade's rating.",
+                stacklevel=2)
         delta_T  = self.temperature_C - 20
         beta_br  = self.alpha_br  * delta_T * 1e-2
         beta_hcj = self.alpha_hcj * delta_T * 1e-2
