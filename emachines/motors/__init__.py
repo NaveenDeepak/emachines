@@ -4,7 +4,40 @@
 __all__ = []
 
 # %% ../../nbs/motors/03_api.ipynb #api-69804809f610d308
-from .dc_motor import GeometricParams, MaterialProperties, OperatingConditions, LumpedParams, calculate_carter_coefficient, calculate_magnetic_circuit
+from emachines.motors.dc_motor import (
+    GeometricParams,
+    MaterialProperties,
+    OperatingConditions,
+    LumpedParams,
+    calculate_carter_coefficient,
+    calculate_magnetic_circuit,
+    calculate_armature_resistance,
+    calculate_motor_constants,
+    calculate_rotor_inertia,
+    calculate_lumped_parameters,
+    calculate_steady_state_performance,
+    calculate_losses_and_efficiency,
+    plot_efficiency_map,
+)
 from .pmsm import PMSMParams, back_emf, torque, dq_currents, SPM
 
-__all__ = ['GeometricParams', 'MaterialProperties', 'OperatingConditions', 'LumpedParams', 'calculate_carter_coefficient', 'calculate_magnetic_circuit', 'PMSMParams', 'back_emf', 'torque', 'dq_currents', 'SPM']
+__all__ = [
+    'GeometricParams',
+    'MaterialProperties',
+    'OperatingConditions',
+    'LumpedParams',
+    'calculate_carter_coefficient',
+    'calculate_magnetic_circuit',
+    'calculate_armature_resistance',
+    'calculate_motor_constants',
+    'calculate_rotor_inertia',
+    'calculate_lumped_parameters',
+    'calculate_steady_state_performance',
+    'calculate_losses_and_efficiency',
+    'plot_efficiency_map',
+    'PMSMParams',
+    'back_emf',
+    'torque',
+    'dq_currents',
+    'SPM',
+]
