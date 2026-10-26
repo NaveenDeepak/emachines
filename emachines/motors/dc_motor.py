@@ -7,7 +7,6 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 import numpy as np
-from scipy.interpolate import griddata
 
 # %% auto #0
 __all__ = ['GeometricParams', 'MaterialProperties', 'OperatingConditions', 'LumpedParams', 'calculate_carter_coefficient',
@@ -18,83 +17,83 @@ __all__ = ['GeometricParams', 'MaterialProperties', 'OperatingConditions', 'Lump
 # %% ../../nbs/motors/02_dc_motors.ipynb #f716699b
 @dataclass
 class GeometricParams:
-    """Geometric dimensions of the motor (SI units)."""
-    stator_outer_diameter: float
-    stator_inner_diameter: float
-    rotor_outer_diameter: float
-    rotor_inner_diameter: float
-    stack_length: float
-    air_gap_length: float
-    num_poles: int
+    """Geometric dimensions of the motor (SI units).
+
+    Magnets sit on the stator bore, so `rotor_outer_diameter` should equal
+    `stator_inner_diameter - 2*magnet_thickness - 2*air_gap_length`.
+    """
+    stator_outer_diameter: float  # [m]
+    stator_inner_diameter: float  # [m] bore of the stator yoke, where the magnets are mounted
+    rotor_outer_diameter: float  # [m] armature outer diameter
+    rotor_inner_diameter: float  # [m] armature inner diameter (shaft diameter)
+    stack_length: float  # [m]
+    air_gap_length: float  # [m] mechanical gap between magnet surface and armature
+    num_poles: int  # number of poles (not pole pairs)
     num_armature_slots: int
-    slot_opening_width: float
-    magnet_arc_angle_deg: float
-    magnet_thickness: float
-    turns_per_coil: int
-    armature_wire_cross_section_m2: float
-    is_lap_winding: bool = True
+    slot_opening_width: float  # [m]
+    magnet_arc_angle_deg: float  # [deg] mechanical arc covered by one magnet
+    magnet_thickness: float  # [m] radial
+    turns_per_coil: int  # one coil per slot (double-layer), so Z = 2 * turns_per_coil * num_armature_slots
+    armature_wire_cross_section_m2: float  # [m²]
+    is_lap_winding: bool = True  # simplex lap (a = num_poles parallel paths); False = simplex wave (a = 2)
 
 
 @dataclass
 class MaterialProperties:
-    """Material properties for motor components."""
-    copper_resistivity: float
-    steel_permeability: float
-    magnet_remanent_flux_density: float
-    magnet_recoil_permeability: float
-    steel_density: float
-    copper_density: float
-    shaft_density: float
-    hysteresis_coeff: float
-    steinmetz_exponent: float
-    eddy_current_coeff: float
-    lamination_thickness: float
+    """Material properties for motor components (SI units)."""
+    copper_resistivity: float  # [Ω·m]
+    steel_permeability: float  # [H/m] absolute permeability μ0·μr, constant (linear steel)
+    magnet_remanent_flux_density: float  # [T] B_r
+    magnet_recoil_permeability: float  # [H/m] absolute recoil permeability μ0·μ_rec
+    steel_density: float  # [kg/m³]
+    copper_density: float  # [kg/m³] (not used yet)
+    shaft_density: float  # [kg/m³]
+    hysteresis_coeff: float  # k_h [W/(m³·Hz·T^α)] in p_h = k_h f B^α V
+    steinmetz_exponent: float  # α in p_h = k_h f B^α V
+    eddy_current_coeff: float  # k_e [W/(m³·(Hz·T·m)²)] in p_e = k_e (f B d)² V
+    lamination_thickness: float  # [m] d
 
 
 @dataclass
 class OperatingConditions:
     """Terminal operating conditions."""
-    terminal_voltage: float
-    brush_contact_drop_v: float = 1.0
-    brush_resistance_total: float = 0.05
+    terminal_voltage: float  # [V]
+    brush_contact_drop_v: float = 1.0  # [V] total contact drop of both brushes
+    brush_resistance_total: float = 0.05  # [Ω] in series with the armature
 
 
 @dataclass
 class LumpedParams:
     """Calculated lumped-parameter motor model."""
-    armature_resistance: float
-    armature_inductance: float
-    motor_constant: float
-    rotor_inertia: float
-    viscous_damping: float
-    air_gap_flux_density: float
-    flux_per_pole: float
+    armature_resistance: float  # [Ω] R_a, winding only (brushes are in `OperatingConditions`)
+    armature_inductance: float  # [H] placeholder, not calculated from the design
+    motor_constant: float  # [V·s/rad] = [N·m/A], K = K_e = K_t
+    rotor_inertia: float  # [kg·m²]
+    viscous_damping: float  # [N·m·s/rad] placeholder, not calculated from the design
+    air_gap_flux_density: float  # [T] average over the pole face
+    flux_per_pole: float  # [Wb]
 
 # %% ../../nbs/motors/02_dc_motors.ipynb #f29852b7
 def calculate_carter_coefficient(g: float, w_so: float, slot_pitch: float) -> float:
-    """Carter's coefficient for slot opening effect.
-    
-    Accounts for the reduction in effective air gap due to slot openings.
-    Returns a value typically between 0.8 and 1.0.
-    
+    """Carter's coefficient k_c >= 1 for the slotted armature surface.
+
+    The slot openings lengthen the effective air gap to g_eff = k_c * g.
+    k_c = 1 for a slotless surface (w_so = 0).
+
     Args:
         g: Air gap [m]
         w_so: Slot opening width [m]
         slot_pitch: Slot pitch (distance between slots) [m]
+
+    Raises:
+        ValueError: if g or slot_pitch is not positive, or w_so is not in [0, slot_pitch).
     """
-    if slot_pitch <= 0 or g <= 0:
-        return 1.0
-    
+    if g <= 0 or slot_pitch <= 0:
+        raise ValueError(f"g and slot_pitch must be positive, got g = {g}, slot_pitch = {slot_pitch}")
+    if not 0 <= w_so < slot_pitch:
+        raise ValueError(f"w_so must be in [0, slot_pitch), got w_so = {w_so}, slot_pitch = {slot_pitch}")
     gamma = (w_so / g) ** 2 / (5 + w_so / g)
-    denominator = slot_pitch - gamma * g
-    
-    # Ensure denominator is positive to avoid division by zero or negative k_c
-    if denominator <= 0:
-        return 0.95  # Return conservative estimate
-    
-    k_c = (slot_pitch - gamma * g) / slot_pitch
-    # Clamp to valid range [0.8, 1.0]
-    return max(0.8, min(k_c, 1.0))
+    return slot_pitch / (slot_pitch - gamma * g)
 
 # %% ../../nbs/motors/02_dc_motors.ipynb #d0bb3428
 def calculate_magnetic_circuit(geom: GeometricParams, mat: MaterialProperties) -> tuple[float, float]:
@@ -171,13 +170,17 @@ def calculate_lumped_parameters(geom: GeometricParams, mat: MaterialProperties) 
 
 # %% ../../nbs/motors/02_dc_motors.ipynb #f48b6251
 def calculate_steady_state_performance(params: LumpedParams, op: OperatingConditions) -> dict:
-    """Steady-state speed-torque characteristic."""
+    """Steady-state speed-torque characteristic.
+
+    The circuit resistance is R_a plus `op.brush_resistance_total`; the brush
+    contact drop is subtracted from the terminal voltage.
+    """
     K = params.motor_constant
-    Ra = params.armature_resistance
+    R = params.armature_resistance + op.brush_resistance_total
     V_eff = max(0.0, op.terminal_voltage - op.brush_contact_drop_v)
-    stall_torque = (V_eff * K) / Ra
+    stall_torque = (V_eff * K) / R
     torque_range = np.linspace(0, stall_torque, 200)
-    speed_rad_s = V_eff / K - (Ra / K ** 2) * torque_range
+    speed_rad_s = V_eff / K - (R / K ** 2) * torque_range
     speed_rpm = speed_rad_s * 60 / (2 * np.pi)
     return {
         "torque": torque_range, "speed_rpm": speed_rpm,
@@ -230,10 +233,10 @@ def plot_efficiency_map(
     T, S = np.meshgrid(torque_grid, speed_grid)
     Eff = np.zeros_like(T)
     K = params.motor_constant
-    Ra = params.armature_resistance
+    R = params.armature_resistance + op_conditions.brush_resistance_total
     for i in range(T.shape[0]):
         for j in range(T.shape[1]):
-            max_t = (K ** 2 / Ra) * (V_eff / K - S[i, j] * 2 * np.pi / 60)
+            max_t = (K ** 2 / R) * (V_eff / K - S[i, j] * 2 * np.pi / 60)
             if T[i, j] <= max_t and max_t > 0:
                 d = calculate_losses_and_efficiency(params, geom, mat, T[i, j], S[i, j])
                 Eff[i, j] = d["efficiency"]
@@ -245,7 +248,7 @@ def plot_efficiency_map(
     ax.plot(steady_state_data["torque"], steady_state_data["speed_rpm"],
             "r--", linewidth=2, label="Operating Envelope")
     if target_torque is not None and target_speed_rpm is not None:
-        max_t_at_target = (K ** 2 / Ra) * (V_eff / K - target_speed_rpm * 2 * np.pi / 60)
+        max_t_at_target = (K ** 2 / R) * (V_eff / K - target_speed_rpm * 2 * np.pi / 60)
         in_env = target_torque <= max_t_at_target and max_t_at_target > 0
         color = "lime" if in_env else "red"
         ax.plot(target_torque, target_speed_rpm, "*", color=color, markersize=16)
