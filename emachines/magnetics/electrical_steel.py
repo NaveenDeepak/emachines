@@ -38,7 +38,13 @@ class SteelGrade:
         return len(self.bh_data)
     
     def loss_at(self, freq: float, B: float) -> float:
-        """Interpolate core loss at given frequency and flux density."""
+        """
+        Interpolate core loss (W/kg) at a measured frequency and flux density.
+
+        Linear interpolation between the measured points at that frequency.
+        Raises ValueError if the frequency was not measured, or if B is outside
+        the measured flux-density range: values outside it are not extrapolated.
+        """
         if freq not in self.frequencies:
             raise ValueError(f"Frequency {freq} Hz not available")
         b_col = next((c for c in ("B [T]", "J [T]") if c in self.loss_data.columns), None)
@@ -47,7 +53,12 @@ class SteelGrade:
         if not b_col or not loss_col:
             raise ValueError("Loss data missing expected columns.")
         subset = self.loss_data[self.loss_data["frequency [Hz]"] == freq].sort_values(b_col)
-        return float(np.interp(B, subset[b_col].values, subset[loss_col].values))
+        b_vals = subset[b_col].to_numpy(dtype=float)
+        if not b_vals.min() <= B <= b_vals.max():
+            raise ValueError(
+                f"B = {B} T is outside the measured range {b_vals.min()}–{b_vals.max()} T "
+                f"at {freq} Hz; loss_at() does not extrapolate.")
+        return float(np.interp(B, b_vals, subset[loss_col].to_numpy(dtype=float)))
 
 # %% ../../nbs/magnetics/02_electrical_steel.ipynb #d4e5f6a7
 class SteelDatabase:

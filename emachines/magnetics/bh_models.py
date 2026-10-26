@@ -35,8 +35,8 @@ def frolich(H: np.ndarray, a: float, b: float) -> np.ndarray:
     
     Args:
         H: Magnetic field intensity (A/m)
-        a: Model parameter (dimensionless)
-        b: Model parameter (m/A)
+        a: Model parameter (m/H); 1/a is the initial permeability (H/m)
+        b: Model parameter (1/T); 1/b is the saturation flux density (T)
     
     Returns:
         Flux density B (T)
