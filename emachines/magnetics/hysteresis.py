@@ -62,6 +62,18 @@ class TakacsModel:
         x = np.vectorize(solve)(B_m / self.B_s)
         return self.h0 * x if x.ndim else float(self.h0 * x)
 
+    def normal_H(self, B):
+        """H [A/m] on the normal magnetisation curve: single-valued, no hysteresis.
+
+        Odd extension of the loop-tip curve, H(-B) = -H(B) and H(0) = 0, for |B| < B_s.
+        """
+        B = np.asarray(B, dtype=float)
+        H = np.zeros_like(B)
+        nz = B != 0
+        if np.any(nz):
+            H[nz] = np.sign(B[nz]) * np.atleast_1d(self.tip_H(np.abs(B[nz])))
+        return H if H.ndim else float(H)
+
     def branch_B(self, H, H_m, rising: bool):
         """B [T] on the ascending (rising=True) or descending branch of the loop with tip H_m."""
         x_m = self._x_m(H_m)
@@ -188,6 +200,10 @@ class DynamicLoopModel:
     """Static Takács loop widened by Bertotti's classical-eddy and excess fields.
 
     H(t) = H_static(B) + c_cl dB/dt + c_exc sign(dB/dt) |dB/dt|^0.5
+
+    Both effects are optional per call: `hysteresis=False` replaces the loop by the
+    single-valued normal curve of the same model, `dynamic=False` drops the
+    rate-dependent terms.
     """
     static: TakacsModel
     c_cl: float  # [A·s/(m·T)] classical eddy coefficient
@@ -204,17 +220,24 @@ class DynamicLoopModel:
             raise ValueError(f"density must be positive, got {density}")
         return cls(static, k_e * density / (2 * np.pi ** 2), k_a * density / (_C_EXC * np.sqrt(2 * np.pi)))
 
-    def field_waveform(self, B, dt: float):
-        """H(t) [A/m] for one period of B(t) [T] sampled at time step dt [s]."""
+    def field_waveform(self, B, dt: float, hysteresis: bool = True, dynamic: bool = True):
+        """H(t) [A/m] for one period of B(t) [T] sampled at time step dt [s].
+
+        Args:
+            hysteresis: use the Takács loop (True) or its single-valued normal curve (False).
+            dynamic: add the classical-eddy and excess fields.
+        """
         if dt <= 0:
             raise ValueError(f"dt must be positive, got {dt}")
         B = np.asarray(B, dtype=float)
-        dBdt = (np.roll(B, -1) - np.roll(B, 1)) / (2 * dt)
-        return (self.static.field_waveform(B) + self.c_cl * dBdt
-                + self.c_exc * np.sign(dBdt) * np.sqrt(np.abs(dBdt)))
+        H = self.static.field_waveform(B) if hysteresis else self.static.normal_H(B)
+        if dynamic:
+            dBdt = (np.roll(B, -1) - np.roll(B, 1)) / (2 * dt)
+            H = H + self.c_cl * dBdt + self.c_exc * np.sign(dBdt) * np.sqrt(np.abs(dBdt))
+        return H
 
-    def cycle_energy(self, B, dt: float) -> float:
-        """Energy per cycle ∮H dB [J/m³] for one period of B(t) sampled at dt."""
+    def cycle_energy(self, B, dt: float, hysteresis: bool = True, dynamic: bool = True) -> float:
+        """Energy per cycle ∮H dB [J/m³] for one period of B(t) sampled at dt; switches as in `field_waveform`."""
         B = np.asarray(B, dtype=float)
-        H = self.field_waveform(B, dt)
+        H = self.field_waveform(B, dt, hysteresis, dynamic)
         return float(np.sum(0.5 * (H + np.roll(H, -1)) * (np.roll(B, -1) - B)))
