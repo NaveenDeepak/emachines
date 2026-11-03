@@ -26,7 +26,8 @@ Requires Python \>= 3.10.
 |----|----|
 | [Winding](winding/01_factors.ipynb) | Winding factors (kp, kd, kw), MMF distribution, star-of-slots phasor method |
 | [Motors](motors/01_pmsm.ipynb) | PMSM dq-frame model, DC motor analytical model |
-| [Magnetics](magnetics/01_bh_models.ipynb) | BH curve models, iron loss (Steinmetz, Bertotti), electrical steel & PM databases |
+| [Magnetics](magnetics/01_bh_models.ipynb) | BH curve models, iron loss (Steinmetz, Bertotti), electrical steel & PM databases, hysteresis (Takács, dynamic widening) |
+| [Transformer](transformer/01_single_phase.ipynb) | Single-phase transformer: no-load current waveform, core loss, equivalent circuit, load performance |
 | [MEC](mec/02_solver.ipynb) | Magnetic equivalent circuit Newton-Raphson solver with nonlinear materials |
 
 ## Quick Start
