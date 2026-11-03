@@ -9,7 +9,7 @@ import numpy as np
 from scipy.optimize import brentq, least_squares
 
 # %% auto #0
-__all__ = ['TakacsModel', 'fit_takacs']
+__all__ = ['TakacsModel', 'fit_takacs', 'classical_eddy_coefficient', 'DynamicLoopModel']
 
 # %% ../../nbs/magnetics/07_hysteresis.ipynb #hys-model
 def _logcosh(z):
@@ -61,6 +61,18 @@ class TakacsModel:
             return brentq(f, 0.0, hi, xtol=1e-14)
         x = np.vectorize(solve)(B_m / self.B_s)
         return self.h0 * x if x.ndim else float(self.h0 * x)
+
+    def normal_H(self, B):
+        """H [A/m] on the normal magnetisation curve: single-valued, no hysteresis.
+
+        Odd extension of the loop-tip curve, H(-B) = -H(B) and H(0) = 0, for |B| < B_s.
+        """
+        B = np.asarray(B, dtype=float)
+        H = np.zeros_like(B)
+        nz = B != 0
+        if np.any(nz):
+            H[nz] = np.sign(B[nz]) * np.atleast_1d(self.tip_H(np.abs(B[nz])))
+        return H if H.ndim else float(H)
 
     def branch_B(self, H, H_m, rising: bool):
         """B [T] on the ascending (rising=True) or descending branch of the loop with tip H_m."""
@@ -166,3 +178,66 @@ def fit_takacs(H_tip, B_tip, B_loop, W_loop) -> dict:
     return {"B_s": B_s, "h0": h0, "a0": a0, "takacs": TakacsModel(B_s, h0, a0),
             "rel_rms_tip": float(np.sqrt(np.mean(r[:n] ** 2))),
             "rel_rms_energy": float(np.sqrt(np.mean(r[n:] ** 2))), "model": "Takács"}
+
+# %% ../../nbs/magnetics/07_hysteresis.ipynb #dyn-model
+_C_EXC = 3.4960767390218895  # ∫_0^{2π} |cos θ|^1.5 dθ
+
+
+def classical_eddy_coefficient(sigma: float, d: float) -> float:
+    """Physical classical-eddy coefficient c_cl = σ d² / 12 [A·s/(m·T)].
+
+    Args:
+        sigma: electrical conductivity of the steel [S/m]
+        d: lamination thickness [m]
+    """
+    if sigma <= 0 or d <= 0:
+        raise ValueError(f"sigma and d must be positive, got {sigma}, {d}")
+    return sigma * d ** 2 / 12
+
+
+@dataclass(frozen=True)
+class DynamicLoopModel:
+    """Static Takács loop widened by Bertotti's classical-eddy and excess fields.
+
+    H(t) = H_static(B) + c_cl dB/dt + c_exc sign(dB/dt) |dB/dt|^0.5
+
+    Both effects are optional per call: `hysteresis=False` replaces the loop by the
+    single-valued normal curve of the same model, `dynamic=False` drops the
+    rate-dependent terms.
+    """
+    static: TakacsModel
+    c_cl: float  # [A·s/(m·T)] classical eddy coefficient
+    c_exc: float  # [A/m·(s/T)^0.5] excess coefficient
+
+    def __post_init__(self):
+        if self.c_cl < 0 or self.c_exc < 0:
+            raise ValueError(f"c_cl and c_exc must be >= 0, got {self.c_cl}, {self.c_exc}")
+
+    @classmethod
+    def from_bertotti(cls, static: TakacsModel, k_e: float, k_a: float, density: float):
+        """Build from `fit_bertotti` coefficients k_e, k_a [W/kg] and density [kg/m³]."""
+        if density <= 0:
+            raise ValueError(f"density must be positive, got {density}")
+        return cls(static, k_e * density / (2 * np.pi ** 2), k_a * density / (_C_EXC * np.sqrt(2 * np.pi)))
+
+    def field_waveform(self, B, dt: float, hysteresis: bool = True, dynamic: bool = True):
+        """H(t) [A/m] for one period of B(t) [T] sampled at time step dt [s].
+
+        Args:
+            hysteresis: use the Takács loop (True) or its single-valued normal curve (False).
+            dynamic: add the classical-eddy and excess fields.
+        """
+        if dt <= 0:
+            raise ValueError(f"dt must be positive, got {dt}")
+        B = np.asarray(B, dtype=float)
+        H = self.static.field_waveform(B) if hysteresis else self.static.normal_H(B)
+        if dynamic:
+            dBdt = (np.roll(B, -1) - np.roll(B, 1)) / (2 * dt)
+            H = H + self.c_cl * dBdt + self.c_exc * np.sign(dBdt) * np.sqrt(np.abs(dBdt))
+        return H
+
+    def cycle_energy(self, B, dt: float, hysteresis: bool = True, dynamic: bool = True) -> float:
+        """Energy per cycle ∮H dB [J/m³] for one period of B(t) sampled at dt; switches as in `field_waveform`."""
+        B = np.asarray(B, dtype=float)
+        H = self.field_waveform(B, dt, hysteresis, dynamic)
+        return float(np.sum(0.5 * (H + np.roll(H, -1)) * (np.roll(B, -1) - B)))

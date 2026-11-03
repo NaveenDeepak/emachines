@@ -9,6 +9,6 @@ from .bh_models import linear_region, frolich, fit_frolich
 from .electrical_steel import SAMPLE_BH, SAMPLE_LOSS, SteelGrade, SteelDatabase, load_literature_database, get_steel_library
 from .pm_materials import MAGNET_LIBRARY, MagnetGrade, MagnetData
 from .permeability import MU0, PermeabilityModel, LinearPermeabilityModel, SplinePermeabilityModel, ShanesudhoffModel
-from .hysteresis import TakacsModel, fit_takacs
+from .hysteresis import TakacsModel, fit_takacs, classical_eddy_coefficient, DynamicLoopModel
 
-__all__ = ['MODEL_NAMES', 'steinmetz', 'bertotti', 'fit_steinmetz', 'fit_bertotti', 'fit_loss_model', 'linear_region', 'frolich', 'fit_frolich', 'SAMPLE_BH', 'SAMPLE_LOSS', 'SteelGrade', 'SteelDatabase', 'load_literature_database', 'get_steel_library', 'MAGNET_LIBRARY', 'MagnetGrade', 'MagnetData', 'MU0', 'PermeabilityModel', 'LinearPermeabilityModel', 'SplinePermeabilityModel', 'ShanesudhoffModel', 'TakacsModel', 'fit_takacs']
+__all__ = ['MODEL_NAMES', 'steinmetz', 'bertotti', 'fit_steinmetz', 'fit_bertotti', 'fit_loss_model', 'linear_region', 'frolich', 'fit_frolich', 'SAMPLE_BH', 'SAMPLE_LOSS', 'SteelGrade', 'SteelDatabase', 'load_literature_database', 'get_steel_library', 'MAGNET_LIBRARY', 'MagnetGrade', 'MagnetData', 'MU0', 'PermeabilityModel', 'LinearPermeabilityModel', 'SplinePermeabilityModel', 'ShanesudhoffModel', 'TakacsModel', 'fit_takacs', 'classical_eddy_coefficient', 'DynamicLoopModel']
