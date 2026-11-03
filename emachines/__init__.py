@@ -1,4 +1,4 @@
-"""Root package init — sets `__version__`. All public symbols live in subpackages (`winding`, `magnetics`, `motors`, `mec`).
+"""Root package init — sets `__version__`. All public symbols live in subpackages (`winding`, `magnetics`, `motors`, `mec`, `transformer`).
 
 Docs: https://NaveenDeepak.github.io/emachines/init.html.md"""
 

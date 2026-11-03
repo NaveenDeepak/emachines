@@ -23,6 +23,10 @@ website:
           - motors/01_pmsm.ipynb
           - motors/02_dc_motors.ipynb
           - motors/03_api.ipynb
+      - section: transformer
+        contents:
+          - transformer/01_single_phase.ipynb
+          - transformer/02_api.ipynb
       - section: winding
         contents:
           - winding/01_factors.ipynb
