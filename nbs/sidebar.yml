@@ -9,8 +9,9 @@ website:
           - magnetics/02_electrical_steel.ipynb
           - magnetics/03_iron_loss.ipynb
           - magnetics/04_pm_materials.ipynb
-          - magnetics/06_permeability_models.ipynb
           - magnetics/05_api.ipynb
+          - magnetics/06_permeability_models.ipynb
+          - magnetics/07_hysteresis.ipynb
       - section: mec
         contents:
           - mec/01_material_models.ipynb
@@ -27,5 +28,5 @@ website:
           - winding/01_factors.ipynb
           - winding/02_mmf.ipynb
           - winding/03_sos.ipynb
-          - winding/05_design.ipynb
           - winding/04_api.ipynb
+          - winding/05_design.ipynb
