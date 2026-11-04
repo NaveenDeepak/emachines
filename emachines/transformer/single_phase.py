@@ -13,7 +13,8 @@ from ..magnetics.permeability import MU0
 
 # %% auto #0
 __all__ = ['TransformerCore', 'TransformerWinding', 'CoreMaterial', 'Supply', 'peak_flux_density', 'no_load_current', 'core_loss',
-           'magnetising_branch', 'winding_resistance', 'rogowski_factor', 'leakage_inductance', 'load_performance']
+           'magnetising_branch', 'winding_resistance', 'rogowski_factor', 'leakage_inductance', 'EquivalentCircuit',
+           'shunt_from_open_circuit', 'series_from_short_circuit', 'solve_equivalent_circuit', 'load_performance']
 
 # %% ../../nbs/transformer/01_single_phase.ipynb #xf-dataclasses
 @dataclass(frozen=True)
@@ -158,6 +159,91 @@ def leakage_inductance(primary: TransformerWinding, secondary: TransformerWindin
     k_R = rogowski_factor(winding_height, a1 + a2 + gap)
     return MU0 * primary.turns ** 2 * l_mt / winding_height * (a1 / 3 + a2 / 3 + gap) * k_R
 
+# %% ../../nbs/transformer/01_single_phase.ipynb #xf-ec
+@dataclass(frozen=True)
+class EquivalentCircuit:
+    """T equivalent circuit of a two-winding transformer, every value referred to one side [Ω]."""
+    R1: float  # source-side winding resistance
+    X1: float  # source-side leakage reactance
+    R2: float  # load-side winding resistance, referred
+    X2: float  # load-side leakage reactance, referred
+    R_c: float  # core-loss resistance
+    X_m: float  # magnetising reactance
+
+    @classmethod
+    def from_series(cls, R_eq: float, X_eq: float, R_c: float, X_m: float, split: float = 0.5) -> "EquivalentCircuit":
+        """Build from the total series impedance, putting the fraction `split` on the source side."""
+        if not 0 <= split <= 1:
+            raise ValueError(f"split must be in [0, 1], got {split}")
+        return cls(split * R_eq, split * X_eq, (1 - split) * R_eq, (1 - split) * X_eq, R_c, X_m)
+
+    @property
+    def R_eq(self) -> float:
+        """Total series resistance R1 + R2 [Ω]."""
+        return self.R1 + self.R2
+
+    @property
+    def X_eq(self) -> float:
+        """Total leakage reactance X1 + X2 [Ω]."""
+        return self.X1 + self.X2
+
+
+def _test_powers(voltage: float, current: float, power: float) -> tuple[float, float]:
+    S = voltage * current
+    if voltage <= 0 or current <= 0 or not 0 < power < S:
+        raise ValueError(f"need V, I > 0 and 0 < P < V·I, got V = {voltage}, I = {current}, P = {power}")
+    return power, float(np.sqrt(S ** 2 - power ** 2))
+
+
+def shunt_from_open_circuit(voltage: float, current: float, power: float) -> tuple[float, float]:
+    """(R_c, X_m) [Ω] from an open-circuit test (rms V, A and W), on the side the test was made."""
+    P, Q = _test_powers(voltage, current, power)
+    return voltage ** 2 / P, voltage ** 2 / Q
+
+
+def series_from_short_circuit(voltage: float, current: float, power: float) -> tuple[float, float]:
+    """(R_eq, X_eq) [Ω] from a short-circuit test (rms V, A and W), on the side the test was made."""
+    P, Q = _test_powers(voltage, current, power)
+    return P / current ** 2, Q / current ** 2
+
+
+def solve_equivalent_circuit(circuit: EquivalentCircuit, V2: float, I2: float, power_factor: float,
+                             lagging: bool = True, model: str = "T") -> dict:
+    """Source-side quantities for a load V2 [V], I2 [A] at power_factor, all referred to the circuit's side.
+
+    model "T" solves the T circuit exactly; "cantilever" puts the shunt branch at the
+    source terminals. Returns 'V1', 'V1_angle_deg', 'I1', 'I1_angle_deg', 'regulation'
+    (standard definition, (V2_nl - V2)/V2), 'P_out', 'P_cu', 'P_core', 'P_in', 'efficiency'.
+    """
+    if V2 <= 0 or I2 < 0 or not 0 < power_factor <= 1:
+        raise ValueError(f"need V2 > 0, I2 >= 0 and power_factor in (0, 1], got {V2}, {I2}, {power_factor}")
+    if model not in ("T", "cantilever"):
+        raise ValueError(f'model must be "T" or "cantilever", got {model!r}')
+    c = circuit
+    phi = np.arccos(power_factor) * (1 if lagging else -1)
+    I2c = I2 * np.exp(-1j * phi)                       # current lags V2 by phi
+    Z1, Z2 = c.R1 + 1j * c.X1, c.R2 + 1j * c.X2
+    Y_m = 1 / c.R_c - 1j / c.X_m
+    if model == "T":
+        E = V2 + I2c * Z2
+        I1 = I2c + E * Y_m
+        V1 = E + I1 * Z1
+        P_cu = abs(I1) ** 2 * c.R1 + I2 ** 2 * c.R2
+        P_core = abs(E) ** 2 / c.R_c
+        V_nl = abs(V1 / (1 + Z1 * Y_m))
+    else:
+        V1 = V2 + I2c * (Z1 + Z2)
+        I1 = I2c + V1 * Y_m
+        P_cu = I2 ** 2 * c.R_eq
+        P_core = abs(V1) ** 2 / c.R_c
+        V_nl = abs(V1)
+    P_out = V2 * I2 * power_factor
+    return {"V1": float(abs(V1)), "V1_angle_deg": float(np.degrees(np.angle(V1))),
+            "I1": float(abs(I1)), "I1_angle_deg": float(np.degrees(np.angle(I1))),
+            "regulation": float((V_nl - V2) / V2), "P_out": float(P_out), "P_cu": float(P_cu),
+            "P_core": float(P_core), "P_in": float((V1 * np.conj(I1)).real),
+            "efficiency": float(P_out / (P_out + P_cu + P_core))}
+
 # %% ../../nbs/transformer/01_single_phase.ipynb #xf-load
 def load_performance(core: TransformerCore, primary: TransformerWinding, secondary: TransformerWinding,
                      material: CoreMaterial, supply: Supply, load_va: float, power_factor: float,
@@ -167,7 +253,9 @@ def load_performance(core: TransformerCore, primary: TransformerWinding, seconda
 
     The load is load_va [VA] at power_factor on the rated secondary voltage V1·N2/N1
     (a constant impedance). The magnetising branch is evaluated at the core voltage E1
-    by fixed-point iteration. Returns currents, voltages, losses, efficiency and regulation.
+    by fixed-point iteration. Returns currents, voltages, losses, efficiency, regulation
+    (standard definition, (V2_nl - V2)/V2) and the solved 'circuit' (EquivalentCircuit,
+    referred to the primary, shunt branch at the load point).
     """
     if load_va <= 0 or not 0 < power_factor <= 1:
         raise ValueError(f"load_va must be > 0 and power_factor in (0, 1], got {load_va}, {power_factor}")
@@ -179,25 +267,31 @@ def load_performance(core: TransformerCore, primary: TransformerWinding, seconda
     R1, R2 = winding_resistance(primary, temperature_C), winding_resistance(secondary, temperature_C)
     Z1, Z2p, ZLp = R1 + 0.5j * X_s, k ** 2 * R2 + 0.5j * X_s, k ** 2 * Z_L
 
-    E1 = complex(supply.voltage)
-    for _ in range(max_iter):
+    def shunt(E1):
         mb = magnetising_branch(core, primary, material, Supply(abs(E1), supply.frequency), hysteresis, dynamic)
-        Y_m = 1 / mb["R_c"] - 1j / mb["X_m"]
-        E1_new = supply.voltage / (1 + Z1 * (Y_m + 1 / (Z2p + ZLp)))
-        if abs(E1_new - E1) < tol * supply.voltage:
+        return mb, 1 / mb["R_c"] - 1j / mb["X_m"]
+
+    def core_voltage(Y_load):
+        """Fixed point E1 = V1 / (1 + Z1 (Y_m(E1) + Y_load))."""
+        E1 = complex(supply.voltage)
+        for _ in range(max_iter):
+            E1_new = supply.voltage / (1 + Z1 * (shunt(E1)[1] + Y_load))
+            if abs(E1_new - E1) < tol * supply.voltage:
+                return E1_new
             E1 = E1_new
-            break
-        E1 = E1_new
-    else:
         raise RuntimeError("load_performance: E1 iteration did not converge")
-    mb = magnetising_branch(core, primary, material, Supply(abs(E1), supply.frequency), hysteresis, dynamic)
-    Y_m = 1 / mb["R_c"] - 1j / mb["X_m"]
+
+    E1 = core_voltage(1 / (Z2p + ZLp))
+    mb, Y_m = shunt(E1)
     I2p = E1 / (Z2p + ZLp)
     I1 = E1 * Y_m + I2p
     V2 = abs(I2p * ZLp) / k
+    V2_nl = abs(core_voltage(0.0)) / k                      # load removed, same V1
     P_out = abs(I2p) ** 2 * ZLp.real
     P_cu = abs(I1) ** 2 * R1 + abs(I2p) ** 2 * Z2p.real
     P_fe = mb["P_fe"]
-    return {"I1": abs(I1), "I2": abs(I2p) * k, "V2": V2, "E1": abs(E1), "B_peak": mb["B_peak"],
-            "P_out": P_out, "P_cu": P_cu, "P_fe": P_fe, "P_in": float((supply.voltage * np.conj(I1)).real),
-            "efficiency": P_out / (P_out + P_cu + P_fe), "regulation": (V2n - V2) / V2n}
+    circuit = EquivalentCircuit(R1, 0.5 * X_s, Z2p.real, 0.5 * X_s, mb["R_c"], mb["X_m"])
+    return {"I1": abs(I1), "I2": abs(I2p) * k, "V2": V2, "V2_no_load": V2_nl, "E1": abs(E1),
+            "B_peak": mb["B_peak"], "P_out": P_out, "P_cu": P_cu, "P_fe": P_fe,
+            "P_in": float((supply.voltage * np.conj(I1)).real),
+            "efficiency": P_out / (P_out + P_cu + P_fe), "regulation": (V2_nl - V2) / V2, "circuit": circuit}
