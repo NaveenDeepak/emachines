@@ -17,6 +17,10 @@ from emachines.transformer.single_phase import (
     rogowski_factor,
     leakage_inductance,
     load_performance,
+    EquivalentCircuit,
+    shunt_from_open_circuit,
+    series_from_short_circuit,
+    solve_equivalent_circuit,
 )
 
 __all__ = [
@@ -32,4 +36,8 @@ __all__ = [
     'rogowski_factor',
     'leakage_inductance',
     'load_performance',
+    'EquivalentCircuit',
+    'shunt_from_open_circuit',
+    'series_from_short_circuit',
+    'solve_equivalent_circuit',
 ]
