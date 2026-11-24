@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 590" width="900" height="590" font-family="Helvetica, Arial, sans-serif" font-size="14">
+<defs><marker id="af" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#c0392b"/></marker><marker id="ak" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#111"/></marker></defs>
+<rect width="900" height="590" fill="#ffffff"/>
+<text x="340.0" y="30" text-anchor="middle" font-weight="bold">Magnetic equivalent circuit on the front view</text>
+<path d="M150,70 H530 V530 H150 Z M230,150 V450 H450 V150 Z" fill="#e3e6eb" fill-rule="evenodd" stroke="#9aa1ad" stroke-width="1.2"/>
+<rect x="236" y="200" width="26" height="210" fill="#f7d9a8" stroke="#9aa1ad" stroke-width="0.8"/>
+<rect x="284" y="200" width="26" height="210" fill="#c3d7f5" stroke="#9aa1ad" stroke-width="0.8"/>
+<rect x="118" y="200" width="26" height="210" fill="#f7d9a8" stroke="#9aa1ad" stroke-width="0.8"/>
+<rect x="70" y="200" width="26" height="210" fill="#c3d7f5" stroke="#9aa1ad" stroke-width="0.8"/>
+<line x1="230" y1="450" x2="230" y2="530" stroke="#9aa1ad" stroke-width="2" stroke-dasharray="3,2"/>
+<line x1="450" y1="450" x2="450" y2="530" stroke="#9aa1ad" stroke-width="2" stroke-dasharray="3,2"/>
+<circle cx="190.0" cy="178" r="4" fill="#111"/>
+<text x="180.0" y="170" text-anchor="end" font-weight="bold" font-size="13" fill="#444">C</text>
+<circle cx="190.0" cy="432" r="4" fill="#111"/>
+<text x="180.0" y="450" text-anchor="end" font-weight="bold" font-size="13" fill="#444">B</text>
+<circle cx="190.0" cy="110.0" r="4" fill="#111"/>
+<text x="180.0" y="102.0" text-anchor="end" font-weight="bold" font-size="13" fill="#444">A</text>
+<path d="M190.0,432 L190.0,397.5 L197.0,393.3333333333333 L183.0,389.1666666666667 L197.0,385.0 L183.0,380.8333333333333 L197.0,376.6666666666667 L183.0,372.5 L197.0,368.3333333333333 L183.0,364.1666666666667 L197.0,360.0 L183.0,355.8333333333333 L190.0,351.6666666666667 L190.0,347.5 L190.0,313.0" fill="none" stroke="#111" stroke-width="2"/>
+<text x="176.0" y="377.5" text-anchor="end" fill="#111"><tspan font-family="Times New Roman, serif" font-style="italic" font-size="17">ℛ</tspan><tspan font-size="11" dy="4">limb,1</tspan><tspan dy="-4"></tspan></text>
+<path d="M190.0,313.0 L190.0,260.5" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M190.0,230.5 L190.0,178" fill="none" stroke="#111" stroke-width="2"/>
+<circle cx="190.0" cy="245.5" r="15" fill="#fff" stroke="#111" stroke-width="2"/>
+<line x1="190.0" y1="255.5" x2="190.0" y2="236.5" stroke="#111" stroke-width="2.2" marker-end="url(#ak)"/>
+<text x="167.0" y="250.5" text-anchor="end" fill="#111">N<tspan font-size="11" dy="4">1</tspan><tspan dy="-4">i</tspan><tspan font-size="11" dy="4">1</tspan></text>
+<path d="M190.0,178 L190.0,158.0" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M190.0,130.0 L190.0,110.0" fill="none" stroke="#111" stroke-width="2"/>
+<circle cx="190.0" cy="144.0" r="14" fill="#fff" stroke="#111" stroke-width="2"/>
+<line x1="190.0" y1="154.0" x2="190.0" y2="135.0" stroke="#111" stroke-width="2.2" marker-end="url(#ak)"/>
+<text x="168.0" y="149.0" text-anchor="end" fill="#111">N<tspan font-size="11" dy="4">2</tspan><tspan dy="-4">i</tspan><tspan font-size="11" dy="4">2</tspan></text>
+<path d="M190.0,178 L273.0,178" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M273.0,432 L190.0,432" fill="none" stroke="#111" stroke-width="2"/>
+<path d="M273.0,432 L273.0,335.0 L280.0,330.0 L266.0,325.0 L280.0,320.0 L266.0,315.0 L280.0,310.0 L266.0,305.0 L280.0,300.0 L266.0,295.0 L280.0,290.0 L266.0,285.0 L273.0,280.0 L273.0,275.0 L273.0,178" fill="none" stroke="#111" stroke-width="2"/>
+<text x="287.0" y="310.0" text-anchor="start" fill="#111"><tspan font-family="Times New Roman, serif" font-style="italic" font-size="17">ℛ</tspan><tspan font-size="11" dy="4">σ</tspan><tspan dy="-4"></tspan></text>
+<path d="M190.0,110.0 L310.0,110.0 L315.0,117.0 L320.0,103.0 L325.0,117.0 L330.0,103.0 L335.0,117.0 L340.0,103.0 L345.0,117.0 L350.0,103.0 L355.0,117.0 L360.0,103.0 L365.0,110.0 L370.0,110.0 L490.0,110.0" fill="none" stroke="#111" stroke-width="2"/>
+<text x="340.0" y="96.0" text-anchor="middle" fill="#111"><tspan font-family="Times New Roman, serif" font-style="italic" font-size="17">ℛ</tspan><tspan font-size="11" dy="4">yoke</tspan><tspan dy="-4"></tspan></text>
+<path d="M490.0,110.0 L490.0,270.0 L483.0,275.0 L497.0,280.0 L483.0,285.0 L497.0,290.0 L483.0,295.0 L497.0,300.0 L483.0,305.0 L497.0,310.0 L483.0,315.0 L497.0,320.0 L490.0,325.0 L490.0,330.0 L490.0,490.0" fill="none" stroke="#111" stroke-width="2"/>
+<text x="504.0" y="305.0" text-anchor="start" fill="#111"><tspan font-family="Times New Roman, serif" font-style="italic" font-size="17">ℛ</tspan><tspan font-size="11" dy="4">limb,2</tspan><tspan dy="-4"></tspan></text>
+<path d="M490.0,490.0 L450.0,490.0 L445.0,483.0 L440.0,497.0 L435.0,483.0 L430.0,497.0 L425.0,483.0 L420.0,497.0 L415.0,483.0 L410.0,497.0 L405.0,483.0 L400.0,497.0 L395.0,490.0 L390.0,490.0 L350.0,490.0" fill="none" stroke="#111" stroke-width="2"/>
+<text x="420.0" y="516.0" text-anchor="middle" fill="#111"><tspan font-family="Times New Roman, serif" font-style="italic" font-size="17">ℛ</tspan><tspan font-size="11" dy="4">yoke</tspan><tspan dy="-4"></tspan></text>
+<path d="M350.0,490.0 L295.0,490.0 L290.8333333333333,483.0 L286.6666666666667,497.0 L282.5,483.0 L278.3333333333333,497.0 L274.1666666666667,483.0 L270.0,497.0 L265.8333333333333,483.0 L261.6666666666667,497.0 L257.5,483.0 L253.33333333333331,497.0 L249.16666666666669,490.0 L245.0,490.0 L190.0,490.0" fill="none" stroke="#111" stroke-width="2"/>
+<text x="270.0" y="516.0" text-anchor="middle" fill="#111"><tspan font-family="Times New Roman, serif" font-style="italic" font-size="17">ℛ</tspan><tspan font-size="11" dy="4">g</tspan><tspan dy="-4"></tspan></text>
+<path d="M190.0,490.0 L190.0,432" fill="none" stroke="#111" stroke-width="2"/>
+<line x1="390.0" y1="94.0" x2="440.0" y2="94.0" stroke="#c0392b" stroke-width="2" marker-end="url(#af)"/>
+<text x="0" y="0" text-anchor="start" fill="#c0392b" font-style="italic"></text>
+<text x="446.0" y="98.0" fill="#c0392b" font-style="italic">Φ<tspan font-size="11" dy="4" font-style="normal">m</tspan></text>
+<line x1="293.0" y1="412" x2="293.0" y2="362" stroke="#c0392b" stroke-width="2" marker-end="url(#af)"/>
+<text x="0" y="0" text-anchor="start" fill="#c0392b" font-style="italic"></text>
+<text x="299.0" y="392" fill="#c0392b" font-style="italic">Φ<tspan font-size="11" dy="4" font-style="normal">σ</tspan></text>
+<line x1="208.0" y1="424" x2="208.0" y2="384" stroke="#c0392b" stroke-width="2" marker-end="url(#af)"/>
+<text x="0" y="0" text-anchor="start" fill="#c0392b" font-style="italic"></text>
+<text x="214.0" y="408" fill="#c0392b" font-style="italic">Φ<tspan font-size="11" dy="4" font-style="normal">1</tspan></text>
+<text x="570" y="110" font-weight="bold" font-size="13">Elements</text>
+<text x="570" y="129" font-size="12.5" fill="#333" xml:space="preserve">resistor = reluctance  ℛ = l / (μA)</text>
+<text x="570" y="148" font-size="12.5" fill="#333" xml:space="preserve">circle with arrow = MMF source N·i</text>
+<text x="570" y="167" font-size="12.5" fill="#333" xml:space="preserve">(arrow: direction of the MMF; under load</text>
+<text x="570" y="186" font-size="12.5" fill="#333" xml:space="preserve"> N₂i₂ opposes N₁i₁)</text>
+<text x="570" y="215" font-weight="bold" font-size="13">Branches between nodes</text>
+<text x="570" y="234" font-size="12.5" fill="#333" xml:space="preserve">C–B: limb inside both windings,</text>
+<text x="570" y="253" font-size="12.5" fill="#333" xml:space="preserve">     ℛ_limb,1 in series with N₁i₁</text>
+<text x="570" y="272" font-size="12.5" fill="#333" xml:space="preserve">C–B: duct between the windings, ℛ_σ</text>
+<text x="570" y="291" font-size="12.5" fill="#333" xml:space="preserve">     (in parallel with the limb branch)</text>
+<text x="570" y="310" font-size="12.5" fill="#333" xml:space="preserve">A–C: N₂i₂, common to limb and duct</text>
+<text x="570" y="329" font-size="12.5" fill="#333" xml:space="preserve">A–B: return path in series:</text>
+<text x="570" y="348" font-size="12.5" fill="#333" xml:space="preserve">     ℛ_yoke + ℛ_limb,2 + ℛ_yoke + ℛ_g</text>
+<text x="570" y="377" font-weight="bold" font-size="13">Loops (each encloses its windings)</text>
+<text x="570" y="396" font-size="12.5" fill="#333" xml:space="preserve">limb + duct: primary only</text>
+<text x="570" y="415" font-size="12.5" fill="#333" xml:space="preserve">duct + return: secondary only</text>
+<text x="570" y="434" font-size="12.5" fill="#333" xml:space="preserve">limb + return: both windings</text>
+<text x="570" y="463" font-weight="bold" font-size="13">Fluxes</text>
+<text x="570" y="482" font-size="12.5" fill="#333" xml:space="preserve">Φ₁ = Φ_m − Φ_σ  (limb flux)</text>
+<text x="570" y="501" font-size="12.5" fill="#333" xml:space="preserve">Φ_m mutual (return) flux, Φ_σ leakage</text>
+<text x="30" y="576" font-size="11" fill="#555">Not to scale. ℛ_g lumps every joint gap along the path (joint_gap_total); joints are drawn on the bottom yoke only for illustration.</text>
+</svg>
