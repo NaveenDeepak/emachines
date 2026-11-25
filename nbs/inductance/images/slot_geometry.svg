@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Helvetica, Arial, sans-serif" font-size="14">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#222"/></marker></defs>
+<rect width="1000" height="600" fill="#ffffff"/>
+<text x="200.0" y="30.0" text-anchor="middle" font-size="15" fill="#222" font-weight="bold">(a) Open slot</text>
+<polygon points="92.3,110.0 307.7,110.0 307.7,389.5 92.3,389.5" fill="#cfd4dc" stroke="#4a5160" stroke-width="1.2"/>
+<polygon points="239.0,110.0 239.0,110.0 239.9,129.5 240.7,149.0 241.6,168.5 242.4,188.0 243.3,207.5 244.1,227.0 245.0,246.5 245.8,266.0 246.7,285.5 247.5,305.0 248.4,324.5 249.2,344.0 150.8,344.0 151.6,324.5 152.5,305.0 153.3,285.5 154.2,266.0 155.0,246.5 155.9,227.0 156.7,207.5 157.6,188.0 158.4,168.5 159.3,149.0 160.1,129.5 161.0,110.0 161.0,110.0" fill="#ffffff" stroke="#4a5160" stroke-width="1.2"/>
+<line x1="79.3" y1="100.0" x2="320.7" y2="100.0" stroke="#4a5160" stroke-width="1.2" stroke-dasharray="6,4"/>
+<text x="88.3" y="96.0" text-anchor="start" font-size="11" fill="#4a5160" >air gap</text>
+<polygon points="234.7,115.2 235.5,133.2 236.2,151.2 237.0,169.1 237.8,187.1 238.6,205.1 239.4,223.1 160.6,223.1 161.4,205.1 162.2,187.1 163.0,169.1 163.8,151.2 164.5,133.2 165.3,115.2" fill="#f0b45a" stroke="#222" stroke-width="0.7"/>
+<text x="200.0" y="174.2" text-anchor="middle" font-size="12" fill="#222" >top</text>
+<polygon points="239.7,230.9 240.5,248.9 241.3,266.9 242.1,284.9 242.9,302.8 243.6,320.8 244.4,338.8 155.6,338.8 156.4,320.8 157.1,302.8 157.9,284.9 158.7,266.9 159.5,248.9 160.3,230.9" fill="#6fa3ef" stroke="#222" stroke-width="0.7"/>
+<text x="200.0" y="289.9" text-anchor="middle" font-size="12" fill="#222" >bottom</text>
+<line x1="161.0" y1="110.0" x2="161.0" y2="86.0" stroke="#222" stroke-width="0.7" stroke-dasharray="2,2"/>
+<line x1="239.0" y1="110.0" x2="239.0" y2="86.0" stroke="#222" stroke-width="0.7" stroke-dasharray="2,2"/>
+<line x1="161.0" y1="86.0" x2="239.0" y2="86.0" stroke="#222" stroke-width="1.0" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text x="200.0" y="80.0" text-anchor="middle" font-size="13" fill="#222" ><tspan font-style="italic">b</tspan><tspan font-size="10" dy="4">s</tspan><tspan dy="-4"> </tspan>(= opening)</text>
+<line x1="249.2" y1="110.0" x2="325.7" y2="110.0" stroke="#222" stroke-width="0.7" stroke-dasharray="2,2"/>
+<line x1="249.2" y1="344.0" x2="325.7" y2="344.0" stroke="#222" stroke-width="0.7" stroke-dasharray="2,2"/>
+<line x1="321.7" y1="110.0" x2="321.7" y2="344.0" stroke="#222" stroke-width="1.0" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text x="329.7" y="232.0" text-anchor="start" font-size="13" fill="#222" ><tspan font-style="italic">h</tspan><tspan font-size="10" dy="4">s</tspan><tspan dy="-4"> </tspan></text>
+<line x1="150.8" y1="344.0" x2="150.8" y2="366.0" stroke="#222" stroke-width="0.7" stroke-dasharray="2,2"/>
+<line x1="249.2" y1="344.0" x2="249.2" y2="366.0" stroke="#222" stroke-width="0.7" stroke-dasharray="2,2"/>
+<line x1="150.8" y1="366.0" x2="249.2" y2="366.0" stroke="#222" stroke-width="1.0" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text x="200.0" y="383.0" text-anchor="middle" font-size="13" fill="#222" ><tspan font-style="italic">b</tspan><tspan font-size="10" dy="4">b</tspan><tspan dy="-4"> </tspan>= <tspan font-style="italic">b</tspan><tspan font-size="10" dy="4">s</tspan><tspan dy="-4"> </tspan>+ <tspan font-style="italic">t</tspan>·2π<tspan font-style="italic">h</tspan><tspan font-size="10" dy="4">s</tspan><tspan dy="-4"> </tspan>/<tspan font-style="italic">Q</tspan></text>
+<line x1="66.3" y1="110.0" x2="66.3" y2="215.3" stroke="#c0392b" stroke-width="1.2" marker-end="url(#ar)"/>
+<line x1="61.3" y1="110.0" x2="161.0" y2="110.0" stroke="#c0392b" stroke-width="0.7" stroke-dasharray="2,2"/>
+<text x="60.3" y="167.7" text-anchor="end" font-size="14" fill="#c0392b" ><tspan font-style="italic">y</tspan></text>
+<text x="560.0" y="30.0" text-anchor="middle" font-size="15" fill="#222" font-weight="bold">(b) Semi-closed slot</text>
+<polygon points="452.3,110.0 667.7,110.0 667.7,438.9 452.3,438.9" fill="#cfd4dc" stroke="#4a5160" stroke-width="1.2"/>
+<polygon points="576.2,110.0 576.2,130.8 599.0,159.4 599.0,159.4 599.9,178.9 600.7,198.4 601.6,217.9 602.4,237.4 603.3,256.9 604.1,276.4 605.0,295.9 605.8,315.4 606.7,334.9 607.5,354.4 608.4,373.9 609.2,393.4 510.8,393.4 511.6,373.9 512.5,354.4 513.3,334.9 514.2,315.4 515.0,295.9 515.9,276.4 516.7,256.9 517.6,237.4 518.4,217.9 519.3,198.4 520.1,178.9 521.0,159.4 521.0,159.4 543.8,130.8 543.8,110.0" fill="#ffffff" stroke="#4a5160" stroke-width="1.2"/>
+<line x1="439.3" y1="100.0" x2="680.7" y2="100.0" stroke="#4a5160" stroke-width="1.2" stroke-dasharray="6,4"/>
+<text x="448.3" y="96.0" text-anchor="start" font-size="11" fill="#4a5160" >air gap</text>
+<polygon points="594.7,164.6 595.5,182.6 596.2,200.6 597.0,218.6 597.8,236.5 598.6,254.5 599.4,272.5 520.6,272.5 521.4,254.5 522.2,236.5 523.0,218.6 523.8,200.6 524.5,182.6 525.3,164.6" fill="#f0b45a" stroke="#222" stroke-width="0.7"/>
+<text x="560.0" y="223.6" text-anchor="middle" font-size="12" fill="#222" >top</text>
+<polygon points="599.7,280.3 600.5,298.3 601.3,316.3 602.1,334.2 602.9,352.2 603.6,370.2 604.4,388.2 515.6,388.2 516.4,370.2 517.1,352.2 517.9,334.2 518.7,316.3 519.5,298.3 520.3,280.3" fill="#6fa3ef" stroke="#222" stroke-width="0.7"/>
+<text x="560.0" y="339.2" text-anchor="middle" font-size="12" fill="#222" >bottom</text>
+<line x1="543.8" y1="110.0" x2="543.8" y2="86.0" stroke="#222" stroke-width="0.7" stroke-dasharray="2,2"/>
+<line x1="576.2" y1="110.0" x2="576.2" y2="86.0" stroke="#222" stroke-width="0.7" stroke-dasharray="2,2"/>
+<line x1="543.8" y1="86.0" x2="576.2" y2="86.0" stroke="#222" stroke-width="1.0" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text x="560.0" y="80.0" text-anchor="middle" font-size="13" fill="#222" ><tspan font-style="italic">b</tspan><tspan font-size="10" dy="4">0</tspan><tspan dy="-4"> </tspan></text>
+<line x1="576.2" y1="110.0" x2="685.7" y2="110.0" stroke="#222" stroke-width="0.7" stroke-dasharray="2,2"/>
+<line x1="576.2" y1="130.8" x2="685.7" y2="130.8" stroke="#222" stroke-width="0.7" stroke-dasharray="2,2"/>
+<line x1="681.7" y1="110.0" x2="681.7" y2="130.8" stroke="#222" stroke-width="1.0" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text x="689.7" y="125.4" text-anchor="start" font-size="13" fill="#222" ><tspan font-style="italic">h</tspan><tspan font-size="10" dy="4">0</tspan><tspan dy="-4"> </tspan></text>
+<line x1="599.0" y1="130.8" x2="685.7" y2="130.8" stroke="#222" stroke-width="0.7" stroke-dasharray="2,2"/>
+<line x1="599.0" y1="159.4" x2="685.7" y2="159.4" stroke="#222" stroke-width="0.7" stroke-dasharray="2,2"/>
+<line x1="681.7" y1="130.8" x2="681.7" y2="159.4" stroke="#222" stroke-width="1.0" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text x="689.7" y="150.1" text-anchor="start" font-size="13" fill="#222" ><tspan font-style="italic">h</tspan><tspan font-size="10" dy="4">1</tspan><tspan dy="-4"> </tspan></text>
+<line x1="609.2" y1="159.4" x2="685.7" y2="159.4" stroke="#222" stroke-width="0.7" stroke-dasharray="2,2"/>
+<line x1="609.2" y1="393.4" x2="685.7" y2="393.4" stroke="#222" stroke-width="0.7" stroke-dasharray="2,2"/>
+<line x1="681.7" y1="159.4" x2="681.7" y2="393.4" stroke="#222" stroke-width="1.0" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text x="689.7" y="281.4" text-anchor="start" font-size="13" fill="#222" ><tspan font-style="italic">h</tspan><tspan font-size="10" dy="4">s</tspan><tspan dy="-4"> </tspan></text>
+<line x1="521.0" y1="165.4" x2="599.0" y2="165.4" stroke="#222" stroke-width="1.0" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text x="500.8" y="170.4" text-anchor="end" font-size="13" fill="#222" ><tspan font-style="italic">b</tspan><tspan font-size="10" dy="4">s</tspan><tspan dy="-4"> </tspan></text>
+<line x1="510.8" y1="393.4" x2="510.8" y2="415.4" stroke="#222" stroke-width="0.7" stroke-dasharray="2,2"/>
+<line x1="609.2" y1="393.4" x2="609.2" y2="415.4" stroke="#222" stroke-width="0.7" stroke-dasharray="2,2"/>
+<line x1="510.8" y1="415.4" x2="609.2" y2="415.4" stroke="#222" stroke-width="1.0" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text x="560.0" y="432.4" text-anchor="middle" font-size="13" fill="#222" ><tspan font-style="italic">b</tspan><tspan font-size="10" dy="4">b</tspan><tspan dy="-4"> </tspan>= <tspan font-style="italic">b</tspan><tspan font-size="10" dy="4">s</tspan><tspan dy="-4"> </tspan>+ <tspan font-style="italic">t</tspan>·2π<tspan font-style="italic">h</tspan><tspan font-size="10" dy="4">s</tspan><tspan dy="-4"> </tspan>/<tspan font-style="italic">Q</tspan></text>
+<line x1="426.3" y1="159.4" x2="426.3" y2="264.7" stroke="#c0392b" stroke-width="1.2" marker-end="url(#ar)"/>
+<line x1="421.3" y1="159.4" x2="521.0" y2="159.4" stroke="#c0392b" stroke-width="0.7" stroke-dasharray="2,2"/>
+<text x="420.3" y="217.1" text-anchor="end" font-size="14" fill="#c0392b" ><tspan font-style="italic">y</tspan></text>
+<text x="870.0" y="30.0" text-anchor="middle" font-size="15" fill="#222" font-weight="bold">(c) Named positions</text>
+<rect x="800" y="110" width="46" height="110" fill="#ffffff" stroke="#4a5160" stroke-width="1.2"/>
+<rect x="804" y="114" width="38" height="48.0" fill="#f0b45a" stroke="#222" stroke-width="0.7"/>
+<rect x="804" y="168.0" width="38" height="48.0" fill="#6fa3ef" stroke="#222" stroke-width="0.7"/>
+<text x="823.0" y="141.5" text-anchor="middle" font-size="11" fill="#222" >top</text>
+<text x="823.0" y="196.5" text-anchor="middle" font-size="10" fill="#222" >bottom</text>
+<text x="823.0" y="238.0" text-anchor="middle" font-size="12" fill="#222" >over-under</text>
+<rect x="880" y="110" width="46" height="110" fill="#ffffff" stroke="#4a5160" stroke-width="1.2"/>
+<rect x="884" y="114" width="17.0" height="102" fill="#f0b45a" stroke="#222" stroke-width="0.7"/>
+<rect x="905.0" y="114" width="17.0" height="102" fill="#6fa3ef" stroke="#222" stroke-width="0.7"/>
+<text x="892.5" y="169.0" text-anchor="middle" font-size="11" fill="#222" >L</text>
+<text x="913.5" y="169.0" text-anchor="middle" font-size="11" fill="#222" >R</text>
+<text x="903.0" y="238.0" text-anchor="middle" font-size="12" fill="#222" >side-by-side</text>
+<rect x="840" y="290" width="46" height="110" fill="#ffffff" stroke="#4a5160" stroke-width="1.2"/>
+<rect x="846" y="294.0" width="34" height="15.0" fill="#f0b45a" stroke="#222" stroke-width="0.7"/>
+<text x="863.0" y="305.5" text-anchor="middle" font-size="10" fill="#222" >1</text>
+<rect x="846" y="311.0" width="34" height="15.0" fill="#6fa3ef" stroke="#222" stroke-width="0.7"/>
+<text x="863.0" y="322.5" text-anchor="middle" font-size="10" fill="#222" >2</text>
+<rect x="846" y="328.0" width="34" height="15.0" fill="#f0b45a" stroke="#222" stroke-width="0.7"/>
+<text x="863.0" y="339.5" text-anchor="middle" font-size="10" fill="#222" >3</text>
+<rect x="846" y="345.0" width="34" height="15.0" fill="#6fa3ef" stroke="#222" stroke-width="0.7"/>
+<text x="863.0" y="356.5" text-anchor="middle" font-size="10" fill="#222" >4</text>
+<rect x="846" y="362.0" width="34" height="15.0" fill="#f0b45a" stroke="#222" stroke-width="0.7"/>
+<text x="863.0" y="373.5" text-anchor="middle" font-size="10" fill="#222" >5</text>
+<rect x="846" y="379.0" width="34" height="15.0" fill="#6fa3ef" stroke="#222" stroke-width="0.7"/>
+<text x="863.0" y="390.5" text-anchor="middle" font-size="10" fill="#222" >6</text>
+<text x="863.0" y="418.0" text-anchor="middle" font-size="12" fill="#222" >hairpin 1…N</text>
+<text x="40.0" y="520.0" text-anchor="start" font-size="13" fill="#222" >Conductor-body width at depth <tspan font-style="italic">y</tspan>:  <tspan font-style="italic">b</tspan>(<tspan font-style="italic">y</tspan>) = <tspan font-style="italic">b</tspan><tspan font-size="10" dy="4">s</tspan><tspan dy="-4"> </tspan>+ <tspan font-style="italic">t</tspan>·2π<tspan font-style="italic">y</tspan>/<tspan font-style="italic">Q</tspan></text>
+<text x="40.0" y="542.0" text-anchor="start" font-size="13" fill="#222" ><tspan font-style="italic">t</tspan> = 0 parallel slot,  <tspan font-style="italic">t</tspan> = 1 parallel tooth (constant tooth width <tspan font-style="italic">w</tspan><tspan font-size="10" dy="4">t</tspan><tspan dy="-4"> </tspan>),  0 < <tspan font-style="italic">t</tspan> < 1 in between.</text>
+<text x="40.0" y="564.0" text-anchor="start" font-size="13" fill="#222" >Open slot: <tspan font-style="italic">b</tspan><tspan font-size="10" dy="4">0</tspan><tspan dy="-4"> </tspan> = <tspan font-style="italic">b</tspan><tspan font-size="10" dy="4">s</tspan><tspan dy="-4"> </tspan>,  <tspan font-style="italic">h</tspan><tspan font-size="10" dy="4">0</tspan><tspan dy="-4"> </tspan> = <tspan font-style="italic">h</tspan><tspan font-size="10" dy="4">1</tspan><tspan dy="-4"> </tspan> = 0.   An optional separator <tspan font-style="italic">h</tspan><tspan font-size="10" dy="4">sep</tspan><tspan dy="-4"> </tspan> sits between layers.</text>
+<text x="960.0" y="590.0" text-anchor="end" font-size="11" fill="#4a5160" >tip heights not to scale</text>
+</svg>

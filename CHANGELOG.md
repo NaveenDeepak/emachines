@@ -5,6 +5,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- `emachines.winding.pattern` — `WindingPattern`: any stator winding as signed turns per
+  phase, slot and named slot position (`slot_turns[phase, slot, position]`), with the coils
+  that made it. Builders: `from_star_of_slots`, `distributed` (integer-slot lap, full or short
+  pitch), `concentrated` (tooth coils on all teeth, side-by-side or over-under, or on alternate
+  teeth), `from_slot_table` and `custom` (a list of `Coil`). Balance check, winding factors,
+  series turns, parallel paths and a developed slot plot. `slot_positions` names the positions
+  of each layout (`single`, `over_under` with 2 or n layers, `side_by_side`).
+- `emachines.inductance.geometry` — `SlotGeometry` (open or semi-closed slot, conductor body
+  tapered by `t` from parallel slot to parallel tooth, optional layer separator) and
+  `StatorGeometry` (bore, air gap, stack, yoke, end-winding overhang; slot pitch, tooth width,
+  outer radius). `regions()` maps each named position to its part of the slot: equal-copper-area
+  radial layers, or side-by-side halves. Labelled stator and slot figures in the notebook.
 - `emachines.winding.mmf`: MMF harmonic spectrum (pure function, no UI dependency)
 - `emachines.magnetics.pm_materials`: permanent magnet material database
 - `emachines.motors.dc_motor`: DC motor analytical model
