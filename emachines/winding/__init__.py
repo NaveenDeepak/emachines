@@ -10,10 +10,12 @@ from .sos import (get_basic_params, build_star_of_slots, assign_phases, check_wi
                                    build_coil_matrix, winding_factor_sos, check_symmetry,
                                    get_valid_coil_spans, is_valid_combination)
 from .design import WindingCandidate, design_windings
+from .pattern import LAYOUTS, slot_positions, Coil, WindingPattern
 
 __all__ = ['pitch_factor', 'distribution_factor', 'winding_factor', 'winding_factor_spectrum',
            'mmf_distribution', 'mmf_waveform', 'mmf_harmonics',
            'get_basic_params', 'build_star_of_slots', 'assign_phases', 'check_winding',
            'build_coil_matrix', 'winding_factor_sos', 'check_symmetry',
            'get_valid_coil_spans', 'is_valid_combination',
-           'WindingCandidate', 'design_windings']
+           'WindingCandidate', 'design_windings',
+           'LAYOUTS', 'slot_positions', 'Coil', 'WindingPattern']

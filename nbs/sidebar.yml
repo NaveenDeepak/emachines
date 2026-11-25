@@ -3,6 +3,10 @@ website:
     contents:
       - index.ipynb
       - 00_init.ipynb
+      - section: inductance
+        contents:
+          - inductance/01_geometry.ipynb
+          - inductance/02_api.ipynb
       - section: magnetics
         contents:
           - magnetics/01_bh_models.ipynb
@@ -34,3 +38,4 @@ website:
           - winding/03_sos.ipynb
           - winding/04_api.ipynb
           - winding/05_design.ipynb
+          - winding/06_pattern.ipynb
