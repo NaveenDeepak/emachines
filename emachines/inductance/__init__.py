@@ -9,9 +9,25 @@ from emachines.inductance.geometry import (
     SlotGeometry,
     StatorGeometry,
 )
+from emachines.inductance.airgap import (
+    MU0,
+    winding_function,
+    winding_function_harmonics,
+    carter_coefficient,
+    effective_air_gap,
+    airgap_inductance,
+    phase_imbalance,
+)
 
 __all__ = [
     'SlotRegion',
     'SlotGeometry',
     'StatorGeometry',
+    'MU0',
+    'winding_function',
+    'winding_function_harmonics',
+    'carter_coefficient',
+    'effective_air_gap',
+    'airgap_inductance',
+    'phase_imbalance',
 ]

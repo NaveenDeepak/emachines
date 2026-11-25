@@ -6,6 +6,7 @@ website:
       - section: inductance
         contents:
           - inductance/01_geometry.ipynb
+          - inductance/03_airgap.ipynb
           - inductance/02_api.ipynb
       - section: magnetics
         contents:
