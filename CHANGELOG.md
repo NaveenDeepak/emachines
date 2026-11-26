@@ -5,15 +5,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- Slot-leakage notebook: the "layers rotated pole by pole" variant of the EP 2 237 392 B1 winding
+  overfilled some slot positions and cannot be built; the example now shows why and checks the fill.
+
 ### Added
+- `emachines.inductance.endwinding` — `EndTurn` (straight extension, axial tier offset per slot
+  position, arc factor, empirical end-winding factor λ_w), `coil_end_length`, `mean_turn_length`,
+  `phase_resistance` (DC, per phase, from copper area or fill factor, at temperature) and
+  `end_winding_inductance` (empirical, 2 μ0 N_s² l_end λ_w / p). Worked example: resistance spread
+  of the EP 2 237 392 B1 winding for three end-turn stackings.
+- `emachines.inductance.stator` — `StatorInductances` (magnetising, harmonic, slot, tooth-tip and
+  end-winding matrices, resistance; total, leakage, positive and zero sequence, imbalance, summary),
+  `stator_inductances` and `compare_windings` (side-by-side table with an even-fill check).
 - `emachines.inductance.slot` — slot and tooth-tip leakage by conductor position.
   `slot_permeance(stator, layout, n, part)` gives the specific permeance matrix between slot
   positions, Λ_rs = ∫ A_r A_s / b dy over the conductor body (any taper), plus the opening and
   tooth-tip transition and the tooth-tip leakage; `slot_leakage_inductance(pattern, stator, part)`
   gives the m × m phase matrix, to add to `airgap_inductance`. Validated against the exact
   three-layer matrix (self 1 : 4 : 7) and Pyrhönen's short-pitch factors k1, k2. Worked example:
-  the one-phase-per-layer winding of EP 2 237 392 B1, its imbalance, the effect of slot taper and
-  of rotating the layers pole by pole. Labelled slot-field and taper figures.
+  the one-phase-per-layer winding of EP 2 237 392 B1, its imbalance and the effect of slot taper.
+  Labelled slot-field and taper figures.
 - `emachines.winding.pattern` — `WindingPattern`: any stator winding as signed turns per
   phase, slot and named slot position (`slot_turns[phase, slot, position]`), with the coils
   that made it. Builders: `from_star_of_slots`, `distributed` (integer-slot lap, full or short
