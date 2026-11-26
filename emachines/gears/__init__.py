@@ -3,7 +3,7 @@
 # %% auto #0
 __all__ = []
 
-# %% ../../nbs/gears/07_api.ipynb #914d3892
+# %% ../../nbs/gears/07_api.ipynb #f0265519
 from emachines.gears.involute import (
     inv,
     inv_inverse,

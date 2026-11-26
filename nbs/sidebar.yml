@@ -5,6 +5,7 @@ website:
       - 00_init.ipynb
       - section: gears
         contents:
+          - gears/00_overview.ipynb
           - gears/01_involute.ipynb
           - gears/02_layout.ipynb
           - gears/03_rating.ipynb
