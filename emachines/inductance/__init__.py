@@ -18,6 +18,14 @@ from emachines.inductance.airgap import (
     airgap_inductance,
     phase_imbalance,
 )
+from emachines.inductance.slot import (
+    SLOT_PARTS,
+    body_permeance,
+    opening_permeance,
+    tooth_tip_permeance,
+    slot_permeance,
+    slot_leakage_inductance,
+)
 
 __all__ = [
     'SlotRegion',
@@ -30,4 +38,10 @@ __all__ = [
     'effective_air_gap',
     'airgap_inductance',
     'phase_imbalance',
+    'SLOT_PARTS',
+    'body_permeance',
+    'opening_permeance',
+    'tooth_tip_permeance',
+    'slot_permeance',
+    'slot_leakage_inductance',
 ]

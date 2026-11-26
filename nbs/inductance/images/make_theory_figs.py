@@ -16,7 +16,7 @@ from emachines.inductance.airgap import winding_function, winding_function_harmo
 from emachines.winding.pattern import WindingPattern
 
 OUT = Path(__file__).parent
-plt.rcParams.update({"font.size": 10, "font.family": "DejaVu Sans", "svg.fonttype": "path",
+plt.rcParams.update({"font.size": 10, "font.family": "DejaVu Sans", "svg.fonttype": "path", "svg.hashsalt": "emachines",
                      "axes.spines.top": False, "axes.spines.right": False})
 
 IRON, IRON_EDGE, ROTOR = "#cfd4dc", "#4a5160", "#e3e6eb"
@@ -147,8 +147,8 @@ def fig_components():
         MAIN, "part='magnetising'")
     box(23, 1, 22, 16, r"Harmonic leakage $L_\delta$", "all other harmonics\n" + r"$\nu \neq p$" +
         "\n(differential leakage)", HARM, "part='harmonic'")
-    box(50, 1, 17, 16, r"Slot  $L_{slot}$", "across the slot,\nby layer", SLOT, "next PR")
-    box(69, 1, 17, 16, r"Tooth tip  $L_{tt}$", "across the\nslot opening", TIP, "next PR")
+    box(50, 1, 17, 16, r"Slot  $L_{slot}$", "across the slot,\nby layer", SLOT, "04_slot_leakage")
+    box(69, 1, 17, 16, r"Tooth tip  $L_{tt}$", "across the\nslot opening", TIP, "04_slot_leakage")
     box(88, 1, 18, 16, r"End winding  $L_{ew}$", "around the\nend turns", EW, "later PR")
     for x in (11, 34):
         link((24, 22), (x, 17))
