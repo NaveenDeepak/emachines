@@ -3,7 +3,7 @@
 # %% auto #0
 __all__ = []
 
-# %% ../../nbs/gears/07_api.ipynb #f0265519
+# %% ../../nbs/gears/07_api.ipynb #dda54af2
 from emachines.gears.involute import (
     inv,
     inv_inverse,
@@ -49,6 +49,18 @@ from emachines.gears.rating import (
 from emachines.gears.components import (
     DIN6885_KEYS,
     ParallelKey,
+    E_STEEL,
+    NU_STEEL,
+    ALPHA_STEEL,
+    spline_geometry,
+    spline_pressure,
+    SPLINE_FITS,
+    PRESS_FITS,
+    PressFit,
+    press_fit,
+    select_press_fit,
+    adhesive_torque,
+    hob_runout,
     needle_roller_diameter,
     needle_cage_rating,
     BOLTS_88,
@@ -94,7 +106,9 @@ __all__ = [
     'GearMaterial', 'MATERIALS', 'form_factors', 'rim_factor', 'K_GAMMA', 'load_sharing_factor',
     'dynamic_factor', 'transverse_factor', 'life_factor_contact', 'life_factor_bending', 'RatingInputs',
     'GearRating', 'PlanetaryRating', 'rate_planetary',
-    'DIN6885_KEYS', 'ParallelKey', 'needle_roller_diameter', 'needle_cage_rating', 'BOLTS_88',
+    'DIN6885_KEYS', 'ParallelKey', 'E_STEEL', 'NU_STEEL', 'ALPHA_STEEL', 'spline_geometry', 'spline_pressure',
+    'SPLINE_FITS', 'PRESS_FITS', 'PressFit', 'press_fit', 'select_press_fit', 'adhesive_torque', 'hob_runout',
+    'needle_roller_diameter', 'needle_cage_rating', 'BOLTS_88',
     'ComponentInputs', 'max_planet_bore', 'rim_thicknesses', 'Check', 'PlanetaryComponents',
     'lubrication_advice', 'size_components',
     'it_grade', 'iso286_limits', 'fmt_fit', 'iso1328_tolerances', 'ThicknessAllowance', 'backlash_allowances',
