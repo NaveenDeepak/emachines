@@ -5,6 +5,7 @@ website:
       - 00_init.ipynb
       - section: inductance
         contents:
+          - inductance/00_theory.ipynb
           - inductance/01_geometry.ipynb
           - inductance/03_airgap.ipynb
           - inductance/02_api.ipynb
