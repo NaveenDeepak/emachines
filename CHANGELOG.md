@@ -18,6 +18,23 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - `emachines.inductance.stator` — `StatorInductances` (magnetising, harmonic, slot, tooth-tip and
   end-winding matrices, resistance; total, leakage, positive and zero sequence, imbalance, summary),
   `stator_inductances` and `compare_windings` (side-by-side table with an even-fill check).
+- `emachines.gears` — single-stage planetary gear train design, from requirements to a
+  manufacturing package (ring fixed, sun in, carrier out; spur gears; mm, N, MPa).
+  `involute`: `GearGeometry` (external/internal, profile shift, tip reduction, root form
+  diameter), span and over-ball measurements, operating pressure angle, centre distance,
+  contact ratio, interference and tip-clearance checks. `layout`: tooth-count search with
+  coaxial, assembly and neighbour conditions (also ±1-tooth rings via profile shift),
+  `PlanetarySet` with automatic shifts and ring tip reduction, module window from envelope
+  diameter and sun shaft/key. `rating`: ISO 6336 pitting and tooth-root safety for both meshes
+  (Y_F/Y_S by the 30° tangent, rim factor, K_v, K_Hβ, K_γ, life factors, planet Y_M).
+  `components`: DIN 6885 key, planet needle bearing (C_req, ISO 281 estimate, L10h), pin
+  bending/deflection, double-plate carrier with posts or single-plate carrier with cantilevered pins,
+  ring fixing, axial stack; sun–shaft joints: key, DIN 5480 spline (sliding or tight), press/shrink
+  fit (Lamé, fit selection), retaining adhesive, or sun cut on the shaft.
+  `manufacturing`: ISO 286 fit limits, ISO 1328-1:2013 tolerances, backlash → tooth thickness
+  allowances, ISO 1340 / DIN 3966-1 gear data tables, DXF tooth outlines. `design`:
+  `design_planetary(PlanetaryRequirements)` search (carrier type, minimum module) and `write_package` (report, data tables,
+  parts list, component dimensions, layout SVG, DXF).
 - `emachines.inductance.slot` — slot and tooth-tip leakage by conductor position.
   `slot_permeance(stator, layout, n, part)` gives the specific permeance matrix between slot
   positions, Λ_rs = ∫ A_r A_s / b dy over the conductor body (any taper), plus the opening and

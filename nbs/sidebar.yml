@@ -3,6 +3,16 @@ website:
     contents:
       - index.ipynb
       - 00_init.ipynb
+      - section: gears
+        contents:
+          - gears/00_overview.ipynb
+          - gears/01_involute.ipynb
+          - gears/02_layout.ipynb
+          - gears/03_rating.ipynb
+          - gears/04_components.ipynb
+          - gears/05_manufacturing.ipynb
+          - gears/06_design.ipynb
+          - gears/07_api.ipynb
       - section: inductance
         contents:
           - inductance/00_theory.ipynb
