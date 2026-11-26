@@ -26,6 +26,20 @@ from emachines.inductance.slot import (
     slot_permeance,
     slot_leakage_inductance,
 )
+from emachines.inductance.endwinding import (
+    RHO_CU_20,
+    ALPHA_CU,
+    EndTurn,
+    coil_end_length,
+    mean_turn_length,
+    phase_resistance,
+    end_winding_inductance,
+)
+from emachines.inductance.stator import (
+    StatorInductances,
+    stator_inductances,
+    compare_windings,
+)
 
 __all__ = [
     'SlotRegion',
@@ -44,4 +58,14 @@ __all__ = [
     'tooth_tip_permeance',
     'slot_permeance',
     'slot_leakage_inductance',
+    'RHO_CU_20',
+    'ALPHA_CU',
+    'EndTurn',
+    'coil_end_length',
+    'mean_turn_length',
+    'phase_resistance',
+    'end_winding_inductance',
+    'StatorInductances',
+    'stator_inductances',
+    'compare_windings',
 ]

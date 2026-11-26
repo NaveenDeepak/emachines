@@ -5,7 +5,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- Slot-leakage notebook: the "layers rotated pole by pole" variant of the EP 2 237 392 B1 winding
+  overfilled some slot positions and cannot be built; the example now shows why and checks the fill.
+
 ### Added
+- `emachines.inductance.endwinding` — `EndTurn` (straight extension, axial tier offset per slot
+  position, arc factor, empirical end-winding factor λ_w), `coil_end_length`, `mean_turn_length`,
+  `phase_resistance` (DC, per phase, from copper area or fill factor, at temperature) and
+  `end_winding_inductance` (empirical, 2 μ0 N_s² l_end λ_w / p). Worked example: resistance spread
+  of the EP 2 237 392 B1 winding for three end-turn stackings.
+- `emachines.inductance.stator` — `StatorInductances` (magnetising, harmonic, slot, tooth-tip and
+  end-winding matrices, resistance; total, leakage, positive and zero sequence, imbalance, summary),
+  `stator_inductances` and `compare_windings` (side-by-side table with an even-fill check).
 - `emachines.gears` — single-stage planetary gear train design, from requirements to a
   manufacturing package (ring fixed, sun in, carrier out; spur gears; mm, N, MPa).
   `involute`: `GearGeometry` (external/internal, profile shift, tip reduction, root form
@@ -16,10 +28,12 @@ Versioning follows [Semantic Versioning](https://semver.org/).
   diameter and sun shaft/key. `rating`: ISO 6336 pitting and tooth-root safety for both meshes
   (Y_F/Y_S by the 30° tangent, rim factor, K_v, K_Hβ, K_γ, life factors, planet Y_M).
   `components`: DIN 6885 key, planet needle bearing (C_req, ISO 281 estimate, L10h), pin
-  bending/deflection, double-plate carrier and posts, ring fixing, axial stack.
+  bending/deflection, double-plate carrier with posts or single-plate carrier with cantilevered pins,
+  ring fixing, axial stack; sun–shaft joints: key, DIN 5480 spline (sliding or tight), press/shrink
+  fit (Lamé, fit selection), retaining adhesive, or sun cut on the shaft.
   `manufacturing`: ISO 286 fit limits, ISO 1328-1:2013 tolerances, backlash → tooth thickness
   allowances, ISO 1340 / DIN 3966-1 gear data tables, DXF tooth outlines. `design`:
-  `design_planetary(PlanetaryRequirements)` search and `write_package` (report, data tables,
+  `design_planetary(PlanetaryRequirements)` search (carrier type, minimum module) and `write_package` (report, data tables,
   parts list, component dimensions, layout SVG, DXF).
 - `emachines.inductance.slot` — slot and tooth-tip leakage by conductor position.
   `slot_permeance(stator, layout, n, part)` gives the specific permeance matrix between slot
@@ -27,8 +41,8 @@ Versioning follows [Semantic Versioning](https://semver.org/).
   tooth-tip transition and the tooth-tip leakage; `slot_leakage_inductance(pattern, stator, part)`
   gives the m × m phase matrix, to add to `airgap_inductance`. Validated against the exact
   three-layer matrix (self 1 : 4 : 7) and Pyrhönen's short-pitch factors k1, k2. Worked example:
-  the one-phase-per-layer winding of EP 2 237 392 B1, its imbalance, the effect of slot taper and
-  of rotating the layers pole by pole. Labelled slot-field and taper figures.
+  the one-phase-per-layer winding of EP 2 237 392 B1, its imbalance and the effect of slot taper.
+  Labelled slot-field and taper figures.
 - `emachines.winding.pattern` — `WindingPattern`: any stator winding as signed turns per
   phase, slot and named slot position (`slot_turns[phase, slot, position]`), with the coils
   that made it. Builders: `from_star_of_slots`, `distributed` (integer-slot lap, full or short

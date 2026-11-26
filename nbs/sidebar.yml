@@ -19,6 +19,8 @@ website:
           - inductance/01_geometry.ipynb
           - inductance/03_airgap.ipynb
           - inductance/04_slot_leakage.ipynb
+          - inductance/05_end_winding.ipynb
+          - inductance/06_stator.ipynb
           - inductance/02_api.ipynb
       - section: magnetics
         contents:
