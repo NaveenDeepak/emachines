@@ -18,6 +18,19 @@ Versioning follows [Semantic Versioning](https://semver.org/).
   `StatorGeometry` (bore, air gap, stack, yoke, end-winding overhang; slot pitch, tooth width,
   outer radius). `regions()` maps each named position to its part of the slot: equal-copper-area
   radial layers, or side-by-side halves. Labelled stator and slot figures in the notebook.
+- `nbs/inductance/00_theory.ipynb` — inductance theory page: flux linkage, self and mutual
+  inductance, the flux paths that make up a winding's inductance (magnetising, harmonic, slot,
+  tooth-tip and end-winding leakage), synchronous, zero-sequence and dq inductances, what each
+  standstill measurement reads, and a map from each part to the function that computes it.
+  The air-gap notebook's theory is now a labelled step-by-step derivation (winding function,
+  flux per tooth, flux linkage, harmonic split, Carter). Figures from
+  `nbs/inductance/images/make_theory_figs.py`.
+- `emachines.inductance.airgap` — `winding_function` (turns around each tooth, zero mean) and
+  its exact Fourier coefficients; `airgap_inductance(pattern, stator, part)` gives the m × m
+  air-gap inductance matrix, its magnetising part (ν = p) or the air-gap harmonic leakage,
+  with a Carter-corrected gap or a given `g_eff`; `phase_imbalance(L)` reports self and mutual
+  spread and positive-to-other-sequence coupling. Validated against the closed-form L_m for
+  distributed, fractional-slot and tooth-coil windings and the tabulated σ_δ for q = 1 … 5.
 - `emachines.winding.mmf`: MMF harmonic spectrum (pure function, no UI dependency)
 - `emachines.magnetics.pm_materials`: permanent magnet material database
 - `emachines.motors.dc_motor`: DC motor analytical model
