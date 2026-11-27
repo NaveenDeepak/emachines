@@ -47,6 +47,11 @@ jobs:
           pip install -e ".[dev]"
           pip install "nbdev==3.3.2" "jupyterlab>=4.0.0"
 
+      # The notebooks are stored without outputs. Run them here (outputs are not
+      # committed) so the site shows the plots and tables made by code cells.
+      - name: Execute notebooks for their outputs
+        run: python .github/scripts/execute_notebooks.py nbs
+
       - name: Build docs with nbdev
         run: nbdev-docs
 
