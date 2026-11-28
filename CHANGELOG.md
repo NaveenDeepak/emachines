@@ -5,6 +5,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- `emachines.gears.helical` — single-stage external helical gear pair, from requirements to a
+  manufacturing package (mm, N, MPa). `geometry`: `HelicalGear` (normal/transverse module and
+  pressure angle, base helix, lead, axial pitch, virtual tooth count, transverse spur equivalent with
+  exact root form diameter), pair centre distance and shift sum, helix angle for a centre distance,
+  `helical_mesh_check` (ε_α, ε_β, ε_γ, active profile, interference, clearance), span W_k in the normal
+  plane and dimension over balls. `layout`: tooth counts, helix angle by design priority
+  ('quiet', 'balanced', 'low_thrust'), Niemann / ISO TR 4467 shift split, `HelicalPair` with tidy centre
+  distance, tip shortening, speeds and tooth forces. `rating`: ISO 6336 contact and bending with Z_H(β_b),
+  Z_ε(ε_β), Z_β, Y_β, Y_ε(ε_αn), helical K_v and K_Hα, form factors on the virtual gear, static peak check.
+  `components`: hub joints with axial force (key + retaining ring, press fit, adhesive, pinion cut on the
+  shaft), bearing reactions with the axial moment, deep groove ball bearing selection (C_req, L10h),
+  shaft minimum diameter and deflection, housing axis tolerances (ISO/TR 10064-3). `manufacturing`:
+  ISO 1328-1 tolerances, backlash → normal thickness allowances, ISO 1340 data tables with hand and lead,
+  transverse DXF outline and CAD twist angle. `design`: `design_helical_pair(HelicalRequirements)` and
+  `write_package` (report, data tables, parts list, component dimensions, layout SVG, DXF).
 ### Fixed
 - Slot-leakage notebook: the "layers rotated pole by pole" variant of the EP 2 237 392 B1 winding
   overfilled some slot positions and cannot be built; the example now shows why and checks the fill.

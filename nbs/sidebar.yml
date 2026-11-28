@@ -13,6 +13,16 @@ website:
           - gears/05_manufacturing.ipynb
           - gears/06_design.ipynb
           - gears/07_api.ipynb
+          - section: helical
+            contents:
+              - gears/helical/00_overview.ipynb
+              - gears/helical/01_geometry.ipynb
+              - gears/helical/02_layout.ipynb
+              - gears/helical/03_rating.ipynb
+              - gears/helical/04_components.ipynb
+              - gears/helical/05_manufacturing.ipynb
+              - gears/helical/06_design.ipynb
+              - gears/helical/07_api.ipynb
       - section: inductance
         contents:
           - inductance/00_theory.ipynb
