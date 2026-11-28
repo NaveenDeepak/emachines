@@ -57,8 +57,11 @@ from emachines.gears.helical.manufacturing import (
     twist_angle,
 )
 from emachines.gears.helical.design import (
+    APPLICATIONS,
     standard_shaft,
     HelicalRequirements,
+    ApplicationProfile,
+    requirements_for,
     HelicalDesign,
     evaluate,
     design_helical_pair,
@@ -113,8 +116,11 @@ __all__ = [
     'helical_data_sheet',
     'helical_outline',
     'twist_angle',
+    'APPLICATIONS',
     'standard_shaft',
     'HelicalRequirements',
+    'ApplicationProfile',
+    'requirements_for',
     'HelicalDesign',
     'evaluate',
     'design_helical_pair',

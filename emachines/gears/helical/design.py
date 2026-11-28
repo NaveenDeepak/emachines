@@ -22,8 +22,9 @@ from .components import (PairComponentInputs, PairComponents, pair_rims,
 from .manufacturing import (pair_backlash, helical_data_sheet, helical_outline, twist_angle)
 
 # %% auto #0
-__all__ = ['standard_shaft', 'HelicalRequirements', 'HelicalDesign', 'evaluate', 'design_helical_pair', 'layout_svg',
-           'data_sheets', 'component_rows', 'parts_list', 'report_markdown', 'write_package']
+__all__ = ['APPLICATIONS', 'standard_shaft', 'HelicalRequirements', 'ApplicationProfile', 'requirements_for', 'HelicalDesign',
+           'evaluate', 'design_helical_pair', 'layout_svg', 'data_sheets', 'component_rows', 'parts_list',
+           'report_markdown', 'write_package']
 
 # %% ../../../nbs/gears/helical/06_design.ipynb #cfdc0006
 _SHAFTS = (6, 8, 10, 12, 15, 17, 20, 25, 30, 35, 40, 45, 50, 55, 60)
@@ -126,6 +127,40 @@ class HelicalRequirements:
         return {k: MATERIALS[v] for k, v in self.materials.items()}
 
 # %% ../../../nbs/gears/helical/06_design.ipynb #cfdc0008
+@dataclass(frozen=True)
+class ApplicationProfile:
+    "Duty-related defaults for one kind of machine (see the table above)."
+    description: str
+    life_h: float
+    K_A: float
+    priority: str
+    grade: int
+    alternating: bool
+    flank_finish: str = "ground"
+
+
+APPLICATIONS: dict[str, ApplicationProfile] = {
+    "industrial": ApplicationProfile("general industrial gearbox, electric motor drive, light shocks", 20_000, 1.25, "balanced", 6, False),
+    "uniform": ApplicationProfile("pumps, fans, blowers, generators: steady load, long life", 40_000, 1.0, "balanced", 7, False),
+    "moderate_shock": ApplicationProfile("conveyors with uneven load, mixers, machine tool main drives", 20_000, 1.5, "balanced", 7, False),
+    "heavy_shock": ApplicationProfile("crushers, presses, mills: heavy shocks", 20_000, 1.75, "low_thrust", 7, False),
+    "vehicle": ApplicationProfile("EV / e-axle and traction reductions: high speed, NVH-critical, regenerative braking", 6_000, 1.0, "quiet", 5, True),
+    "servo": ApplicationProfile("servo axes, positioning drives, robot joints: reversing, low backlash", 10_000, 1.25, "balanced", 5, True),
+    "tool": ApplicationProfile("power tools and appliances: short life, high speed", 500, 1.5, "balanced", 7, False, "hobbed"),
+}
+
+
+def requirements_for(application: str, **kw) -> "HelicalRequirements":
+    "HelicalRequirements with the defaults of an application profile; keyword arguments override any field."
+    if application not in APPLICATIONS:
+        raise ValueError(f"application must be one of {list(APPLICATIONS)}")
+    a = APPLICATIONS[application]
+    base: dict = dict(life_h=a.life_h, K_A=a.K_A, priority=a.priority, grade=a.grade, alternating=a.alternating,
+                flank_finish=a.flank_finish)
+    base.update(kw)
+    return HelicalRequirements(**base)
+
+# %% ../../../nbs/gears/helical/06_design.ipynb #cfdc0011
 @dataclass
 class HelicalDesign:
     "A checked design: requirements, pair, ratings, components and backlash allowances."
@@ -193,7 +228,7 @@ def evaluate(req: HelicalRequirements, z1: int, z2: int, mn: float, beta: float,
         return None
     return HelicalDesign(req, pair, r, rp, c, pair_backlash(pair, req.grade))
 
-# %% ../../../nbs/gears/helical/06_design.ipynb #cfdc0010
+# %% ../../../nbs/gears/helical/06_design.ipynb #cfdc0013
 def _faces(req: HelicalRequirements, mn: float, beta: float, d1: float) -> list[float]:
     b_hi = req.b_d_max * d1
     if req.face_max is not None:
@@ -252,7 +287,7 @@ def design_helical_pair(req: HelicalRequirements, max_results: int = 10) -> list
     found.sort(key=lambda t: t[0])
     return [d for _, d in found[:max_results]]
 
-# %% ../../../nbs/gears/helical/06_design.ipynb #cfdc0012
+# %% ../../../nbs/gears/helical/06_design.ipynb #cfdc0015
 def _poly(P: np.ndarray, sx: float, ox: float, oy: float, style: str) -> str:
     pts = " ".join(f"{ox + x * sx:.2f},{oy - y * sx:.2f}" for x, y in P)
     return f'<polygon points="{pts}" {style}/>'
@@ -345,7 +380,7 @@ def layout_svg(d: HelicalDesign, width_px: int = 1100) -> str:
     out.append("</svg>")
     return "\n".join(out)
 
-# %% ../../../nbs/gears/helical/06_design.ipynb #cfdc0014
+# %% ../../../nbs/gears/helical/06_design.ipynb #cfdc0017
 def _fmt(v) -> str:
     return f"{v:.4g}" if isinstance(v, float) else str(v)
 

@@ -19,7 +19,8 @@ Versioning follows [Semantic Versioning](https://semver.org/).
   shaft), bearing reactions with the axial moment, deep groove ball bearing selection (C_req, L10h),
   shaft minimum diameter and deflection, housing axis tolerances (ISO/TR 10064-3). `manufacturing`:
   ISO 1328-1 tolerances, backlash → normal thickness allowances, ISO 1340 data tables with hand and lead,
-  transverse DXF outline and CAD twist angle. `design`: `design_helical_pair(HelicalRequirements)` and
+  transverse DXF outline and CAD twist angle. `design`: `design_helical_pair(HelicalRequirements)`, application profiles
+  (`APPLICATIONS`, `requirements_for`: industrial, uniform, moderate/heavy shock, vehicle, servo, tool) and
   `write_package` (report, data tables, parts list, component dimensions, layout SVG, DXF).
 ### Fixed
 - Slot-leakage notebook: the "layers rotated pole by pole" variant of the EP 2 237 392 B1 winding
